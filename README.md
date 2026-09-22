@@ -1,7 +1,7 @@
 # moonpug
 
-A template engine: all of Jinja2, plus what Django and Pug have that Jinja does
-not, in Jinja's spelling.
+A template engine: everything Jinja2, Django, Pug and Fumi can do, spelled the
+way Jinja does it.
 
 > **Status: planned.** The repository is set up; nothing is implemented yet.
 
@@ -10,27 +10,38 @@ not, in Jinja's spelling.
 @moonpug.render(source, context, syntax=Indent)   // Pug's indentation
 ```
 
-## One vocabulary, two surfaces
+## Everything the four of them do, spelled the way Jinja does
 
-**Jinja2 is the whole of it**: every statement, all 51 filters, all 30 tests,
-the globals, the `loop` object, the three undefined strategies, whitespace
-control, line statements, and the i18n extension.
+**Jinja2 whole**: every statement, all 51 filters, all 30 tests, the globals, the
+`loop` object, the three undefined strategies, whitespace control, line
+statements, and the i18n extension.
 
-**Django and Pug supply what Jinja lacks, in Jinja's form.** Where the two say
-the same thing, Jinja's spelling is the one that exists here: `{% else %}` not
-`{% empty %}`, `{% raw %}` not `{% verbatim %}`, `loop.index` not
-`forloop.counter`, `super()` not `block.super`, `|f(a)` not `|f:a`. Where Django
-has something Jinja does not — `date`, `slugify`, `pluralize`, `linebreaks` —
-it is added as a filter named the way Jinja names filters.
+**Django, Pug and Fumi bring the rest.** Nothing is dropped for being someone
+else's idea; only spellings are. Where two of them say the same thing, Jinja's
+is the one that exists here — `{% else %}` not `{% empty %}`, `{% raw %}` not
+`{% verbatim %}`, `loop.index` not `forloop.counter`, `super()` not
+`block.super`, `|f(a)` not `|f:a`, `elif` not `else-if`. Where they have
+something Jinja does not, it is added in Jinja's shape:
 
-**Two surfaces, one meaning.** Braces and Pug's indentation are two ways of
-writing the same tree: a line beginning with `<` is literal HTML, one beginning
-with `{%` is a block, anything else is a Pug line, and `#{expr}` and `{{ expr }}`
-both interpolate anywhere. An `extends` chain may cross surfaces, because what
-it exchanges is a block, not text.
+| From | Capability | Here |
+|:--|:--|:--|
+| Django | `date`, `slugify`, `pluralize`, `linebreaks`, `yesno`, … | Filters, named the way Jinja names filters |
+| Django | `url`, `static`, `csrf_token`, `now`, `querystring` | Globals the caller registers — Jinja's own answer to host knowledge, as Flask does with `url_for` |
+| Django | `cycle`, `regroup`, `ifchanged`, `spaceless`, `firstof` | `cycler()`, `|groupby`, `loop.changed()`, `|spaceless`, an expression |
+| Fumi | `show` | Renders, and hides with an inline style when false — what `v-show` means once the markup has left the server |
+| Fumi | `once` | Caches that piece under a key; the store is supplied by the caller |
+| Fumi | `:key` | Emitted as `data-key`, and handed to the caller as an annotation |
+| Pug | `block append` / `prepend` | Modifiers on `{% block %}`; Jinja can only override |
+| Pug | Element shorthand, `&attributes`, content filters, `doctype` | Kept, because they are the indentation surface |
 
-Nothing reads a file: `extends` and `include` take a `load` function, and the
-i18n statements take a `translate` function. The caller supplies both.
+**Two surfaces, one meaning.** A line beginning with `<` is literal HTML, one
+beginning with `{%` is a block, anything else is a Pug line; `#{expr}` and
+`{{ expr }}` both interpolate anywhere. An `extends` chain may cross surfaces,
+because what it exchanges is a block, not text.
+
+Nothing reads a file or a clock: `extends` and `include` take a `load` function,
+the i18n statements take a `translate` function, and the host globals are
+registered by the caller.
 
 ## What it does not do
 
