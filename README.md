@@ -1,34 +1,34 @@
 # moonpug
 
-A template engine: Jinja2 and Fumi written the same way, Pug when indentation
+A template engine: Jinja2, Django and Fumi written as one, Pug when indentation
 suits better, one expression language under all of them.
 
 > **Status: planned.** The repository is set up; nothing is implemented yet.
 
 ```moonbit
-@html.render(template, { "user": "Leo" })    // HTML with `{% %}` blocks
-@pug.render(template, { "user": "Leo" })     // indentation
+@moonpug.render(source, context)                  // braces: Jinja / Django / Fumi
+@moonpug.render(source, context, syntax=Indent)   // Pug
 ```
 
-## Two packages, three ways of writing
+## Four ways of writing, two front ends
 
-| Package | Block structure | Understands |
+| Written as | Block structure | Its own |
 |:--|:--|:--|
-| `html` | `{% ... %}` | Jinja's `{{ x }}`, `{% if %}`, `{% elif %}`, `{% for %}`, `{% block %}` — **and** Fumi's `{% else-if %}`, `{% for x in xs :key="x.id" %}`, `{% show %}`, `{% once %}`, `{% html raw %}` |
-| `pug` | Indentation | `a(href=url)= text`, `#{expr}`, `{{ expr }}` |
+| Jinja2 | `{% %}` | `raw`, `loop.index`, `super()`, `\|f(a)` |
+| Django | `{% %}` | `empty`, `verbatim`, `with`, `cycle`, `forloop.*`, `block.super`, `\|f:a` |
+| Fumi | `{% %}` | `else-if`, `show`, `once`, `html`, `:key` |
+| Pug | Indentation | `a(href=x)= text`, mixins, `#{expr}` |
 
-**Jinja and Fumi mix freely**, because they are the same grammar with two
-vocabularies: the tags they share mean the same thing and the rest is addition.
-One tokenizer, one table.
+**The first three mix freely.** They are one grammar with three vocabularies:
+the tags they share mean the same thing, the rest is addition, and the two
+filter-argument spellings are told apart by the character after the name.
 
-**Pug and the brace blocks do not mix**, because their block structure is
-different — indentation against explicit ends — and in one file the two would
-fight over scope. That is the grammar talking, not a rule. Inline interpolation
-is not block structure, so `#{expr}` and `{{ expr }}` both work inside Pug.
+**Pug is the other front end**, because indentation and explicit ends fight over
+scope in one file. Inline interpolation is not block structure, so `#{expr}` and
+`{{ expr }}` both work inside Pug. An `extends` chain is all of one kind.
 
-The expression language, the filters, the inheritance (`extends` / `block`), the
-escaping and the source mapping are the engine's; only the block structure
-differs.
+Everything after the front end — the expression language, the filters, the
+inheritance, the escaping, the source mapping — is shared.
 
 ## What it does not do
 
