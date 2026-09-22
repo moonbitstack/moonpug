@@ -1,15 +1,15 @@
-name = "moonbitstack/CHANGE-ME"
+name = "moonbitstack/moonpug"
 
 version = "0.1.0"
 
 readme = "README.md"
 
-repository = "https://github.com/moonbitstack/CHANGE-ME"
+repository = "https://github.com/moonbitstack/moonpug"
 
 license = "Apache-2.0"
 
-keywords = [ "moonbit" ]
+keywords = [ "template", "pug", "html", "jinja", "render", "moonbit" ]
 
-description = "One sentence saying what this is and what it is not."
+description = "moonpug — a template engine for MoonBit (← Jinja2 / Pug): two syntaxes, Pug's indentation and plain HTML, over one expression language. It writes text; it does not parse documents — that is moonxml."
 
 preferred_target = "wasm-gc"
