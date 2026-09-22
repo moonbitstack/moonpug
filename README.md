@@ -1,24 +1,34 @@
 # moonpug
 
-A template engine: `Jinja2` to use, `Pug` to write, one expression language for
-both.
+A template engine: Jinja2 and Fumi written the same way, Pug when indentation
+suits better, one expression language under all of them.
 
 > **Status: planned.** The repository is set up; nothing is implemented yet.
 
 ```moonbit
-@pug.render(template, { "user": "Leo" })     // indentation syntax
-@html.render(template, { "user": "Leo" })    // HTML with the same braces
+@html.render(template, { "user": "Leo" })    // HTML with `{% %}` blocks
+@pug.render(template, { "user": "Leo" })     // indentation
 ```
 
-## Two syntaxes, one engine
+## Two packages, three ways of writing
 
-| Package | Syntax | For |
+| Package | Block structure | Understands |
 |:--|:--|:--|
-| `pug` | Indentation, `a(href=url)= text` | Writing a page by hand |
-| `html` | HTML5 with `{{ }}` and `{% %}` | A designer's file, marked up in place |
+| `html` | `{% ... %}` | Jinja's `{{ x }}`, `{% if %}`, `{% elif %}`, `{% for %}`, `{% block %}` — **and** Fumi's `{% else-if %}`, `{% for x in xs :key="x.id" %}`, `{% show %}`, `{% once %}`, `{% html raw %}` |
+| `pug` | Indentation | `a(href=url)= text`, `#{expr}`, `{{ expr }}` |
 
-The expression language, the filters, the inheritance (`extends` / `block`) and
-the escaping are the engine's and are shared; only the surface differs.
+**Jinja and Fumi mix freely**, because they are the same grammar with two
+vocabularies: the tags they share mean the same thing and the rest is addition.
+One tokenizer, one table.
+
+**Pug and the brace blocks do not mix**, because their block structure is
+different — indentation against explicit ends — and in one file the two would
+fight over scope. That is the grammar talking, not a rule. Inline interpolation
+is not block structure, so `#{expr}` and `{{ expr }}` both work inside Pug.
+
+The expression language, the filters, the inheritance (`extends` / `block`), the
+escaping and the source mapping are the engine's; only the block structure
+differs.
 
 ## What it does not do
 
