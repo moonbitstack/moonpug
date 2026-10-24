@@ -40,7 +40,7 @@ fn parse_braces(src : String, opts : ReadOpts) -> Array[Node] raise Fault {
     strip_last_newline(src)
   }
   let ps : Pieces = { items: scan_braces(source, opts), at: 0, }
-  let (nodes, stop) = parse_piece_block(ps, [])
+  let (nodes, stop, _) = parse_piece_block(ps, [])
   if stop != "" {
     raise lexical(0, "`\{stop}` closes nothing here")
   }
@@ -218,30 +218,43 @@ let ws_chars : StringView = " \t\r\n"
 fn scan_verbatim(c : Cur, closer : String) -> (StringView, Bool) raise Fault {
   let src = c.src
   let from = c.at
-  let plain = find_from(src, "{%\{closer}%}", from)
-  let trimmed = find_from(src, "{%-\{closer}%}", from)
-  let (at, used_trim, width) = match (plain, trimmed) {
-    (Some(a), Some(b)) => {
-      let w = "{%-\{closer}%}".length()
-      if b + w <= a || a > b {
-        // whichever comes first
-        if b < a {
-          (b, true, w)
-        } else {
-          (a, false, "{%\{closer}%}".length())
+  // The closer may carry any spacing and an optional left trim.
+  let mut i = from
+  let mut at = -1
+  let mut used_trim = false
+  while i + 2 < src.length() {
+    if src.at(i) == 0x7B && src.at(i + 1) == 0x25 {
+      let mut j = i + 2
+      if src.at(j) == 0x2D {
+        j = j + 1
+      }
+      while j < src.length() && src.at(j) == 0x20 {
+        j = j + 1
+      }
+      let word = view_sub(src, j, j + closer.length())
+      if word == closer {
+        let mut k = j + closer.length()
+        while k < src.length() && src.at(k) == 0x20 {
+          k = k + 1
         }
-      } else {
-        (a, false, "{%\{closer}%}".length())
+        if k + 1 < src.length() && src.at(k) == 0x25 && src.at(k + 1) == 0x7D {
+          at = i
+          used_trim = src.at(i + 2) == 0x2D
+          break
+        }
       }
     }
-    (Some(a), None) => (a, false, "{%\{closer}%}".length())
-    (None, Some(b)) => (b, true, "{%-\{closer}%}".length())
-    (None, None) => raise lexical(from, "`\{closer}` never closes")
+    i = i + 1
+  }
+  if at < 0 {
+    raise lexical(from, "`\{closer}` never closes")
   }
   let body = src[from:at]
-  let after = at + width
-  // Also allow `{% endraw -%}`; the trailing `-` is rare, left as text.
-  c.at = after
+  let mut k = at + 2
+  while k + 1 < src.length() && !(src.at(k) == 0x25 && src.at(k + 1) == 0x7D) {
+    k = k + 1
+  }
+  c.at = k + 2
   (body, used_trim)
 }
 
@@ -586,7 +599,11 @@ fn parse_statement(
       }
       ignore(c.take_name())
       c.skip_ws()
-      let iter = parse_expression(c)
+      // The iterable stops at a bare `if` or `recursive`: those belong to the
+      // statement, not the expression.
+      let iter_end = find_clause_end(c, ["if", "recursive"])
+      let iter = parse_expression(Cur::make(c.src, c.at, iter_end))
+      c.at = iter_end
       c.skip_ws()
       let mut filter : Expr? = None
       let mut recursive = false
@@ -606,9 +623,9 @@ fn parse_statement(
           going = true
         }
       }
-      let (for_body, stop) = parse_piece_block(ps, ["else", "endfor"])
+      let (for_body, stop, _) = parse_piece_block(ps, ["else", "endfor"])
       let otherwise = if stop == "else" {
-        let (else_body, stop2) = parse_piece_block(ps, ["endfor"])
+        let (else_body, stop2, _) = parse_piece_block(ps, ["endfor"])
         require(stop2, "endfor")
         else_body
       } else {
@@ -631,24 +648,27 @@ fn parse_statement(
       if c.at != c.end {
         raise lexical(c.at, "`if` holds one condition")
       }
-      let (then_body, stop) = parse_piece_block(ps, ["elif", "else", "endif"])
+      let (then_body, stop, stop_head) = parse_piece_block(ps, [
+        "elif", "else", "endif",
+      ])
       branches.push((cond, then_body))
       let mut stop_word = stop
       while stop_word == "elif" {
-        let head = stmt_head(ps)
-        let hc = Cur::make(head, 0, head.length())
+        let hc = Cur::make(stop_head, 0, stop_head.length())
         hc.skip_ws()
         cond = parse_expression(hc)
         hc.skip_ws()
         if hc.at != hc.end {
           raise lexical(hc.at, "`elif` holds one condition")
         }
-        let (next_body, stop2) = parse_piece_block(ps, ["elif", "else", "endif"])
+        let (next_body, stop2, _) = parse_piece_block(ps, [
+          "elif", "else", "endif",
+        ])
         branches.push((cond, next_body))
         stop_word = stop2
       }
       let otherwise = if stop_word == "else" {
-        let (else_body, stop3) = parse_piece_block(ps, ["endif"])
+        let (else_body, stop3, _) = parse_piece_block(ps, ["endif"])
         require(stop3, "endif")
         else_body
       } else {
@@ -681,7 +701,7 @@ fn parse_statement(
         SetVar([first], parse_expression(c, with_tuple=true))
       } else if c.at >= c.end {
         // Block assignment: `{% set x %} … {% endset %}`.
-        let (block_body, stop) = parse_piece_block(ps, ["endset"])
+        let (block_body, stop, _) = parse_piece_block(ps, ["endset"])
         require(stop, "endset")
         SetBlock(first, block_body)
       } else {
@@ -705,7 +725,7 @@ fn parse_statement(
         }
         c.skip_ws()
       }
-      let (block_body, stop) = parse_piece_block(ps, ["endblock"])
+      let (block_body, stop, _) = parse_piece_block(ps, ["endblock"])
       require(stop, "endblock")
       Block(name, { body: block_body, scoped, required, mod, })
     }
@@ -765,7 +785,7 @@ fn parse_statement(
       let name = c.read_word()
       c.skip_ws()
       let (params, defaults, rest) = parse_params(c)
-      let (macro_body, stop) = parse_piece_block(ps, ["endmacro"])
+      let (macro_body, stop, _) = parse_piece_block(ps, ["endmacro"])
       require(stop, "endmacro")
       MacroDef(name, {
         name,
@@ -791,7 +811,7 @@ fn parse_statement(
       if !(call is Call(_, _)) {
         raise lexical(c.at, "a `call` block ends in a macro call")
       }
-      let (call_body, stop) = parse_piece_block(ps, ["endcall"])
+      let (call_body, stop, _) = parse_piece_block(ps, ["endcall"])
       require(stop, "endcall")
       CallBlock(params, call, call_body)
     }
@@ -816,7 +836,7 @@ fn parse_statement(
           going = true
         }
       }
-      let (filter_body, stop) = parse_piece_block(ps, ["endfilter"])
+      let (filter_body, stop, _) = parse_piece_block(ps, ["endfilter"])
       require(stop, "endfilter")
       FilterBlock(chain, filter_body)
     }
@@ -838,7 +858,7 @@ fn parse_statement(
           c.skip_ws()
         }
       }
-      let (with_body, stop) = parse_piece_block(ps, ["endwith"])
+      let (with_body, stop, _) = parse_piece_block(ps, ["endwith"])
       require(stop, "endwith")
       With(bindings, with_body)
     }
@@ -848,7 +868,7 @@ fn parse_statement(
         "off" => Lit(Bool(false))
         _ => parse_expression(c)
       }
-      let (escape_body, stop) = parse_piece_block(ps, ["endautoescape"])
+      let (escape_body, stop, _) = parse_piece_block(ps, ["endautoescape"])
       require(stop, "endautoescape")
       Autoescape(setting, escape_body)
     }
@@ -867,13 +887,13 @@ fn parse_statement(
     "debug" => Debug
     "show" => {
       let cond = parse_expression(c)
-      let (show_body, stop) = parse_piece_block(ps, ["endshow"])
+      let (show_body, stop, _) = parse_piece_block(ps, ["endshow"])
       require(stop, "endshow")
       Show(cond, show_body)
     }
     "once" => {
       let key = ignore_key(c)
-      let (once_body, stop) = parse_piece_block(ps, ["endonce"])
+      let (once_body, stop, _) = parse_piece_block(ps, ["endonce"])
       require(stop, "endonce")
       Once(key, once_body)
     }
@@ -914,16 +934,6 @@ fn ignore_key(c : Cur) -> String? {
     None
   } else {
     Some(stripped)
-  }
-}
-
-///|
-/// The inner text of the next statement piece, for heads parsed after the
-/// stop word (`elif`).
-fn stmt_head(ps : Pieces) -> String {
-  match ps.next() {
-    Some(PStmt(_, body)) => body
-    _ => ""
   }
 }
 
@@ -1044,7 +1054,7 @@ fn read_context_flags(
 fn parse_piece_block(
   ps : Pieces,
   stops : Array[String],
-) -> (Array[Node], String) raise Fault {
+) -> (Array[Node], String, String) raise Fault {
   let nodes : Array[Node] = []
   let mut going = true
   while going {
@@ -1068,7 +1078,7 @@ fn parse_piece_block(
       }
       Some(PStmt(word, body)) => {
         if stops.contains(word) {
-          return (nodes, word)
+          return (nodes, word, body)
         }
         let node = parse_statement(word, body, ps)
         nodes.push(node)
@@ -1076,7 +1086,7 @@ fn parse_piece_block(
       }
       None =>
         if stops.is_empty() {
-          return (nodes, "")
+          return (nodes, "", "")
         } else {
           raise lexical(
             0,
@@ -1085,5 +1095,36 @@ fn parse_piece_block(
         }
     }
   }
-  (nodes, "")
+  (nodes, "", "")
+}
+
+///|
+/// Where the current clause ends: the next occurrence of one of the words at
+/// bracket depth zero.
+fn find_clause_end(c : Cur, words : Array[String]) -> Int32 {
+  let mut depth = 0
+  let mut i = c.at
+  while i < c.end {
+    let unit = unit_at(c.src, i)
+    match unit {
+      0x28 | 0x5B | 0x7B => depth = depth + 1
+      0x29 | 0x5D | 0x7D => if depth > 0 { depth = depth - 1 }
+      _ => ()
+    }
+    if depth == 0 && is_name_start(unit) {
+      let start = i
+      let mut j = i
+      while j < c.end && is_name_part(c.src.at(j)) {
+        j = j + 1
+      }
+      let word = c.src[start:j]
+      if words.contains(word.to_owned()) {
+        return start
+      }
+      i = j
+      continue
+    }
+    i = i + 1
+  }
+  c.end
 }

@@ -13,6 +13,9 @@ priv struct LoopCtl {
 fn run_nodes(env : Env, nodes : Array[Node]) -> Unit raise Fault {
   for node in nodes {
     run_node(env, node)
+    if env.braking || env.skipping {
+      return
+    }
   }
 }
 
@@ -133,7 +136,7 @@ fn run_node(env : Env, node : Node) -> Unit raise Fault {
         Call(target, args) => {
           let callee = eval(env, target)
           let (pos, kw) = eval_args(env, args)
-          ignore(call_value_with(env, callee, pos, kw, Some(caller)))
+          env.emit(call_value_with(env, callee, pos, kw, Some(caller)))
         }
         _ => raise Wrong(because="a call block needs a macro call")
       }
@@ -410,10 +413,13 @@ fn loop_pass(
     dict.set("cycle", Native("cycle", args => cycle_step(ctl, args)))
     dict.set("changed", Native("changed", args => changed_step(ctl, args)))
     if recursive {
+      // The loop is a mapping and a callable at once: the call rides behind
+      // a reserved key the caller never names.
       dict.set(
-        "loop",
+        "__call__",
         Native("loop", sub => {
-          let seq = materialise(Seq(sub))
+          // `sub` carries the arguments; the sequence to walk is the first.
+          let seq = if sub.is_empty() { [] } else { materialise(sub[0]) }
           let taken = env.capture(() => {
             env.push({})
             loop_pass(

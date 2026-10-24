@@ -223,11 +223,9 @@ fn eval_slice(
           i = i + step_n
         }
       } else {
-        let mut k = from - 1
-        while k >= till && k >= 0 {
-          if k < n {
-            out.push(items[k])
-          }
+        let mut k = from
+        while k > till && k < n {
+          out.push(items[k])
           k = k + step_n
         }
       }
@@ -244,11 +242,9 @@ fn eval_slice(
           i = i + step_n
         }
       } else {
-        let mut k = from - 1
-        while k >= till && k >= 0 {
-          if k < n {
-            out.write_string(s[k:k + 1].to_owned())
-          }
+        let mut k = from
+        while k > till && k < n {
+          out.write_string(s[k:k + 1].to_owned())
           k = k + step_n
         }
       }
@@ -265,31 +261,77 @@ fn slice_bounds(
   n : Int32,
   step : Int32,
 ) -> (Int32, Int32) {
+  // Python slice arithmetic: negatives count from the end, and with a
+  // negative step the defaults walk from the last element down to the first.
   let clamp = fn(v : Int32) -> Int32 {
-    if v < 0 {
-      let w = v + n
-      if w < 0 {
-        0
-      } else {
-        w
-      }
-    } else if v > n {
+    let w = if v < 0 { v + n } else { v }
+    if w < 0 {
+      0
+    } else if w > n {
       n
     } else {
-      v
+      w
     }
   }
   let from = match start {
-    Some(Int(v)) => clamp(v.to_int())
-    Some(Double(d)) => clamp(d.to_int())
-    Some(Absent(_)) | None => if step < 0 { n } else { 0 }
-    Some(_) => 0
+    Some(Int(v)) => {
+      let v = v.to_int()
+      if step < 0 {
+        let w = if v < 0 { v + n } else { v }
+        if w >= n {
+          n - 1
+        } else if w < 0 {
+          -1
+        } else {
+          w
+        }
+      } else {
+        clamp(v)
+      }
+    }
+    Some(Double(d)) => {
+      let v = d.to_int()
+      if step < 0 {
+        let w = if v < 0 { v + n } else { v }
+        if w >= n {
+          n - 1
+        } else if w < 0 {
+          -1
+        } else {
+          w
+        }
+      } else {
+        clamp(v)
+      }
+    }
+    Some(Absent(_)) | None | Some(_) => if step < 0 { n - 1 } else { 0 }
   }
   let till = match stop {
-    Some(Int(v)) => clamp(v.to_int())
-    Some(Double(d)) => clamp(d.to_int())
-    Some(Absent(_)) | None => if step < 0 { 0 } else { n }
-    Some(_) => n
+    Some(Int(v)) => {
+      let v = v.to_int()
+      if step < 0 {
+        if v < 0 {
+          v + n
+        } else {
+          v
+        }
+      } else {
+        clamp(v)
+      }
+    }
+    Some(Double(d)) => {
+      let v = d.to_int()
+      if step < 0 {
+        if v < 0 {
+          v + n
+        } else {
+          v
+        }
+      } else {
+        clamp(v)
+      }
+    }
+    Some(Absent(_)) | None | Some(_) => if step < 0 { -1 } else { n }
   }
   (from, till)
 }
@@ -317,8 +359,8 @@ fn eval_binary(
     Gt => Bool(compare_value(l, r) > 0)
     Le => Bool(compare_value(l, r) <= 0)
     Ge => Bool(compare_value(l, r) >= 0)
-    In => Bool(contains_value(l, r))
-    NotIn => Bool(!contains_value(l, r))
+    In => Bool(contains_value(r, l))
+    NotIn => Bool(!contains_value(r, l))
     Concat => Text(show_value(l) + show_value(r))
     Add =>
       match (l, r) {
@@ -353,6 +395,7 @@ fn arith(op : Binop, l : Value, r : Value) -> Value raise Fault {
       let a64 = a
       let b64 = b
       match op {
+        Add => Int(a64 + b64)
         Sub => Int(a64 - b64)
         Mul => Int(a64 * b64)
         Div => Double(a64.to_double() / b64.to_double())
@@ -441,6 +484,12 @@ fn call_value(
       let rendered = invoke_macro(env, def, pos, kw, None)
       Markup(rendered)
     }
+    Dict(fields) =>
+      // A loop in a recursive `for` calls itself through the reserved key.
+      match fields.get("__call__") {
+        Some(Native(_, call)) => call(pos)
+        _ => raise Wrong(because="a mapping is not callable")
+      }
     Absent(name) =>
       match env.policy {
         Strict => raise Undefined(name~)

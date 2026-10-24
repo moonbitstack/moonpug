@@ -165,8 +165,16 @@ fn is_absent(env : Env, expr : Expr) -> Bool {
         return true
       }
       match eval_plain(env, inner) {
-        Dict(fields) => !fields.contains(field)
-        Namespaced(fields) => !fields.contains(field)
+        Dict(fields) =>
+          match fields.get(field) {
+            Some(value) => value is Absent(_)
+            None => true
+          }
+        Namespaced(fields) =>
+          match fields.get(field) {
+            Some(value) => value is Absent(_)
+            None => true
+          }
         _ => true
       }
     }
