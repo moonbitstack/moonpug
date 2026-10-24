@@ -27,7 +27,11 @@ fn main raise {
   )
   // The indentation surface.
   println(
-    @moonpug.render("ul#list\n  each it in items\n    li= it|upper", ctx, syntax=Pug) catch {
+    @moonpug.render(
+      "ul#list\n  each it in items\n    li= it|upper",
+      ctx,
+      syntax=Pug,
+    ) catch {
       fault => "F:\{fault}"
     },
   )
@@ -42,8 +46,7 @@ fn main raise {
   )
   println(
     @moonpug.render(
-      "{{ n }}\n{% block lang=pug %}p doubled #{n * 2}{% endblock %}",
-      ctx,
+      "{{ n }}\n{% block lang=pug %}p doubled #{n * 2}{% endblock %}", ctx,
     ) catch {
       fault => "F:\{fault}"
     },
