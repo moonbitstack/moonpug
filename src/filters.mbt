@@ -34,11 +34,7 @@ fn apply_filter(
       let size = arg_int(pos, kw, 0, None, "batch")
       let fill = match kw.get("fill_with") {
         Some(filler) => Some(filler)
-        None => if 1 < pos.length() {
-          Some(pos[1])
-        } else {
-          None
-        }
+        None => if 1 < pos.length() { Some(pos[1]) } else { None }
       }
       let items = as_list(input, "batch")
       let out = []
@@ -448,11 +444,7 @@ fn apply_filter(
       let parts = arg_int(pos, kw, 0, None, "slice")
       let fill = match kw.get("fill_with") {
         Some(filler) => Some(filler)
-        None => if 1 < pos.length() {
-          Some(pos[1])
-        } else {
-          None
-        }
+        None => if 1 < pos.length() { Some(pos[1]) } else { None }
       }
       let items = as_list(input, "slice")
       let n = items.length()
@@ -996,17 +988,18 @@ fn percent_encode(s : String) -> String {
     unit == 0x5F ||
     unit == 0x7E
   }
-  fn hex_byte(b : Int) -> String {
+  fn hex_byte(b : Int32) -> String {
     let hex = "0123456789ABCDEF"
-    u16_char(hex.at(b / 16 % 16)).to_string() + u16_char(hex.at(b % 16)).to_string()
+    u16_char(hex.at(b / 16 % 16)).to_string() +
+    u16_char(hex.at(b % 16)).to_string()
   }
   // A code point goes out as one %XX per UTF-8 byte.
-  fn escape_codepoint(cp : Int) -> String {
+  fn escape_codepoint(cp : Int32) -> String {
     if cp < 0x80 {
       return "%" + hex_byte(cp)
     }
     let out = StringBuilder()
-    let bytes : Array[Int] = if cp < 0x800 {
+    let bytes : Array[Int32] = if cp < 0x800 {
       [0xC0 + cp / 64, 0x80 + cp % 64]
     } else if cp < 0x10000 {
       [0xE0 + cp / 4096, 0x80 + cp / 64 % 64, 0x80 + cp % 64]
@@ -1034,6 +1027,7 @@ fn percent_encode(s : String) -> String {
   }
   out.to_string()
 }
+
 ///|
 /// Python's %-style formatting, `"%s - %s"|format(a, b)` and the named
 /// `%(key)s` spelling.
@@ -1086,7 +1080,10 @@ fn format_printf(
       next = next + 1
       v
     }
-    // Flags and width, consumed and mostly ignored beyond correctness.
+    // Flags and a width: the zero flag pads the number to the width.
+    let mut pad_zero = false
+    let mut width = 0
+    let mut seen_width = false
     while i < n &&
           (
             pattern.at(i) == 0x2D ||
@@ -1094,10 +1091,29 @@ fn format_printf(
             pattern.at(i) == 0x30 ||
             pattern.at(i) == 0x20
           ) {
+      if pattern.at(i) == 0x30 {
+        pad_zero = true
+      }
       i = i + 1
     }
     while i < n && is_digit(pattern.at(i)) {
+      width = width * 10 + pattern.at(i).to_int() - 0x30
+      seen_width = true
       i = i + 1
+    }
+    fn pad(plain : String) -> String {
+      if seen_width && pad_zero && plain.length() < width {
+        let missing = width - plain.length()
+        let sign = if plain.has_prefix("-") { "-" } else { "" }
+        let digits = if plain.has_prefix("-") {
+          plain[1:plain.length()].to_owned()
+        } else {
+          plain
+        }
+        sign + "0".repeat(missing) + digits
+      } else {
+        plain
+      }
     }
     if i < n && pattern.at(i) == 0x2E {
       i = i + 1
@@ -1113,8 +1129,8 @@ fn format_printf(
     match verb {
       0x73 => out.write_string(show_value(value)) // s
       0x72 => out.write_string(repr_value(value)) // r
-      0x64 | 0x69 => out.write_string(int_text(value)) // d, i
-      0x66 => out.write_string(show_double(as_double(value, "format"))) // f
+      0x64 | 0x69 => out.write_string(pad(int_text(value))) // d, i
+      0x66 => out.write_string(pad(show_double(as_double(value, "format")))) // f
       0x78 => out.write_string(int_radix(value, 16, false)) // x
       0x58 => out.write_string(int_radix(value, 16, true)) // X
       0x6F => out.write_string(int_radix(value, 8, false)) // o
@@ -1171,7 +1187,7 @@ fn urlize(value : String, limit : Value, nofollow : Bool) -> Value {
         piece.has_prefix("https://") ||
         piece.has_prefix("www.") {
         let shown = if max > 0 && piece.length() > max {
-          piece[0:max] + "\\u{2026}"
+          piece[0:max] + "…"
         } else {
           piece
         }
@@ -1182,7 +1198,13 @@ fn urlize(value : String, limit : Value, nofollow : Bool) -> Value {
         }
         let rel = if nofollow { " rel=\"nofollow\"" } else { "" }
         words.push(
-          "<a href=\"" + href + "\"" + rel + ">" + escape_text(shown.to_owned()) + "</a>",
+          "<a href=\"" +
+          href +
+          "\"" +
+          rel +
+          ">" +
+          escape_text(shown.to_owned()) +
+          "</a>",
         )
       } else {
         words.push(piece)
@@ -1200,6 +1222,7 @@ fn urlize(value : String, limit : Value, nofollow : Bool) -> Value {
   flush()
   Markup(join_texts(words, ""))
 }
+
 ///|
 /// A builtin filter: dispatch by name into the engine's own table.
 priv struct BuiltinFilter {

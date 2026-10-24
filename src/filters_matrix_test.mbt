@@ -28,11 +28,15 @@ test "the Jinja filters, one case each" {
     // undefined name refuses before the filter sees it
     // dictsort
     // the printed repr escapes like MarkupSafe does, quotes included
-    ("{{ { b: 2, a: 1 }|dictsort }}", "{}", "[[&#39;a&#39;, 1], [&#39;b&#39;, 2]]"),
+    (
+      "{{ { b: 2, a: 1 }|dictsort }}", "{}", "[[&#39;a&#39;, 1], [&#39;b&#39;, 2]]",
+    ),
     // escape
     ("{{ '<b>'|escape }}", "{}", "&lt;b&gt;"),
     // filesizeformat
-    ("{{ 1000|filesizeformat }}|{{ 1000000|filesizeformat }}", "{}", "1.0 kB|1.0 MB"),
+    (
+      "{{ 1000|filesizeformat }}|{{ 1000000|filesizeformat }}", "{}", "1.0 kB|1.0 MB",
+    ),
     // first
     ("{{ [1,2]|first }}|{{ 'ab'|first }}", "{}", "1|a"),
     // float
@@ -42,8 +46,10 @@ test "the Jinja filters, one case each" {
     // format
     ("{{ '%s=%d'|format('k', 3) }}", "{}", "k=3"),
     // groupby
-    ("{{ people|groupby('city')|map(attribute='grouper')|join(',') }}",
-     "{ \"people\": [{\"city\":\"R\"},{\"city\":\"P\"},{\"city\":\"R\"}] }", "P,R"),
+    (
+      "{{ people|groupby('city')|map(attribute='grouper')|join(',') }}", "{ \"people\": [{\"city\":\"R\"},{\"city\":\"P\"},{\"city\":\"R\"}] }",
+      "P,R",
+    ),
     // indent
     ("{{ 'a\nb'|indent(2) }}", "{}", "a\n  b"),
     // int
@@ -51,8 +57,10 @@ test "the Jinja filters, one case each" {
     // items
     ("{{ { a: 1 }|items }}", "{}", "[[&#39;a&#39;, 1]]"),
     // join
-    ("{{ [1,2]|join('-') }}|{{ users|join(', ', attribute='name') }}",
-     "{ \"users\": [{\"name\":\"a\"},{\"name\":\"b\"}] }", "1-2|a, b"),
+    (
+      "{{ [1,2]|join('-') }}|{{ users|join(', ', attribute='name') }}", "{ \"users\": [{\"name\":\"a\"},{\"name\":\"b\"}] }",
+      "1-2|a, b",
+    ),
     // last
     ("{{ [1,2]|last }}|{{ 'ab'|last }}", "{}", "2|b"),
     // length
@@ -62,46 +70,66 @@ test "the Jinja filters, one case each" {
     // lower
     ("{{ 'AB'|lower }}", "{}", "ab"),
     // map
-    ("{{ users|map(attribute='name')|join(',') }}|{{ [1.2, 2.7]|map('round')|join(',') }}",
-     "{ \"users\": [{\"name\":\"x\"},{\"name\":\"y\"}] }", "x,y|1,3"),
+    (
+      "{{ users|map(attribute='name')|join(',') }}|{{ [1.2, 2.7]|map('round')|join(',') }}",
+      "{ \"users\": [{\"name\":\"x\"},{\"name\":\"y\"}] }", "x,y|1,3",
+    ),
     // max / min
-    ("{{ [3,1,2]|max }}|{{ [3,1,2]|min }}|{{ users|max(attribute='age') }}",
-     "{ \"users\": [{\"age\":4},{\"age\":9}] }", "3|1|{&#39;age&#39;: 9}"),
+    (
+      "{{ [3,1,2]|max }}|{{ [3,1,2]|min }}|{{ users|max(attribute='age') }}", "{ \"users\": [{\"age\":4},{\"age\":9}] }",
+      "3|1|{&#39;age&#39;: 9}",
+    ),
     // pprint
     ("{{ [1, 'a']|pprint }}", "{}", "[1, &#39;a&#39;]"),
     // random is not deterministic by contract; covered separately
     // reject / select
-    ("{{ [1,2,3,4]|select('even')|list }}|{{ [1,2,3,4]|reject('even')|list }}", "{}", "[2, 4]|[1, 3]"),
+    (
+      "{{ [1,2,3,4]|select('even')|list }}|{{ [1,2,3,4]|reject('even')|list }}",
+      "{}", "[2, 4]|[1, 3]",
+    ),
     // rejectattr / selectattr
-    ("{{ users|selectattr('on')|map(attribute='n')|join }}",
-     "{ \"users\": [{\"n\":\"a\",\"on\":true},{\"n\":\"b\",\"on\":false}] }", "a"),
+    (
+      "{{ users|selectattr('on')|map(attribute='n')|join }}", "{ \"users\": [{\"n\":\"a\",\"on\":true},{\"n\":\"b\",\"on\":false}] }",
+      "a",
+    ),
     // replace
-    ("{{ 'aaa'|replace('a', 'b', 2) }}|{{ 'aaa'|replace('aa', 'X') }}", "{}", "bba|Xa"),
+    (
+      "{{ 'aaa'|replace('a', 'b', 2) }}|{{ 'aaa'|replace('aa', 'X') }}", "{}", "bba|Xa",
+    ),
     // reverse
     ("{{ [1,2]|reverse|list }}|{{ 'ab'|reverse }}", "{}", "[2, 1]|ba"),
     // round
-    ("{{ 4.7|round }}|{{ 4.2|round }}|{{ 4.5|round(0, 'ceil') }}", "{}", "5|4|5"),
+    (
+      "{{ 4.7|round }}|{{ 4.2|round }}|{{ 4.5|round(0, 'ceil') }}", "{}", "5|4|5",
+    ),
     // safe
     ("{{ '<b>'|safe }}", "{}", "<b>"),
     // slice
     ("{{ [1,2,3,4]|slice(2)|list }}", "{}", "[[1, 2], [3, 4]]"),
     // sort
-    ("{{ [3,1,2]|sort|list }}|{{ ['B','a']|sort|list }}|{{ users|sort(attribute='age')|map(attribute='n')|join }}",
-     "{ \"users\": [{\"n\":\"x\",\"age\":9},{\"n\":\"y\",\"age\":1}] }", "[1, 2, 3]|[&#39;a&#39;, &#39;B&#39;]|yx"),
+    (
+      "{{ [3,1,2]|sort|list }}|{{ ['B','a']|sort|list }}|{{ users|sort(attribute='age')|map(attribute='n')|join }}",
+      "{ \"users\": [{\"n\":\"x\",\"age\":9},{\"n\":\"y\",\"age\":1}] }", "[1, 2, 3]|[&#39;a&#39;, &#39;B&#39;]|yx",
+    ),
     // string
     ("{{ 42|string }}", "{}", "42"),
     // striptags
     ("{{ '<p>a <b>b</b></p>'|striptags }}", "{}", "a b"),
     // sum
-    ("{{ [1,2,3]|sum }}|{{ items|sum(attribute='v') }}",
-     "{ \"items\": [{\"v\":2},{\"v\":3}] }", "6|5"),
+    (
+      "{{ [1,2,3]|sum }}|{{ items|sum(attribute='v') }}", "{ \"items\": [{\"v\":2},{\"v\":3}] }",
+      "6|5",
+    ),
     // title
     ("{{ 'hello world'|title }}", "{}", "Hello World"),
     ("{{ { a: '<i>' }|tojson }}", "{}", "{\"a\":\"\\u003ci\\u003e\"}"),
     // trim
     ("{{ '  a  '|trim }}", "{}", "a"),
     // truncate
-    ("{{ 'foo bar baz qux'|truncate(9) }}|{{ 'foo bar baz qux'|truncate(9, true) }}", "{}", "foo ...|foo ba..."),
+    (
+      "{{ 'foo bar baz qux'|truncate(9) }}|{{ 'foo bar baz qux'|truncate(9, true) }}",
+      "{}", "foo ...|foo ba...",
+    ),
     // unique
     ("{{ [1,2,1]|unique|list }}", "{}", "[1, 2]"),
     // upper
@@ -109,7 +137,9 @@ test "the Jinja filters, one case each" {
     // urlencode
     ("{{ 'a b&c'|urlencode }}", "{}", "a%20b%26c"),
     // urlize
-    ("{{ 'see http://x.example now'|urlize }}", "{}", "see <a href=\"http://x.example\">http://x.example</a> now"),
+    (
+      "{{ 'see http://x.example now'|urlize }}", "{}", "see <a href=\"http://x.example\">http://x.example</a> now",
+    ),
     // wordcount
     ("{{ 'one two  three'|wordcount }}", "{}", "3"),
     // wordwrap
@@ -131,9 +161,10 @@ test "the Jinja filters, one case each" {
 }
 
 ///|
+
 ///|
 fn one_lenient(template : String, context : String) -> String {
-  @moonpug.render(template, @json.parse(context), undefined_policy = Lenient) catch {
+  @moonpug.render(template, @json.parse(context), undefined_policy=Lenient) catch {
     fault => "F:\{fault}"
   }
 }
@@ -141,7 +172,10 @@ fn one_lenient(template : String, context : String) -> String {
 ///|
 test "default over the lenient policy, refused under the strict one" {
   assert_eq(
-    one_lenient("{{ ghost|default('no') }}|{{ ''|default('no', boolean=true) }}|{{ 0|default('no') }}", "{}"),
+    one_lenient(
+      "{{ ghost|default('no') }}|{{ ''|default('no', boolean=true) }}|{{ 0|default('no') }}",
+      "{}",
+    ),
     "no|no|0",
   )
   assert_eq(one("{{ ghost|default('no') }}", "{}"), "F:undefined: ghost")
@@ -151,8 +185,7 @@ test "default over the lenient policy, refused under the strict one" {
 test "random varies within one render" {
   let seen : Map[String, Bool] = Map([])
   let picks = one(
-    "{% for i in range(200) %}{{ [1, 2, 3]|random }};{% endfor %}",
-    "{}",
+    "{% for i in range(200) %}{{ [1, 2, 3]|random }};{% endfor %}", "{}",
   )
   for part in picks.split(";") {
     if !part.is_empty() {

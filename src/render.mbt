@@ -829,25 +829,71 @@ fn run_trans(env : Env, spec : TransSpec) -> Unit raise Fault {
     Some(n) => n != 1
     None => false
   }
-  let message = match env.translate {
-    Some(seam) =>
-      match seam(spec.singular, None, count) {
+  match env.translate {
+    Some(seam) => {
+      // The msgid carries %(name)s where the template wrote {{ name }}.
+      let singular = msgid_of(spec.singular, bound)
+      let msgid = if plural_wanted && spec.plural is Some(_) {
+        msgid_of(spec.plural.unwrap(), bound)
+      } else {
+        singular
+      }
+      let message = match seam(msgid, None, count) {
         Some(translated) => translated
         None =>
           if plural_wanted && spec.plural is Some(plural) {
             plural
           } else {
-            spec.singular
+            singular
           }
       }
-    None =>
-      if plural_wanted && spec.plural is Some(plural) {
+      env.emit(Text(fill_placeholders(message, bound)))
+    }
+    None => {
+      // No seam: the body renders as a template with the bindings in scope.
+      let raw = if plural_wanted && spec.plural is Some(plural) {
         plural
       } else {
         spec.singular
       }
+      env.push(bound)
+      let nodes = parse_template(raw, env.opts)
+      run_nodes(env, nodes)
+      env.pop()
+    }
   }
-  env.emit(Text(fill_placeholders(message, bound)))
+}
+
+///|
+/// `{{ name }}` in a trans body becomes `%(name)s` for the translation seam.
+fn msgid_of(text : String, bound : Map[String, Value]) -> String {
+  let out = StringBuilder()
+  let n = text.length()
+  let mut i = 0
+  while i < n {
+    if text.at(i) == 0x7B &&
+      i + 2 < n &&
+      text.at(i + 1) == 0x7B &&
+      text.at(i + 2) == 0x20 {
+      let mut j = i + 3
+      while j < n && is_name_part(text.at(j)) {
+        j = j + 1
+      }
+      let name = text[i + 3:j].to_owned()
+      if j + 2 < n &&
+        text.at(j) == 0x20 &&
+        text.at(j + 1) == 0x7D &&
+        text.at(j + 2) == 0x7D &&
+        bound.contains(name) {
+        out.write_string("%(" + name + ")s")
+        i = j + 3
+        continue
+      }
+    }
+    out.write_char(u16_char(text.at(i)))
+    i = i + 1
+  }
+  out.to_string()
 }
 
 ///|

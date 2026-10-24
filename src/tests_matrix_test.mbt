@@ -36,12 +36,19 @@ test "the value-level Jinja tests, one case each" {
     ("{{ range is test }}|{{ 1 is test }}", "{}", "False|False"),
     ("{{ 1.5 is float }}|{{ 1 is float }}", "{}", "True|False"),
     ("{{ 1 is integer }}|{{ 1.5 is integer }}", "{}", "True|False"),
-    ("{{ 1 is number }}|{{ 1.5 is number }}|{{ 'x' is number }}|{{ true is number }}", "{}", "True|True|False|True"),
+    (
+      "{{ 1 is number }}|{{ 1.5 is number }}|{{ 'x' is number }}|{{ true is number }}",
+      "{}", "True|True|False|True",
+    ),
     ("{{ 'a' in 'abc' is in('abc') }}|{{ 1 is in([2]) }}", "{}", "False|False"),
     ("{{ 1 is in([1, 2]) }}|{{ 3 is in([1, 2]) }}", "{}", "True|False"),
-    ("{{ [1] is iterable }}|{{ 'a' is iterable }}|{{ 1 is iterable }}", "{}", "True|True|False"),
+    (
+      "{{ [1] is iterable }}|{{ 'a' is iterable }}|{{ 1 is iterable }}", "{}", "True|True|False",
+    ),
     ("{{ {} is mapping }}|{{ [] is mapping }}", "{}", "True|False"),
-    ("{{ [1] is sequence }}|{{ 'a' is sequence }}|{{ 1 is sequence }}", "{}", "True|True|False"),
+    (
+      "{{ [1] is sequence }}|{{ 'a' is sequence }}|{{ 1 is sequence }}", "{}", "True|True|False",
+    ),
     ("{{ 'a' is string }}|{{ 1 is string }}", "{}", "True|False"),
     ("{{ 'abc' is lower }}|{{ 'Abc' is lower }}", "{}", "True|False"),
     ("{{ 'ABC' is upper }}|{{ 'Abc' is upper }}", "{}", "True|False"),
@@ -64,8 +71,16 @@ test "the sameas caveat: numbers across int and double are not the same object" 
 
 ///|
 test "defined and undefined read the expression, not the value" {
-  assert_eq(ask("{{ ghost is defined }}|{{ ghost is not defined }}|{{ 1 is defined }}", "{}"), "False|True|True")
-  assert_eq(ask("{{ ghost is undefined }}|{{ 1 is undefined }}", "{}"), "True|False")
+  assert_eq(
+    ask(
+      "{{ ghost is defined }}|{{ ghost is not defined }}|{{ 1 is defined }}", "{}",
+    ),
+    "False|True|True",
+  )
+  assert_eq(
+    ask("{{ ghost is undefined }}|{{ 1 is undefined }}", "{}"),
+    "True|False",
+  )
   // Strict still refuses the value itself; only the test is safe.
   assert_eq(ask("{{ ghost is defined and (ghost is defined) }}", "{}"), "False")
 }

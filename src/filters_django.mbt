@@ -31,10 +31,11 @@ fn django_filter(
         v => as_moment(v)
       }
       let moment = as_moment(input)
+      // timesince measures from `other` to the value; timeuntil the reverse.
       let diff = if name == "timesince" {
-        moment.diff(other)
-      } else {
         other.diff(moment)
+      } else {
+        moment.diff(other)
       }
       let since = match diff {
         Some(span) => span
@@ -99,8 +100,9 @@ fn django_filter(
       Markup(truncate_html_words(as_text(input, "truncatewords_html"), n))
     }
     "stringformat" => {
+      // Django applies the pattern to the value: "03d" means printf's %03d.
       let pattern = arg_text(pos, kw, 0, None, "stringformat")
-      format_printf(pattern, [input], {})
+      format_printf("%" + pattern, [input], {})
     }
     "yesno" => {
       let spec = arg_text(pos, kw, 0, Some("yes,no,maybe"), "yesno")
@@ -159,11 +161,12 @@ fn django_filter(
       }
     }
     "get_digit" => {
+      // Django reads the digits off the value as text, whatever its kind.
       let which = arg_int(pos, kw, 0, None, "get_digit")
       if which < 1 {
         return input
       }
-      let digits = as_text(input, "get_digit")
+      let digits = show_value(input)
       if which > digits.length() {
         return input
       }
@@ -222,7 +225,7 @@ fn django_filter(
     }
     "spaceless" => {
       let s = as_text(input, "spaceless")
-      Value::Text(space_between_tags(s))
+      Markup(space_between_tags(s))
     }
     _ => raise Unknown(name~, kind="filter")
   }
@@ -300,14 +303,24 @@ fn format_moment(moment : @moondate.Moment, pattern : String) -> String {
       i = i + 2
       continue
     }
-    if unit != 0x25 {
+    // Django's date format is bare letters: Y m d, not %Y %m %d. A `%`
+    // escapes itself, and an unknown letter passes through.
+    if unit == 0x25 {
+      i = i + 1
+      if i < pattern.length() && pattern.at(i) == 0x25 {
+        out.write_char('%')
+        i = i + 1
+        continue
+      }
+      out.write_char('%')
+      continue
+    }
+    if !((unit >= 0x41 && unit <= 0x5A) || (unit >= 0x61 && unit <= 0x7A)) {
       out.write_char(u16_char(unit))
       i = i + 1
       continue
     }
-    i = i + 1
     if i >= pattern.length() {
-      out.write_char('%')
       break
     }
     let letter = pattern.at(i)
@@ -620,44 +633,31 @@ fn tag_first_word(tag : StringView) -> String {
 ///|
 /// A nested list of items and sublists as `<ul>` nesting, Django's shape.
 fn unordered_list(items : Array[Value], depth : Int32) -> String {
+  // An item followed by a list nests that list inside the item's <li>,
+  // which is how Django reads a nested array.
   let out = StringBuilder()
-  if depth == 0 {
-    out.write_string("<ul>")
-  } else {
-    out.write_string("<ul>")
-  }
+  out.write_string("<ul>")
   let mut i = 0
   while i < items.length() {
     match items[i] {
-      Seq(_) => {
-        // A sublist belongs to the item before it.
-        let popped = out.to_string()
-        let trimmed = popped[0:popped.length() - 5]
-        out.reset()
-        out.write_string(trimmed.to_owned())
-        out.write_string(unordered_list_inner(items[i], depth + 1))
-        out.write_string("</li>")
-      }
+      Seq(inner) => out.write_string(unordered_list(inner, depth + 1))
       item => {
-        out.write_string("<li>\{escape_text(show_value(item))}")
-        let next_is_list = i + 1 < items.length() && items[i + 1] is Seq(_)
-        if !next_is_list {
-          out.write_string("</li>")
+        out.write_string("<li>")
+        out.write_string(escape_text(show_value(item)))
+        if i + 1 < items.length() && items[i + 1] is Seq(_) {
+          match items[i + 1] {
+            Seq(inner) => out.write_string(unordered_list(inner, depth + 1))
+            _ => ()
+          }
+          i = i + 1
         }
+        out.write_string("</li>")
       }
     }
     i = i + 1
   }
   out.write_string("</ul>")
   out.to_string()
-}
-
-///|
-fn unordered_list_inner(value : Value, depth : Int32) -> String {
-  match value {
-    Seq(items) => unordered_list(items, depth)
-    _ => ""
-  }
 }
 
 ///|
@@ -684,31 +684,22 @@ fn iri_encode(s : String) -> String {
 
 ///|
 fn escape_js(s : String) -> String {
-  let hex = "0123456789abcdef"
   let out = StringBuilder()
   for i = 0; i < s.length(); i = i + 1 {
     let unit = s.at(i)
     match unit {
-      0x5C => out.write_string("\\\\")
-      0x27 => out.write_string("\\'")
-      0x22 => out.write_string("\\\"")
-      0x3C => out.write_string("\\u003C")
+      0x5C => out.write_string("\\u005C")
+      0x27 => out.write_string("\\u0027")
+      0x22 => out.write_string("\\u0022")
       0x3E => out.write_string("\\u003E")
+      0x3C => out.write_string("\\u003C")
       0x26 => out.write_string("\\u0026")
-      0x3D => out.write_string("\\u003D")
-      0x3B => out.write_string("\\u003B")
-      0x0A => out.write_string("\\n")
-      0x0D => out.write_string("\\r")
-      0x09 => out.write_string("\\t")
+      0x0A => out.write_string("\n")
+      0x0D => out.write_string("\r")
+      0x09 => out.write_string("\t")
       _ =>
         if unit < 0x20 || unit > 0x7E {
-          out.write_string(
-            "\\u" +
-            u16_char(hex.at((unit / 4096).to_int())).to_string() +
-            u16_char(hex.at((unit % 4096 / 256).to_int())).to_string() +
-            u16_char(hex.at((unit % 256 / 16).to_int())).to_string() +
-            u16_char(hex.at((unit % 16).to_int())).to_string(),
-          )
+          out.write_string("\\u" + hex4(unit))
         } else {
           out.write_char(u16_char(unit))
         }
@@ -719,21 +710,19 @@ fn escape_js(s : String) -> String {
 
 ///|
 fn space_between_tags(s : String) -> String {
+  // Only the white space between a closing `>` and an opening `<` goes.
   let out = StringBuilder()
   let mut i = 0
   while i < s.length() {
     if s.at(i) == 0x3E {
-      let close = find_from(s, "<", 0)
-      match close {
-        Some(at) => {
-          out.write_string(">")
-          out.write_string(s[at:at + 1].to_owned())
-          i = at + 1
-        }
-        None => {
-          out.write_string(">")
-          i = i + 1
-        }
+      out.write_string(">")
+      i = i + 1
+      let mut j = i
+      while j < s.length() && u16_char(s.at(j)).is_ascii_whitespace() {
+        j = j + 1
+      }
+      if j < s.length() && s.at(j) == 0x3C {
+        i = j
       }
     } else {
       out.write_string(s[i:i + 1].to_owned())
@@ -767,4 +756,13 @@ fn floatformat(d : Double, places : Int32) -> Value {
     Text(trimmed)
   }
   rounded
+}
+
+///|
+fn hex4(unit : UInt16) -> String {
+  let hex = "0123456789ABCDEF"
+  u16_char(hex.at((unit / 4096 % 16).to_int())).to_string() +
+  u16_char(hex.at((unit / 256 % 16).to_int())).to_string() +
+  u16_char(hex.at((unit / 16 % 16).to_int())).to_string() +
+  u16_char(hex.at((unit % 16).to_int())).to_string()
 }

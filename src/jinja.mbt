@@ -417,6 +417,9 @@ fn scan_trans(
     head_cur.at = head_cur.at + 1
     head_cur.skip_ws()
     bindings.push((name, parse_expression(head_cur)))
+    if name == "count" {
+      count_name = Some(name)
+    }
     head_cur.skip_ws()
     if head_cur.peek() == 0x2C {
       head_cur.at = head_cur.at + 1
@@ -469,10 +472,12 @@ fn find_trans_marker(src : String, from : Int32) -> (String, Int32, Int32)? {
   let mut i = from
   while i < n {
     if src.at(i) == 0x7B && i + 1 < n && src.at(i + 1) == 0x25 {
-      let word_start = i + 2
+      let mut word_start = i + 2
       if src.at(word_start) == 0x2D {
-        i = word_start
-        continue
+        word_start = word_start + 1
+      }
+      while word_start < n && src.at(word_start) == 0x20 {
+        word_start = word_start + 1
       }
       let mut j = word_start
       while j < n && is_name_part(src.at(j)) {
@@ -485,7 +490,7 @@ fn find_trans_marker(src : String, from : Int32) -> (String, Int32, Int32)? {
               !(src.at(close) == 0x25 && src.at(close + 1) == 0x7D) {
           close = close + 1
         }
-        if close + 1 < n {
+        if close + 2 <= n {
           return Some((word.to_owned(), i, close + 2))
         }
       }
