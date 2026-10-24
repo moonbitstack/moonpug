@@ -23,7 +23,7 @@ fn apply_filter(
       let field = arg_text(pos, kw, 0, None, "attr")
       match input {
         Dict(fields) =>
-          match fields.get(name) {
+          match fields.get(field) {
             Some(value) => value
             None => Absent(field)
           }
@@ -32,7 +32,14 @@ fn apply_filter(
     }
     "batch" => {
       let size = arg_int(pos, kw, 0, None, "batch")
-      let fill = kw.get("fill_with")
+      let fill = match kw.get("fill_with") {
+        Some(filler) => Some(filler)
+        None => if 1 < pos.length() {
+          Some(pos[1])
+        } else {
+          None
+        }
+      }
       let items = as_list(input, "batch")
       let out = []
       let mut i = 0
@@ -191,6 +198,8 @@ fn apply_filter(
           groups.push((key, [item]))
         }
       }
+      // Jinja's groupby hands the groups back sorted by their key.
+      groups.sort_by(fn(a, b) { a.0.compare(b.0) })
       let out = []
       for group in groups {
         let dict : Map[String, Value] = Map([])
@@ -371,9 +380,13 @@ fn apply_filter(
       let keep = name == "selectattr"
       let field = arg_text(pos, kw, 0, None, name)
       let test_name = arg_text(pos, kw, 1, Some("true"), name)
+      // The tail after the attribute and (maybe) the test name goes to the
+      // test as its own arguments.
       let rest = pos.copy()
-      ignore(rest.remove(0))
-      ignore(rest.remove(0))
+      let heads = if 1 < rest.length() { 2 } else { 1 }
+      for _k = 0; _k < heads; _k = _k + 1 {
+        ignore(rest.remove(0))
+      }
       match ctx.tests.get(test_name) {
         None => raise Unknown(name=test_name, kind="test")
         Some(probe) => {
@@ -433,7 +446,14 @@ fn apply_filter(
     "safe" => Markup(as_text(input, "safe"))
     "slice" => {
       let parts = arg_int(pos, kw, 0, None, "slice")
-      let fill = kw.get("fill_with")
+      let fill = match kw.get("fill_with") {
+        Some(filler) => Some(filler)
+        None => if 1 < pos.length() {
+          Some(pos[1])
+        } else {
+          None
+        }
+      }
       let items = as_list(input, "slice")
       let n = items.length()
       let base = n / parts
@@ -484,7 +504,7 @@ fn apply_filter(
     "string" => Text(show_value(input))
     "striptags" => {
       let stripped = strip_tags(as_text(input, "striptags"))
-      Text(stripped.trim().to_owned().replace_all(old="\n ", new="\n"))
+      Text(collapse_space(stripped.trim()))
     }
     "sum" => {
       let field = kw.get("attribute")
@@ -527,10 +547,23 @@ fn apply_filter(
       )
     }
     "truncate" => {
+      // Jinja's order: length, killwords, end, leeway.
       let limit = arg_int(pos, kw, 0, Some(255), "truncate")
-      let killwords = kw.get_or_default("killwords", Bool(false)) is Bool(true)
-      let end = arg_text(pos, kw, 1, Some("..."), "truncate")
-      let leeway = arg_int(pos, kw, 2, Some(5), "truncate")
+      let killwords = match pos.get(1) {
+        Some(Bool(b)) => b
+        Some(_) => false
+        None => kw.get_or_default("killwords", Bool(false)) is Bool(true)
+      }
+      let end = match pos.get(2) {
+        Some(Text(e)) | Some(Markup(e)) => e
+        Some(_) => "..."
+        None =>
+          match kw.get("end") {
+            Some(Text(e)) | Some(Markup(e)) => e
+            _ => "..."
+          }
+      }
+      let leeway = arg_int(pos, kw, 3, Some(5), "truncate")
       let s = as_text(input, "truncate")
       if limit < 0 {
         return Text(s)
@@ -550,7 +583,8 @@ fn apply_filter(
           Some(at) => at
           None => hard
         }
-        Text(cut[0:spot].to_owned() + end)
+        // The boundary keeps its space, so the end does not glue to the word.
+        Text(cut[0:spot + 1].to_owned() + end)
       }
     }
     "unique" => {
@@ -962,22 +996,44 @@ fn percent_encode(s : String) -> String {
     unit == 0x5F ||
     unit == 0x7E
   }
-  let hex = "0123456789ABCDEF"
-  let out = StringBuilder()
-  for i = 0; i < s.length(); i = i + 1 {
-    let unit = s.at(i)
-    if unreserved(unit) {
-      out.write_char(u16_char(unit))
+  fn hex_byte(b : Int) -> String {
+    let hex = "0123456789ABCDEF"
+    u16_char(hex.at(b / 16 % 16)).to_string() + u16_char(hex.at(b % 16)).to_string()
+  }
+  // A code point goes out as one %XX per UTF-8 byte.
+  fn escape_codepoint(cp : Int) -> String {
+    if cp < 0x80 {
+      return "%" + hex_byte(cp)
+    }
+    let out = StringBuilder()
+    let bytes : Array[Int] = if cp < 0x800 {
+      [0xC0 + cp / 64, 0x80 + cp % 64]
+    } else if cp < 0x10000 {
+      [0xE0 + cp / 4096, 0x80 + cp / 64 % 64, 0x80 + cp % 64]
     } else {
-      out.write_char('%')
-      out.write_char(u16_char(hex.at((unit / 256).to_int())))
-      out.write_char(u16_char(hex.at((unit % 256 / 16).to_int())))
-      out.write_char(u16_char(hex.at((unit % 16).to_int())))
+      [
+        0xF0 + cp / 262144,
+        0x80 + cp / 4096 % 64,
+        0x80 + cp / 64 % 64,
+        0x80 + cp % 64,
+      ]
+    }
+    for b in bytes {
+      out.write_string("%" + hex_byte(b))
+    }
+    out.to_string()
+  }
+  let out = StringBuilder()
+  for ch in s {
+    let cp = ch.to_int()
+    if cp < 0x80 && unreserved(cp.to_uint16()) {
+      out.write_char(ch)
+    } else {
+      out.write_string(escape_codepoint(cp))
     }
   }
   out.to_string()
 }
-
 ///|
 /// Python's %-style formatting, `"%s - %s"|format(a, b)` and the named
 /// `%(key)s` spelling.
@@ -1103,25 +1159,47 @@ fn urlize(value : String, limit : Value, nofollow : Bool) -> Value {
     Int(n) => n.to_int()
     _ => -1
   }
-  let words = []
-  for word in value.split(" ") {
-    let w = word.to_owned()
-    if w.has_prefix("http://") ||
-      w.has_prefix("https://") ||
-      w.has_prefix("www.") {
-      let shown = if max > 0 && w.length() > max { w[0:max] + "…" } else { w }
-      let href = if w.has_prefix("www.") { "http://\{w}" } else { w }
-      let rel = if nofollow { " rel=\"nofollow\"" } else { "" }
-      words.push(
-        "<a href=\"\{href}\"\{rel}>\{escape_text(shown.to_owned())}</a>",
-      )
-    } else {
-      words.push(w)
+  // Split between whitespace runs - one blank or many, space or tab - so
+  // the prose around a link survives verbatim.
+  let words : Array[String] = []
+  let run = StringBuilder()
+  fn flush() -> Unit {
+    if !run.is_empty() {
+      let piece = run.to_string()
+      run.reset()
+      if piece.has_prefix("http://") ||
+        piece.has_prefix("https://") ||
+        piece.has_prefix("www.") {
+        let shown = if max > 0 && piece.length() > max {
+          piece[0:max] + "\\u{2026}"
+        } else {
+          piece
+        }
+        let href = if piece.has_prefix("www.") {
+          "http://\{piece}"
+        } else {
+          piece
+        }
+        let rel = if nofollow { " rel=\"nofollow\"" } else { "" }
+        words.push(
+          "<a href=\"" + href + "\"" + rel + ">" + escape_text(shown.to_owned()) + "</a>",
+        )
+      } else {
+        words.push(piece)
+      }
     }
   }
-  Markup(join_texts(words, " "))
+  for ch in value {
+    if ch.is_ascii_whitespace() {
+      flush()
+      words.push(ch.to_string())
+    } else {
+      run.write_char(ch)
+    }
+  }
+  flush()
+  Markup(join_texts(words, ""))
 }
-
 ///|
 /// A builtin filter: dispatch by name into the engine's own table.
 priv struct BuiltinFilter {
@@ -1164,4 +1242,24 @@ fn builtin_filters() -> Map[String, &Filter] {
     table.set(name, entry)
   }
   table
+}
+
+///|
+/// Runs of white space become one space: striptags reads as prose, not as
+/// layout.
+fn collapse_space(s : StringView) -> String {
+  let out = StringBuilder()
+  let mut in_space = false
+  for ch in s {
+    if ch.is_ascii_whitespace() || ch == ' ' {
+      if !in_space {
+        out.write_char(' ')
+        in_space = true
+      }
+    } else {
+      out.write_char(ch)
+      in_space = false
+    }
+  }
+  out.to_string()
 }
