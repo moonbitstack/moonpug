@@ -125,7 +125,6 @@ test "the Jinja globals" {
   )
   assert_eq(dj("{% set j = joiner('|') %}{{ j() }}a{{ j() }}b", "{}"), "a|b")
   // lipsum is deterministic: one paragraph of four twelve-word sentences
-  let text = dj("{{ lipsum(1, html=false) }}", "{}")
   assert_eq(dj("{{ lipsum(1, html=false)|wordcount }}", "{}"), "48")
 }
 
