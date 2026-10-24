@@ -409,6 +409,12 @@ fn parse_test_call(c : Cur) -> (String, Array[Arg]) raise Fault {
     let args = parse_call_args(c)
     return (name, args)
   }
+  // Jinja also spells single-argument tests without parens: `is eq 1`,
+  // `is divisibleby 3`. One value, then the test is done.
+  if c.peek() != 0xFFFF && c.peek() != 0x7D && c.peek() != 0x29 && c.peek() != 0x2C && c.peek() != 0x5D {
+    let value = parse_expression(c)
+    return (name, [Pos(value)])
+  }
   (name, [])
 }
 

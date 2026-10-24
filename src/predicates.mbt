@@ -73,7 +73,9 @@ fn builtin_test(
       }
     "false" => input is Bool(false)
     "true" => input is Bool(true)
-    "filter" | "test" => input is Native(_, _) || input is GlobalV(_)
+    // Filter and test objects are not template values in this engine,
+    // so no value satisfies these; the registry holds them.
+    "filter" | "test" => false
     "float" => input is Double(_)
     "integer" => input is Int(_)
     "number" => input is Int(_) || input is Double(_) || input is Bool(_)

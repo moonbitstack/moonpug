@@ -1,0 +1,2 @@
+  正在创建库 C:\Users\heke\AllProjects\MbtProjects\moonpug\_build\native\debug\test\moonpug.blackbox_test.lib 和对象 C:\Users\heke\AllProjects\MbtProjects\moonpug\_build\native\debug\test\moonpug.blackbox_test.exp
+Total tests: 46, passed: 46, failed: 0.
