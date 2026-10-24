@@ -1,0 +1,7 @@
+// One page through both surfaces: `moon run examples/page`.
+pkgtype(kind: "executable")
+
+import {
+  "moonbitstack/moonpug",
+  "moonbitlang/core/json",
+}
