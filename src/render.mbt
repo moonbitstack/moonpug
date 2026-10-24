@@ -124,7 +124,7 @@ fn run_node(env : Env, node : Node) -> Unit raise Fault {
       env.set(name, MacroV(def))
     }
     CallBlock(params, call, body) => {
-      let caller : MacroDef = {
+      let caller : Macro = {
         name: "caller",
         params,
         defaults: [],
@@ -151,7 +151,10 @@ fn run_node(env : Env, node : Node) -> Unit raise Fault {
       for step in filters {
         let (name, args) = step
         let (pos, kw) = eval_args(env, args)
-        current = apply_filter(env, name, current, pos, kw)
+        current = match env.filters.get(name) {
+          Some(found) => found.filter(context_of(env), current, pos, kw)
+          None => raise Unknown(name~, kind="filter")
+        }
       }
       env.emit(current)
     }
@@ -245,24 +248,25 @@ fn run_node(env : Env, node : Node) -> Unit raise Fault {
       }
     }
     Once(key, body) => {
+      let ctx_tally = env.tally
       let slot = match key {
         Some(k) => k
         None => {
-          env.once_tally = env.once_tally + 1
-          "once-\{env.once_tally}"
+          ctx_tally.n = ctx_tally.n + 1
+          "once-\{ctx_tally.n}"
         }
       }
       match env.once.get(slot) {
         Some(cached) => env.out.write_string(cached)
         None => {
-          fn render() -> String raise Fault {
+          fn take() -> String raise Fault {
             let taken = env.capture(() => run_nodes(env, body))
             env.once.set(slot, taken)
             taken
           }
           match env.cache_fn {
-            Some(store) => env.out.write_string(store(slot, render))
-            None => env.out.write_string(render())
+            Some(store) => env.out.write_string(store(slot, take))
+            None => env.out.write_string(take())
           }
         }
       }
@@ -506,6 +510,7 @@ fn loop_dict_of(
   dict.set("length", Int(n.to_int64()))
   dict.set("depth", Int((depth0 + 1).to_int64()))
   dict.set("depth0", Int(depth0.to_int64()))
+  dict.set("__loop__", Bool(true))
   dict.set(
     "previtem",
     match prev {
@@ -529,10 +534,10 @@ fn loop_dict_of(
 /// call block came along.
 fn invoke_macro(
   env : Env,
-  def : MacroDef,
+  def : Macro,
   pos : Array[Value],
   kw : Map[String, Value],
-  caller : MacroDef?,
+  caller : Macro?,
 ) -> String raise Fault {
   let scope : Map[String, Value] = Map([])
   for i = 0; i < def.params.length(); i = i + 1 {
@@ -592,11 +597,11 @@ fn call_value_with(
   callee : Value,
   pos : Array[Value],
   kw : Map[String, Value],
-  caller : MacroDef?,
+  caller : Macro?,
 ) -> Value raise Fault {
   match callee {
     Native(_, call) => call(pos)
-    MacroV(def) => Markup(invoke_macro(env, def, pos, kw, caller))
+    MacroV(m) => Markup(invoke_macro(env, m, pos, kw, caller))
     _ => call_value(env, callee, pos, kw)
   }
 }
@@ -775,17 +780,19 @@ fn import_module(
     Some(text) => {
       let inner : Env = {
         out: StringBuilder(),
-        stack: [{}],
-        blocks: {},
-        natives: env.natives,
+        stack: [Map([])],
+        blocks: Map([]),
+        filters: env.filters,
+        tests: env.tests,
+        globals: env.globals,
         once: env.once,
+        tally: env.tally,
         load: env.load,
         translate: env.translate,
         cache_fn: env.cache_fn,
         opts: env.opts,
         policy: env.policy,
         autoescape: env.autoescape,
-        once_tally: 0,
         braking: false,
         skipping: false,
       }

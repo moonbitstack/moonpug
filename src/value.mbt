@@ -9,7 +9,7 @@
 /// or authored by hand: output writes it as it stands, and that is the whole of
 /// the `|safe` story. `Absent` is a name that did not resolve; the undefined
 /// policy decides what happens next.
-priv enum Value {
+pub(all) enum Value {
   Null
   Bool(Bool)
   Int(Int64)
@@ -21,20 +21,21 @@ priv enum Value {
   Absent(String)
   Native(String, (Array[Value]) -> Value raise Fault)
   NativeKw(String, (Array[Value], Map[String, Value]) -> Value raise Fault)
+  GlobalV(&Global)
   CyclerV(CyclerState)
   JoinerV(JoinerState)
   Namespaced(Map[String, Value])
-  MacroV(MacroDef)
+  MacroV(Macro)
 }
 
 ///|
-priv struct CyclerState {
+pub(all) struct CyclerState {
   items : Array[Value]
   mut at : Int32
 }
 
 ///|
-priv struct JoinerState {
+pub(all) struct JoinerState {
   sep : String
   mut used : Bool
 }
@@ -246,6 +247,7 @@ fn kind_of(value : Value) -> String {
     Seq(_) => "a list"
     Dict(_) => "a mapping"
     Native(name, _) | NativeKw(name, _) => "the function \{name}"
+    GlobalV(_) => "a function"
     CyclerV(_) => "a cycler"
     JoinerV(_) => "a joiner"
     Namespaced(_) => "a namespace"
@@ -293,6 +295,7 @@ fn show_value(value : Value) -> String {
       "{" + join_texts(parts, ", ") + "}"
     }
     Native(name, _) | NativeKw(name, _) => "<function \{name}>"
+    GlobalV(_) => "<function>"
     CyclerV(_) => "<cycler>"
     JoinerV(_) => "<joiner>"
     Namespaced(_) => "<namespace>"
@@ -455,15 +458,6 @@ fn[T] rev_in_place(items : Array[T]) -> Unit {
 }
 
 ///|
-fn prepend_arg(head : Arg, rest : Array[Value]) -> Array[Arg] {
-  let out : Array[Arg] = [head]
-  for value in rest {
-    out.push(Pos(Lit(value)))
-  }
-  out
-}
-
-///|
 /// Core's `Json` is read-only outside its own package, so a number with its
 /// spelling rides through the parser — the one place a repr survives.
 fn number_json(spelling : String) -> Json {
@@ -486,4 +480,23 @@ fn u16_char(unit : UInt16) -> Char {
     Some(c) => c
     None => '?'
   }
+}
+
+///|
+/// A macro as a value: the read-side of a definition. Templates call it;
+/// callers pass it around and read its name and arguments.
+pub(all) struct Macro {
+  name : String
+  params : Array[String]
+  rest : String?
+  body : Array[Node]
+  defaults : Array[(Int32, Expr)]
+  mut home : Map[String, Value]
+}
+
+///|
+/// The read-side a caller sees: a macro's name, its parameters, and whether
+/// it takes a rest parameter. The body stays the engine's.
+pub fn Macro::of_name_params(def : Macro) -> (String, Array[String], String?) {
+  (def.name, def.params, def.rest)
 }

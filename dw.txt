@@ -1,0 +1,30 @@
+Error: [3002]
+   ╭─[ C:\Users\heke\AllProjects\MbtProjects\moonpug\src\api_test.mbt:8:13 ]
+   │
+ 8 │ struct Shout
+   │             │ 
+   │             ╰─ Unexpected line break here, missing `{` at the end of this line.
+───╯
+Error: [3002]
+    ╭─[ C:\Users\heke\AllProjects\MbtProjects\moonpug\src\api_test.mbt:22:12 ]
+    │
+ 22 │ struct Loud
+    │            │ 
+    │            ╰─ Unexpected line break here, missing `{` at the end of this line.
+────╯
+Error: [3002]
+    ╭─[ C:\Users\heke\AllProjects\MbtProjects\moonpug\src\api_test.mbt:34:14 ]
+    │
+ 34 │ struct Ticket
+    │              │ 
+    │              ╰─ Unexpected line break here, missing `{` at the end of this line.
+────╯
+Error: [3002]
+    ╭─[ C:\Users\heke\AllProjects\MbtProjects\moonpug\src\api_test.mbt:50:12 ]
+    │
+ 50 │ struct Bank
+    │            │ 
+    │            ╰─ Unexpected line break here, missing `{` at the end of this line.
+────╯
+Failed with 0 warnings, 4 errors.
+Error: failed when checking project

@@ -9,11 +9,12 @@ priv struct Cur {
   src : String
   end : Int32
   mut at : Int32
+  base : Int32 // where position 0 of src sits in the template
 }
 
 ///|
 fn Cur::make(src : String, start : Int32, end_ : Int32) -> Cur {
-  { src, end: end_, at: start, }
+  { src, end: end_, at: start, base: 0, }
 }
 
 ///|
@@ -87,13 +88,13 @@ fn Cur::skip_ws(self : Cur) -> Unit {
 }
 
 ///|
-priv enum Unop {
+pub enum Unop {
   Neg
   Not
 }
 
 ///|
-priv enum Binop {
+pub enum Binop {
   Add
   Sub
   Mul
@@ -116,7 +117,7 @@ priv enum Binop {
 
 ///|
 /// An argument in a call or a filter: positional or named.
-priv enum Arg {
+pub enum Arg {
   Pos(Expr)
   Kw(String, Expr)
 }
@@ -125,7 +126,7 @@ priv enum Arg {
 /// The expression language, Jinja's whole of it: literals, collections,
 /// subscripting and slicing, attribute and call, arithmetic and comparison,
 /// filters, tests, and the inline conditional.
-priv enum Expr {
+pub enum Expr {
   Lit(Value)
   Name(String)
   ListLit(Array[Expr])
@@ -220,7 +221,7 @@ fn parse_condexpr(c : Cur) -> Expr raise Fault {
       let otherwise = parse_condexpr(c)
       return Ternary(cond, value, otherwise)
     }
-    raise lexical(c.at, "an inline if needs an else")
+    raise lexical(c.base + c.at, "an inline if needs an else")
   }
   value
 }
@@ -393,7 +394,7 @@ fn parse_compare_op(c : Cur) -> CompareOp? {
 /// A test and its arguments: `is divisibleby` or `is divisibleby(3)`.
 fn parse_test_call(c : Cur) -> (String, Array[Arg]) raise Fault {
   if !is_name_start(c.peek()) {
-    raise lexical(c.at, "a test needs a name after `is`")
+    raise lexical(c.base + c.at, "a test needs a name after `is`")
   }
   let name = c.read_word()
   c.skip_ws()
@@ -536,7 +537,7 @@ fn parse_unary(c : Cur) -> Expr raise Fault {
       c.at = c.at + 1
       c.skip_ws()
       if !is_name_start(c.peek()) {
-        raise lexical(c.at, "a filter needs a name after `|`")
+        raise lexical(c.base + c.at, "a filter needs a name after `|`")
       }
       let name = c.read_word()
       c.skip_ws()
@@ -575,7 +576,7 @@ fn parse_subscript(c : Cur, target : Expr) -> Expr raise Fault {
     return finish_slice(c, target, Some(inner))
   }
   if c.peek() != 0x5D {
-    raise lexical(c.at, "expected `]`")
+    raise lexical(c.base + c.at, "expected `]`")
   }
   c.at = c.at + 1
   Index(target, inner)
@@ -602,7 +603,7 @@ fn finish_slice(c : Cur, target : Expr, start : Expr?) -> Expr raise Fault {
   }
   c.skip_ws()
   if c.peek() != 0x5D {
-    raise lexical(c.at, "expected `]`")
+    raise lexical(c.base + c.at, "expected `]`")
   }
   c.at = c.at + 1
   Slice(target, start, stop, step)
@@ -643,7 +644,7 @@ fn parse_call_args(c : Cur) -> Array[Arg] raise Fault {
     } else if c.peek() == 0x29 {
       c.at = c.at + 1
     } else {
-      raise lexical(c.at, "expected `,` or `)`")
+      raise lexical(c.base + c.at, "expected `,` or `)`")
     }
   }
   args
@@ -663,7 +664,7 @@ fn parse_primary(c : Cur) -> Expr raise Fault {
     let inner = parse_expression(c, with_tuple=true)
     c.skip_ws()
     if c.peek() != 0x29 {
-      raise lexical(c.at, "expected `)`")
+      raise lexical(c.base + c.at, "expected `)`")
     }
     c.at = c.at + 1
     inner
@@ -678,7 +679,7 @@ fn parse_primary(c : Cur) -> Expr raise Fault {
         c.at = c.at + 1
         c.skip_ws()
       } else if c.peek() != 0x5D {
-        raise lexical(c.at, "expected `,` or `]`")
+        raise lexical(c.base + c.at, "expected `,` or `]`")
       }
     }
     c.at = c.at + 1
@@ -691,7 +692,10 @@ fn parse_primary(c : Cur) -> Expr raise Fault {
       let key = parse_dict_key(c)
       c.skip_ws()
       if c.peek() != 0x3A {
-        raise lexical(c.at, "a mapping literal needs `:` after its key")
+        raise lexical(
+          c.base + c.at,
+          "a mapping literal needs `:` after its key",
+        )
       }
       c.at = c.at + 1
       c.skip_ws()
@@ -701,7 +705,7 @@ fn parse_primary(c : Cur) -> Expr raise Fault {
         c.at = c.at + 1
         c.skip_ws()
       } else if c.peek() != 0x7D {
-        raise lexical(c.at, "expected `,` or `}`")
+        raise lexical(c.base + c.at, "expected `,` or `}`")
       }
     }
     c.at = c.at + 1
@@ -719,7 +723,7 @@ fn parse_primary(c : Cur) -> Expr raise Fault {
       _ => Name(word)
     }
   } else {
-    raise lexical(c.at, "an expression cannot start here")
+    raise lexical(c.base + c.at, "an expression cannot start here")
   }
 }
 
@@ -740,7 +744,7 @@ fn parse_dict_key(c : Cur) -> Expr raise Fault {
     let inner = parse_expression(c)
     c.skip_ws()
     if c.peek() != 0x29 {
-      raise lexical(c.at, "expected `)`")
+      raise lexical(c.base + c.at, "expected `)`")
     }
     c.at = c.at + 1
     return inner
@@ -772,7 +776,7 @@ fn read_string_literal(c : Cur) -> String raise Fault {
       c.at = c.at + 1
     }
   }
-  raise lexical(c.at, "an unterminated string")
+  raise lexical(c.base + c.at, "an unterminated string")
 }
 
 ///|
@@ -809,7 +813,10 @@ fn read_hex(c : Cur, count : Int32) -> Int32 raise Fault {
     } else if unit >= 0x41 && unit <= 0x46 {
       unit.to_int() - 0x41 + 10
     } else {
-      raise lexical(c.at, "a \\x or \\u escape needs hexadecimal digits")
+      raise lexical(
+        c.base + c.at,
+        "a \\x or \\u escape needs hexadecimal digits",
+      )
     }
     value = value * 16 + digit
     c.at = c.at + 1
@@ -860,4 +867,9 @@ fn read_number_literal(c : Cur) -> Value {
   Double(@string.parse_double(text)) catch {
     _ => Int(0L)
   }
+}
+
+///|
+fn Cur::from(src : String, start : Int32, end_ : Int32, base : Int32) -> Cur {
+  { src, end: end_, at: start, base, }
 }

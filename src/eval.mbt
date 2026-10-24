@@ -69,10 +69,26 @@ fn eval(env : Env, expr : Expr) -> Value raise Fault {
     Filter(target, name, args) => {
       let input = eval(env, target)
       let (pos, kw) = eval_args(env, args)
-      apply_filter(env, name, input, pos, kw)
+      match env.filters.get(name) {
+        Some(found) => found.filter(context_of(env), input, pos, kw)
+        None => raise Unknown(name~, kind="filter")
+      }
     }
     Is(target, name, args, negated) => {
-      let result = apply_test(env, name, target, args)
+      // `defined` and `undefined` read the expression, not the value; they
+      // belong to the engine and no registry sees them.
+      let result = match name {
+        "defined" => !is_absent(env, target)
+        "undefined" => is_absent(env, target)
+        _ => {
+          let value = eval_plain(env, target)
+          let (pos, _) = eval_args(env, args)
+          match env.tests.get(name) {
+            Some(found) => found.probe(value, pos)
+            None => raise Unknown(name~, kind="test")
+          }
+        }
+      }
       Bool(if negated { !result } else { result })
     }
   }
@@ -106,6 +122,22 @@ fn eval_args(
 /// `a.b`: a mapping's key, a macro's name and arguments, a namespace's field,
 /// and the undefined the policy hands back for everything else.
 fn eval_attr(env : Env, target : Value, field : String) -> Value raise Fault {
+  // The sandbox blocks reaching into the context's objects; the loop object
+  // stays reachable, a template cannot walk without it.
+  if env.opts.sandbox {
+    match target {
+      Dict(fields) =>
+        if !fields.contains("__loop__") {
+          raise Wrong(
+            because="sandbox: attribute access is off; use a subscript or a filter",
+          )
+        }
+      _ =>
+        raise Wrong(
+          because="sandbox: attribute access is off; use a subscript or a filter",
+        )
+    }
+  }
   match target {
     Dict(fields) =>
       match fields.get(field) {
@@ -117,12 +149,12 @@ fn eval_attr(env : Env, target : Value, field : String) -> Value raise Fault {
         Some(value) => value
         None => env.absent(field)
       }
-    MacroV(def) =>
+    MacroV(m) =>
       match field {
-        "name" => Text(def.name)
+        "name" => Text(m.name)
         "arguments" => {
           let names = []
-          for p in def.params {
+          for p in m.params {
             names.push(Value::Text(p))
           }
           Seq(names)
@@ -472,7 +504,7 @@ fn call_value(
 ) -> Value raise Fault {
   match callee {
     Native(_, call) => call(pos)
-    NativeKw(_, call) => call(pos, kw)
+    GlobalV(found) => found.call(context_of(env), pos, kw)
     JoinerV(state) =>
       if state.used {
         Text(state.sep)
@@ -480,8 +512,8 @@ fn call_value(
         state.used = true
         Text("")
       }
-    MacroV(def) => {
-      let rendered = invoke_macro(env, def, pos, kw, None)
+    MacroV(m) => {
+      let rendered = invoke_macro(env, m, pos, kw, None)
       Markup(rendered)
     }
     Dict(fields) =>
@@ -496,5 +528,38 @@ fn call_value(
         _ => raise Wrong(because="undefined: \{name} is not callable")
       }
     _ => raise Wrong(because="\{kind_of(callee)} is not callable")
+  }
+}
+
+///|
+fn eval_plain(env : Env, expr : Expr) -> Value {
+  eval(env, expr) catch {
+    _ => Absent("undefined")
+  }
+}
+
+///|
+fn is_absent(env : Env, expr : Expr) -> Bool {
+  match expr {
+    Name(name) => env.find(name) is None && env.globals.get(name) is None
+    Attr(inner, field) => {
+      if is_absent(env, inner) {
+        return true
+      }
+      match eval_plain(env, inner) {
+        Dict(fields) =>
+          match fields.get(field) {
+            Some(value) => value is Absent(_)
+            None => true
+          }
+        Namespaced(fields) =>
+          match fields.get(field) {
+            Some(value) => value is Absent(_)
+            None => true
+          }
+        _ => true
+      }
+    }
+    _ => eval_plain(env, expr) is Absent(_)
   }
 }

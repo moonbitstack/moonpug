@@ -1,0 +1,294 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbitstack/moonpug"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub let preset : Settings
+
+pub fn render(StringView, Json, settings? : Settings, name? : String, syntax? : Syntax, load? : (String) -> String?, translate? : (String, String?, Int32?) -> String?, cache? : (String, () -> String raise Fault) -> String raise Fault, undefined_policy? : UndefinedPolicy, wins? : Wins, clash? : OnClash[Entry]) -> String raise Fault
+
+pub fn show(Value) -> String
+
+// Errors
+pub(all) suberror Fault {
+  Lexical(at~ : Int32, name~ : String, line~ : Int32, column~ : Int32, because~ : String)
+  Unknown(name~ : String, kind~ : String)
+  Undefined(name~ : String)
+  Wrong(because~ : String)
+} derive(Eq, @debug.Debug)
+pub fn Fault::equal(Self, Self) -> Bool
+pub fn Fault::not_equal(Self, Self) -> Bool
+pub fn Fault::output(Self, &Logger) -> Unit
+pub fn Fault::to_repr(Self) -> @debug.Repr
+pub fn Fault::to_string(Self) -> String
+pub impl Show for Fault
+
+// Types and methods
+pub enum Arg {
+  Pos(Expr)
+  Kw(String, Expr)
+}
+
+pub struct Attr {
+  name : String
+  mut value : AttrVal
+}
+
+pub enum AttrVal {
+  Bare
+  Val(Expr)
+}
+
+pub enum Binop {
+  Add
+  Sub
+  Mul
+  Div
+  FloorDiv
+  Mod
+  Pow
+  Concat
+  Eq
+  Ne
+  Lt
+  Gt
+  Le
+  Ge
+  In
+  NotIn
+  And
+  Or
+}
+
+pub struct BlockDef {
+  body : Array[Node]
+  scoped : Bool
+  required : Bool
+  mod : BlockMod
+}
+
+pub enum BlockMod {
+  Override
+  Append
+  Prepend
+}
+
+pub(all) struct Context {
+  filters : Map[String, &Filter]
+  tests : Map[String, &Test]
+  translate : ((String, String?, Int32?) -> String?)?
+  tally : Tally
+}
+
+pub(all) struct CyclerState {
+  items : Array[Value]
+  mut at : Int32
+}
+
+pub struct Elem {
+  tag : String
+  id : String?
+  classes : Array[String]
+  attrs : Array[Attr]
+  splats : Array[Expr]
+  key : Expr?
+  self_close : Bool
+  inline : Array[Node]
+  out : Expr?
+  out_raw : Bool
+  children : Array[Node]
+}
+
+pub(all) enum Entry {
+  FilterOf(&Filter)
+  TestOf(&Test)
+  GlobalOf(&Global)
+}
+
+pub enum Expr {
+  Lit(Value)
+  Name(String)
+  ListLit(Array[Expr])
+  TupleLit(Array[Expr])
+  DictLit(Array[(Expr, Expr)])
+  Attr(Expr, String)
+  Index(Expr, Expr)
+  Slice(Expr, Expr?, Expr?, Expr?)
+  Call(Expr, Array[Arg])
+  Unary(Unop, Expr)
+  Binary(Binop, Expr, Expr)
+  Ternary(Expr, Expr, Expr)
+  Filter(Expr, String, Array[Arg])
+  Is(Expr, String, Array[Arg], Bool)
+}
+
+pub(all) struct JoinerState {
+  sep : String
+  mut used : Bool
+}
+
+pub(all) struct Macro {
+  name : String
+  params : Array[String]
+  rest : String?
+  body : Array[Node]
+  defaults : Array[(Int32, Expr)]
+  mut home : Map[String, Value]
+}
+pub fn Macro::of_name_params(Self) -> (String, Array[String], String?)
+
+pub enum Node {
+  Text(String)
+  Group(Array[Node])
+  Out(Expr)
+  OutRaw(Expr)
+  For(names~ : Array[String], iter~ : Expr, filter~ : Expr?, recursive~ : Bool, swap~ : Bool, body~ : Array[Node], otherwise~ : Array[Node])
+  If(Array[(Expr, Array[Node])], Array[Node])
+  SetVar(Array[String], Expr)
+  SetPath(Array[String], Expr)
+  SetBlock(String, Array[Node])
+  MacroDef(String, Macro)
+  CallBlock(Array[String], Expr, Array[Node])
+  FilterBlock(Array[(String, Array[Arg])], Array[Node])
+  Extends(Expr)
+  Block(String, BlockDef)
+  Include(Expr, Bool, Bool)
+  Import(Expr, String, Bool)
+  FromImport(Expr, Array[(String, String?)], Bool)
+  With(Array[(String, Expr)], Array[Node])
+  Autoescape(Expr, Array[Node])
+  Do(Array[Expr])
+  Debug
+  Show(Expr, Array[Node])
+  Once(String?, Array[Node])
+  Trans(TransSpec)
+  Break
+  Continue
+  LangBlock(String, String)
+  Element(Elem)
+  Doctype(String)
+  Comment(Bool, Array[Node])
+  Case(Expr, Array[WhenArm], Array[Node])
+}
+
+pub(all) enum OnClash[T] {
+  Ignore
+  Panic
+  Handle((T, T) -> T)
+}
+
+pub(all) struct Settings {
+  syntax : Syntax
+  force : Bool
+  autoescape : Bool
+  undefined_policy : UndefinedPolicy
+  trim_blocks : Bool
+  lstrip_blocks : Bool
+  keep_trailing_newline : Bool
+  line : String?
+  shortcuts : Map[String, String]
+  sandbox : Bool
+  loader : &Loader?
+  translate : ((String, String?, Int32?) -> String?)?
+  cache : ((String, () -> String raise Fault) -> String raise Fault)?
+  filters : Map[String, &Filter]
+  tests : Map[String, &Test]
+  globals : Map[String, &Global]
+}
+
+pub(all) enum Syntax {
+  Html
+  Pug
+  Markdown
+} derive(Eq, @debug.Debug)
+pub fn Syntax::equal(Self, Self) -> Bool
+pub fn Syntax::not_equal(Self, Self) -> Bool
+pub fn Syntax::output(Self, &Logger) -> Unit
+pub fn Syntax::to_repr(Self) -> @debug.Repr
+pub fn Syntax::to_string(Self) -> String
+pub impl Show for Syntax
+
+pub(all) struct Tally {
+  mut n : Int32
+}
+
+pub struct TransSpec {
+  singular : String
+  plural : String?
+  bindings : Array[(String, Expr)]
+  count_name : String?
+}
+
+pub(all) enum UndefinedPolicy {
+  Strict
+  Lenient
+  Chainable
+} derive(Eq, @debug.Debug)
+pub fn UndefinedPolicy::equal(Self, Self) -> Bool
+pub fn UndefinedPolicy::not_equal(Self, Self) -> Bool
+pub fn UndefinedPolicy::output(Self, &Logger) -> Unit
+pub fn UndefinedPolicy::to_repr(Self) -> @debug.Repr
+pub fn UndefinedPolicy::to_string(Self) -> String
+pub impl Show for UndefinedPolicy
+
+pub enum Unop {
+  Neg
+  Not
+}
+
+pub(all) enum Value {
+  Null
+  Bool(Bool)
+  Int(Int64)
+  Double(Double)
+  Text(String)
+  Markup(String)
+  Seq(Array[Value])
+  Dict(Map[String, Value])
+  Absent(String)
+  Native(String, (Array[Value]) -> Value raise Fault)
+  NativeKw(String, (Array[Value], Map[String, Value]) -> Value raise Fault)
+  GlobalV(&Global)
+  CyclerV(CyclerState)
+  JoinerV(JoinerState)
+  Namespaced(Map[String, Value])
+  MacroV(Macro)
+}
+
+pub struct WhenArm {
+  values : Array[Expr]
+  body : Array[Node]
+}
+
+pub(all) enum Wins {
+  Base
+  Extra
+} derive(Eq, @debug.Debug)
+pub fn Wins::equal(Self, Self) -> Bool
+pub fn Wins::not_equal(Self, Self) -> Bool
+pub fn Wins::output(Self, &Logger) -> Unit
+pub fn Wins::to_repr(Self) -> @debug.Repr
+pub fn Wins::to_string(Self) -> String
+pub impl Show for Wins
+
+// Type aliases
+
+// Traits
+pub(open) trait Filter {
+  fn filter(Self, Context, Value, Array[Value], Map[String, Value]) -> Value raise Fault
+}
+
+pub(open) trait Global {
+  fn call(Self, Context, Array[Value], Map[String, Value]) -> Value raise Fault
+}
+
+pub(open) trait Loader {
+  fn load(Self, String) -> String?
+}
+
+pub(open) trait Test {
+  fn probe(Self, Value, Array[Value]) -> Bool raise Fault
+}

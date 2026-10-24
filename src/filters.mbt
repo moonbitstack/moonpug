@@ -6,7 +6,7 @@
 /// spelling — positional first, named after. Unknown names are refused, not
 /// guessed at, the way a vocabulary must be.
 fn apply_filter(
-  env : Env,
+  ctx : Context,
   name : String,
   input : Value,
   pos : Array[Value],
@@ -307,7 +307,12 @@ fn apply_filter(
               }
               None => item
             }
-            out.push(apply_filter(env, filter_name, picked, [], {}))
+            out.push(
+              match ctx.filters.get(filter_name) {
+                Some(found) => found.filter(ctx, picked, [], {})
+                None => raise Unknown(name=filter_name, kind="filter")
+              },
+            )
           }
           Seq(out)
         }
@@ -340,8 +345,8 @@ fn apply_filter(
       }
       // Deterministic per render and per call, reproducible across renders:
       // a template that renders twice gives the same page twice.
-      env.once_tally = env.once_tally + 1
-      let seed : Int64 = env.once_tally.to_int64() * 2654435761L +
+      ctx.tally.n = ctx.tally.n + 1
+      let seed : Int64 = ctx.tally.n.to_int64() * 2654435761L +
         items.length().to_int64()
       let index = (seed % items.length().to_int64()).to_int()
       items[index]
@@ -351,10 +356,11 @@ fn apply_filter(
       let test_name = arg_text(pos, kw, 0, None, name)
       let rest = pos.copy()
       ignore(rest.remove(0))
+      let fallback : BuiltinTest = { name: "true", }
+      let probe = ctx.tests.get_or_default(test_name, fallback)
       let out = []
       for item in as_list(input, name) {
-        let args = prepend_arg(Pos(Lit(item)), rest)
-        let passes = apply_test(env, test_name, Lit(item), args)
+        let passes = probe.probe(item, rest)
         if passes == keep {
           out.push(item)
         }
@@ -368,16 +374,19 @@ fn apply_filter(
       let rest = pos.copy()
       ignore(rest.remove(0))
       ignore(rest.remove(0))
-      let out = []
-      for item in as_list(input, name) {
-        let value = pluck(item, field)
-        let args = prepend_arg(Pos(Lit(value)), rest)
-        let passes = apply_test(env, test_name, Lit(value), args)
-        if passes == keep {
-          out.push(item)
+      match ctx.tests.get(test_name) {
+        None => raise Unknown(name=test_name, kind="test")
+        Some(probe) => {
+          let out = []
+          for item in as_list(input, name) {
+            let passes = probe.probe(pluck(item, field), rest)
+            if passes == keep {
+              out.push(item)
+            }
+          }
+          Seq(out)
         }
       }
-      Seq(out)
     }
     "replace" => {
       let old = arg_text(pos, kw, 0, None, "replace")
@@ -616,7 +625,7 @@ fn apply_filter(
         Markup(join_texts(parts, " "))
       }
     }
-    other => django_filter(env, other, input, pos, kw)
+    other => django_filter(ctx, other, input, pos, kw)
   }
 }
 
@@ -1111,4 +1120,48 @@ fn urlize(value : String, limit : Value, nofollow : Bool) -> Value {
     }
   }
   Markup(join_texts(words, " "))
+}
+
+///|
+/// A builtin filter: dispatch by name into the engine's own table.
+priv struct BuiltinFilter {
+  name : String
+}
+
+///|
+impl Filter for BuiltinFilter with fn filter(
+  self : BuiltinFilter,
+  ctx : Context,
+  input : Value,
+  pos : Array[Value],
+  kw : Map[String, Value],
+) -> Value raise Fault {
+  apply_filter(ctx, self.name, input, pos, kw)
+}
+
+///|
+/// The 51 Jinja filters and the Django supplements, registered through the
+/// same trait a caller uses.
+fn builtin_filters() -> Map[String, &Filter] {
+  let table : Map[String, &Filter] = Map([])
+  for
+    name in [
+      "abs", "attr", "batch", "capitalize", "center", "default", "dictsort", "escape",
+      "e", "filesizeformat", "first", "float", "forceescape", "format", "groupby",
+      "indent", "int", "items", "join", "last", "length", "count", "list", "lower",
+      "map", "max", "min", "pprint", "random", "reject", "select", "rejectattr",
+      "selectattr", "replace", "reverse", "round", "safe", "slice", "sort", "string",
+      "striptags", "sum", "title", "tojson", "trim", "truncate", "unique", "upper",
+      "urlencode", "urlize", "wordcount", "wordwrap", "xmlattr",
+      // The Django supplements, spelled the way Jinja spells filters.
+       "date", "time", "timesince", "timeuntil", "slugify", "pluralize", "linebreaks",
+      "linebreaksbr", "truncatechars", "truncatewords", "truncatechars_html", "truncatewords_html",
+      "stringformat", "yesno", "json_script", "iriencode", "urlizetrunc", "unordered_list",
+      "divisibleby", "get_digit", "add", "cut", "make_list", "ljust", "rjust", "floatformat",
+      "escapejs", "spaceless",
+    ] {
+    let entry : BuiltinFilter = { name, }
+    table.set(name, entry)
+  }
+  table
 }

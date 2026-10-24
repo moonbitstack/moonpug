@@ -7,7 +7,7 @@
 /// Jinja already owns — `center`, `escape`, `filesizeformat` — live in the
 /// other file and are not repeated here.
 fn django_filter(
-  _env : Env,
+  _ctx : Context,
   name : String,
   input : Value,
   pos : Array[Value],

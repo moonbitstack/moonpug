@@ -12,14 +12,7 @@ priv struct ReadOpts {
   keep_trailing_newline : Bool
   line : String?
   shortcuts : Map[String, String]
-}
-
-///|
-/// A global the engine or the caller registered: most take positional
-/// arguments only; `dict`, `namespace` and `lipsum` want the names too.
-priv enum Callable {
-  Simple((Array[Value]) -> Value raise Fault)
-  WithKw((Array[Value], Map[String, Value]) -> Value raise Fault)
+  sandbox : Bool
 }
 
 ///|
@@ -29,15 +22,17 @@ priv struct Env {
   mut out : StringBuilder
   mut stack : Array[Map[String, Value]]
   mut blocks : Map[String, Array[BlockDef]]
-  natives : Map[String, Callable]
+  filters : Map[String, &Filter]
+  tests : Map[String, &Test]
+  globals : Map[String, &Global]
   once : Map[String, String]
+  tally : Tally
   load : ((String) -> String?)?
   translate : ((String, String?, Int32?) -> String?)?
   cache_fn : ((String, () -> String raise Fault) -> String raise Fault)?
   opts : ReadOpts
   policy : UndefinedPolicy
   mut autoescape : Bool
-  mut once_tally : Int32
   mut braking : Bool // a `break` is waiting for the innermost loop
   mut skipping : Bool // a `continue` is
 }
@@ -74,9 +69,8 @@ fn Env::get(env : Env, name : String) -> Value raise Fault {
   match env.find(name) {
     Some(scope) => scope.get_or_default(name, Absent(name))
     None =>
-      match env.natives.get(name) {
-        Some(Simple(call)) => Native(name, call)
-        Some(WithKw(call)) => NativeKw(name, call)
+      match env.globals.get(name) {
+        Some(call) => GlobalV(call)
         None =>
           match env.policy {
             Strict => raise Undefined(name~)
@@ -156,5 +150,16 @@ fn Env::absent(env : Env, name : String) -> Value raise Fault {
   match env.policy {
     Strict => raise Undefined(name~)
     _ => Absent(name)
+  }
+}
+
+///|
+/// The context an extension sees, gathered from the render in flight.
+fn context_of(env : Env) -> Context {
+  {
+    filters: env.filters,
+    tests: env.tests,
+    translate: env.translate,
+    tally: env.tally,
   }
 }

@@ -8,7 +8,7 @@
 priv enum Piece {
   PText(String)
   POut(Expr)
-  PStmt(String, String) // word, inner text
+  PStmt(String, String, Int32) // word, inner text, source offset
   PTrans(TransSpec)
   PLang(String, String) // language, body
 }
@@ -96,7 +96,7 @@ fn scan_braces(src : String, opts : ReadOpts) -> Array[Piece] raise Fault {
             skip_ws = true
           }
         }
-        None => raise lexical(c.at, "an unterminated comment")
+        None => raise lexical(c.base + c.at, "an unterminated comment")
       }
       continue
     }
@@ -109,7 +109,7 @@ fn scan_braces(src : String, opts : ReadOpts) -> Array[Piece] raise Fault {
       }
       flush_text(items, pending, skip_ws)
       skip_ws = false
-      scan_statement(items, src, c, opts)
+      scan_statement(items, src, c, opts, tag_at + c.base)
       continue
     }
     scan_plain_text(items, pending, c, opts, skip_ws)
@@ -124,7 +124,7 @@ fn scan_braces(src : String, opts : ReadOpts) -> Array[Piece] raise Fault {
 fn scan_output(src : String, c : Cur) -> (Expr, Bool) raise Fault {
   let inner_end = match find_tag_end(src, c.at, "}}") {
     Some(at) => at
-    None => raise lexical(c.at, "an unterminated output")
+    None => raise lexical(c.base + c.at, "an unterminated output")
   }
   let inner = src[c.at:inner_end]
   let right_trim = inner.has_suffix("-")
@@ -135,7 +135,7 @@ fn scan_output(src : String, c : Cur) -> (Expr, Bool) raise Fault {
   let expr = parse_expression(sc)
   sc.skip_ws()
   if sc.at != sc.end {
-    raise lexical(sc.at, "an output holds one expression")
+    raise lexical(sc.base + sc.at, "an output holds one expression")
   }
   (expr, right_trim)
 }
@@ -147,6 +147,7 @@ fn scan_statement(
   src : String,
   c : Cur,
   opts : ReadOpts,
+  _tag_at : Int32,
 ) -> Unit raise Fault {
   c.skip_ws()
   let word_start = c.at
@@ -155,15 +156,20 @@ fn scan_statement(
   }
   let word = src[word_start:c.at]
   if word.is_empty() {
-    raise lexical(c.at, "a statement needs a word after `{%`")
+    raise lexical(c.base + c.at, "a statement needs a word after `{%`")
   }
   let inner_end = match find_tag_end(src, c.at, "%}") {
     Some(at) => at
-    None => raise lexical(c.at, "`\{word}` is not closed by `%}`")
+    None => raise lexical(c.base + c.at, "`\{word}` is not closed by `%}`")
   }
   let inner = src[c.at:inner_end]
   let opener_right_trim = inner.has_suffix("-")
   let body = if opener_right_trim { inner[0:inner.length() - 1] } else { inner }
+  // The body's own offset in the template: faults inside it must point at
+  // the expression, not at the tag.
+  let body_at = c.at +
+    (inner.length() - body.trim_start(chars=ws_chars).length()) -
+    (if opener_right_trim { 0 } else { 0 })
   let body = body.trim().to_owned()
   c.at = inner_end + 2
   if opts.trim_blocks && !opener_right_trim {
@@ -206,7 +212,7 @@ fn scan_statement(
       }
     _ => ()
   }
-  items.push(PStmt(word.to_owned(), body.to_string()))
+  items.push(PStmt(word.to_owned(), body.to_string(), c.base + body_at))
 }
 
 ///|
@@ -314,7 +320,7 @@ fn scan_line_statements(
         }
         let word = view_sub(stmt, 0, word_end)
         let rest = view_sub(stmt, word_end, stmt.length()).trim()
-        items.push(PStmt(word.to_owned(), rest.to_owned()))
+        items.push(PStmt(word.to_owned(), rest.to_owned(), 0))
       } else {
         pending.write_string(line.to_owned())
       }
@@ -538,7 +544,7 @@ fn scan_lang_block(
     i = i + 1
   }
   if body_end < 0 {
-    raise lexical(c.at, "`block lang=\{lang}` is never closed")
+    raise lexical(c.base + c.at, "`block lang=\{lang}` is never closed")
   }
   let body = src[c.at:body_end]
   c.at = after
@@ -580,8 +586,9 @@ fn parse_statement(
   word : String,
   body : String,
   ps : Pieces,
+  at : Int32,
 ) -> Node raise Fault {
-  let c = Cur::make(body, 0, body.length())
+  let c = Cur::from(body, 0, body.length(), at)
   c.skip_ws()
   match word {
     "for" => {
@@ -595,7 +602,7 @@ fn parse_statement(
         c.skip_ws()
       }
       if c.peek_name() != "in" {
-        raise lexical(c.at, "`for` wants `in` after its names")
+        raise lexical(c.base + c.at, "`for` wants `in` after its names")
       }
       ignore(c.take_name())
       c.skip_ws()
@@ -646,7 +653,7 @@ fn parse_statement(
       let mut cond = parse_expression(c)
       c.skip_ws()
       if c.at != c.end {
-        raise lexical(c.at, "`if` holds one condition")
+        raise lexical(c.base + c.at, "`if` holds one condition")
       }
       let (then_body, stop, stop_head) = parse_piece_block(ps, [
         "elif", "else", "endif",
@@ -659,7 +666,7 @@ fn parse_statement(
         cond = parse_expression(hc)
         hc.skip_ws()
         if hc.at != hc.end {
-          raise lexical(hc.at, "`elif` holds one condition")
+          raise lexical(hc.base + hc.at, "`elif` holds one condition")
         }
         let (next_body, stop2, _) = parse_piece_block(ps, [
           "elif", "else", "endif",
@@ -690,7 +697,7 @@ fn parse_statement(
           c.skip_ws()
         }
         if c.peek() != 0x3D {
-          raise lexical(c.at, "a dotted `set` wants `=`")
+          raise lexical(c.base + c.at, "a dotted `set` wants `=`")
         }
         c.at = c.at + 1
         c.skip_ws()
@@ -705,7 +712,7 @@ fn parse_statement(
         require(stop, "endset")
         SetBlock(first, block_body)
       } else {
-        raise lexical(c.at, "`set` wants `=` or a block")
+        raise lexical(c.base + c.at, "`set` wants `=` or a block")
       }
     }
     "extends" => Extends(parse_expression(c))
@@ -721,7 +728,8 @@ fn parse_statement(
           "required" => required = true
           "append" => mod = Append
           "prepend" => mod = Prepend
-          other => raise lexical(c.at, "`block` does not take `\{other}`")
+          other =>
+            raise lexical(c.base + c.at, "`block` does not take `\{other}`")
         }
         c.skip_ws()
       }
@@ -739,7 +747,7 @@ fn parse_statement(
       let target = parse_expression(c)
       c.skip_ws()
       if c.peek_name() != "as" {
-        raise lexical(c.at, "`import` wants `as` and a name")
+        raise lexical(c.base + c.at, "`import` wants `as` and a name")
       }
       ignore(c.take_name())
       c.skip_ws()
@@ -752,7 +760,7 @@ fn parse_statement(
       let target = parse_expression(c)
       c.skip_ws()
       if c.peek_name() != "import" {
-        raise lexical(c.at, "`from` wants `import`")
+        raise lexical(c.base + c.at, "`from` wants `import`")
       }
       ignore(c.take_name())
       c.skip_ws()
@@ -809,7 +817,7 @@ fn parse_statement(
       c.skip_ws()
       let call = parse_expression(c)
       if !(call is Call(_, _)) {
-        raise lexical(c.at, "a `call` block ends in a macro call")
+        raise lexical(c.base + c.at, "a `call` block ends in a macro call")
       }
       let (call_body, stop, _) = parse_piece_block(ps, ["endcall"])
       require(stop, "endcall")
@@ -847,7 +855,7 @@ fn parse_statement(
         let name = c.read_word()
         c.skip_ws()
         if c.peek() != 0x3D {
-          raise lexical(c.at, "`with` binds with `=`")
+          raise lexical(c.base + c.at, "`with` binds with `=`")
         }
         c.at = c.at + 1
         c.skip_ws()
@@ -987,7 +995,7 @@ fn parse_params(
     } else if c.peek() == 0x29 {
       c.at = c.at + 1
     } else {
-      raise lexical(c.at, "parameters end at `)`")
+      raise lexical(c.base + c.at, "parameters end at `)`")
     }
   }
   (params, defaults, rest)
@@ -1015,7 +1023,7 @@ fn read_context_flags(
           c.skip_ws()
           going = true
         } else {
-          raise lexical(c.at, "`ignore` is followed by `missing`")
+          raise lexical(c.base + c.at, "`ignore` is followed by `missing`")
         }
       }
       "with" => {
@@ -1027,7 +1035,7 @@ fn read_context_flags(
           c.skip_ws()
           going = true
         } else {
-          raise lexical(c.at, "`with` is followed by `context`")
+          raise lexical(c.base + c.at, "`with` is followed by `context`")
         }
       }
       "without" => {
@@ -1039,7 +1047,7 @@ fn read_context_flags(
           c.skip_ws()
           going = true
         } else {
-          raise lexical(c.at, "`without` is followed by `context`")
+          raise lexical(c.base + c.at, "`without` is followed by `context`")
         }
       }
       _ => ()
@@ -1076,11 +1084,11 @@ fn parse_piece_block(
         nodes.push(LangBlock(lang, body))
         going = true
       }
-      Some(PStmt(word, body)) => {
+      Some(PStmt(word, body, at)) => {
         if stops.contains(word) {
           return (nodes, word, body)
         }
-        let node = parse_statement(word, body, ps)
+        let node = parse_statement(word, body, ps, at)
         nodes.push(node)
         going = true
       }

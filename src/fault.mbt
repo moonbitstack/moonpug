@@ -7,9 +7,16 @@
 /// A template is data, so every fault names the place in it that went wrong
 /// rather than unwinding a host stack the caller cannot see.
 pub(all) suberror Fault {
-  /// The source is not the syntax it claims: the byte offset is where reading
-  /// stopped, the reason is what was found there.
-  Lexical(at~ : Int32, because~ : String)
+  /// The source is not the syntax it claims: the template's name, the
+  /// one-based line and column where reading stopped, the byte offset, and
+  /// the reason found there.
+  Lexical(
+    at~ : Int32,
+    name~ : String,
+    line~ : Int32,
+    column~ : Int32,
+    because~ : String
+  )
   /// A name this engine does not know: a filter, a test, a global, a template.
   Unknown(name~ : String, kind~ : String)
   /// A name that is not defined, under the strict undefined policy.
@@ -32,7 +39,13 @@ pub extend Fault with Show::{output, to_string}
 pub impl Show for Fault with fn output(self, logger) {
   logger.write_string(
     match self {
-      Lexical(at~, because~) => "at byte \{at}: \{because}"
+      Lexical(
+        at=_,
+        name=name_of,
+        line=line_of,
+        column=column_of,
+        because=because_of
+      ) => "\{name_of}:\{line_of}:\{column_of}: \{because_of}"
       Unknown(name~, kind~) => "no such \{kind}: \{name}"
       Undefined(name~) => "undefined: \{name}"
       Wrong(because~) => because
@@ -41,6 +54,8 @@ pub impl Show for Fault with fn output(self, logger) {
 }
 
 ///|
+
+///|
 fn lexical(at : Int32, because : String) -> Fault {
-  Lexical(at~, because~)
+  Lexical(at~, name="<template>", line=0, column=0, because~)
 }

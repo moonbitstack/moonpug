@@ -7,7 +7,8 @@
 priv struct Line {
   level : Int32
   text : StringView
-  at : Int32
+  at : Int32 // the line's start in the template
+  base : Int32 // where `text` begins in the template
 }
 
 ///|
@@ -26,7 +27,10 @@ fn parse_pug(src : String, opts : ReadOpts) -> Array[Node] raise Fault {
   let nodes = pug_block(ls, 0, opts)
   if ls.at < ls.items.length() {
     let line = ls.items[ls.at]
-    raise lexical(line.at, "this line indents further than anything around it")
+    raise lexical(
+      line.base + line.at,
+      "this line indents further than anything around it",
+    )
   }
   nodes
 }
@@ -101,7 +105,12 @@ fn read_lines(src : String) -> Array[Line] raise Fault {
         if !uses_tabs && tab_unit is None {
           space_width = spaces
         }
-        out.push({ level, text: content[j:content.length()], at: line_start, })
+        out.push({
+          level,
+          text: content[j:content.length()],
+          at: line_start,
+          base: line_start + j,
+        })
       }
       line_start = i + 1
     }
@@ -126,7 +135,12 @@ fn merge_continuations(items : Array[Line]) -> Array[Line] {
       text = text + " " + items[j].text.to_owned()
       j = j + 1
     }
-    out.push({ level: first.level, text: text[:], at: first.at, })
+    out.push({
+      level: first.level,
+      text: text[:],
+      at: first.at,
+      base: first.base,
+    })
     i = j
   }
   out
@@ -353,7 +367,7 @@ fn pug_construct(
         tail = view_sub(tail, names[1].length(), tail.length()).trim()
       }
       if !tail.has_prefix("in") {
-        raise lexical(line.at, "`each` wants `in` after its names")
+        raise lexical(line.base + line.at, "`each` wants `in` after its names")
       }
       let iter_src = view_sub(tail, 2, tail.length()).trim().to_owned()
       let ic = Cur::make(iter_src, 0, iter_src.length())
@@ -416,7 +430,10 @@ fn pug_construct(
         if ls.items[ls.at].level != level + 1 &&
           ls.items[ls.at].level > level + 1 {
           let arm_line = ls.items[ls.at]
-          raise lexical(arm_line.at, "`case` arms sit one step under `case`")
+          raise lexical(
+            arm_line.base + arm_line.at,
+            "`case` arms sit one step under `case`",
+          )
         }
         let arm_text = ls.items[ls.at].text
         if arm_text.has_prefix("when") {
@@ -441,12 +458,15 @@ fn pug_construct(
           otherwise = pug_children(ls, level + 1, opts)
         } else {
           let arm_line = ls.items[ls.at]
-          raise lexical(arm_line.at, "`case` wants `when` or `default`")
+          raise lexical(
+            arm_line.base + arm_line.at,
+            "`case` wants `when` or `default`",
+          )
         }
       }
       Case(subject, arms, otherwise)
     }
-    "else" => raise lexical(line.at, "`else` follows an `if`")
+    "else" => raise lexical(line.base + line.at, "`else` follows an `if`")
     _ => pug_element_or_call(ls, level, opts)
   }
 }
@@ -510,7 +530,7 @@ fn pug_element_or_call(
 fn pug_element(ls : Lines, level : Int32, opts : ReadOpts) -> Node raise Fault {
   let line = ls.items[ls.at]
   let text = line.text
-  let c = Cur::make(text.to_owned(), 0, text.length())
+  let c = Cur::from(text.to_owned(), 0, text.length(), line.base)
   let mut tag = ""
   if is_name_start(c.peek()) {
     tag = c.read_word()
@@ -552,7 +572,10 @@ fn pug_element(ls : Lines, level : Int32, opts : ReadOpts) -> Node raise Fault {
   }
   if tag.is_empty() {
     if id is None && classes.is_empty() && attrs.is_empty() {
-      raise lexical(line.at, "a line needs a tag, text, or a construct")
+      raise lexical(
+        line.base + line.at,
+        "a line needs a tag, text, or a construct",
+      )
     }
     tag = "div"
   }
@@ -646,7 +669,10 @@ fn one_element_line(
   opts : ReadOpts,
   at : Int32,
 ) -> Elem raise Fault {
-  let single : Lines = { items: [{ level: 0, text: src, at, }], at: 0, }
+  let single : Lines = {
+    items: [{ level: 0, text: src, at, base: 0, }],
+    at: 0,
+  }
   match pug_element(single, 0, opts) {
     Element(elem) => elem
     _ => raise lexical(at, "a `:` chain holds one element")
@@ -734,7 +760,7 @@ fn read_attrs(
       }
       let name = c.src[name_start:c.at]
       if name.is_empty() {
-        raise lexical(c.at, "an attribute needs a name")
+        raise lexical(c.base + c.at, "an attribute needs a name")
       }
       c.skip_ws()
       if c.peek() != 0x3D {
@@ -761,7 +787,7 @@ fn read_attrs(
       c.at = c.at + 1
       return
     } else if c.at >= c.end {
-      raise lexical(c.at, "the attribute section is not closed")
+      raise lexical(c.base + c.at, "the attribute section is not closed")
     } else {
       going = true
     }
@@ -897,7 +923,8 @@ fn pug_directive(
       }
       Group(out)
     }
-    "endraw" => raise lexical(line.at, "`endraw` closes nothing here")
+    "endraw" =>
+      raise lexical(line.base + line.at, "`endraw` closes nothing here")
     "for" => {
       let head = rest_of(inner, word)
       let hc = Cur::make(head.to_owned(), 0, head.length())
@@ -912,7 +939,7 @@ fn pug_directive(
         hc.skip_ws()
       }
       if hc.peek_name() != "in" {
-        raise lexical(line.at, "`for` wants `in` after its names")
+        raise lexical(line.base + line.at, "`for` wants `in` after its names")
       }
       ignore(hc.take_name())
       hc.skip_ws()
@@ -994,7 +1021,7 @@ fn pug_directive(
           sc.skip_ws()
         }
         if sc.peek() != 0x3D {
-          raise lexical(line.at, "a dotted `set` wants `=`")
+          raise lexical(line.base + line.at, "a dotted `set` wants `=`")
         }
         sc.at = sc.at + 1
         sc.skip_ws()
@@ -1149,7 +1176,7 @@ fn pug_directive(
       let target = parse_expression(ic)
       ic.skip_ws()
       if ic.peek_name() != "as" {
-        raise lexical(line.at, "`import` wants `as` and a name")
+        raise lexical(line.base + line.at, "`import` wants `as` and a name")
       }
       ignore(ic.take_name())
       ic.skip_ws()
@@ -1164,7 +1191,7 @@ fn pug_directive(
       let target = parse_expression(fc2)
       fc2.skip_ws()
       if fc2.peek_name() != "import" {
-        raise lexical(line.at, "`from` wants `import`")
+        raise lexical(line.base + line.at, "`from` wants `import`")
       }
       ignore(fc2.take_name())
       fc2.skip_ws()
@@ -1236,8 +1263,9 @@ fn pug_directive(
     | "elif"
     | "else"
     | "pluralize"
-    | "comment" => raise lexical(line.at, "`\{word}` closes nothing here")
-    other => raise lexical(line.at, "no such statement: `\{other}`")
+    | "comment" =>
+      raise lexical(line.base + line.at, "`\{word}` closes nothing here")
+    other => raise lexical(line.base + line.at, "no such statement: `\{other}`")
   }
 }
 
