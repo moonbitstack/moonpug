@@ -2,30 +2,31 @@
 // SPDX-License-Identifier: Apache-2.0
 
 ///|
-/// The command this repository installs: a template, a JSON context on
-/// stdin, the rendered text on stdout.
-///
-///     moon run bin -- init.pug '{"name": "world"}'
+/// The command this repository installs: renders a small demonstration page
+/// through both surfaces and prints the results.
 #coverage.skip
-fn main raise {
-  let args = @args.argv()
-  let mut template = ""
-  let mut context = "{}"
-  for i = 0; i < args.length(); i = i + 1 {
-    if args[i] == "--template" && i + 1 < args.length() {
-      template = args[i + 1]
-    } else if args[i] == "--context" && i + 1 < args.length() {
-      context = args[i + 1]
-    }
+fn main {
+  println(page_brace())
+  println(page_pug())
+}
+
+///|
+fn demo_context() -> Json {
+  @json.parse("{ \"name\": \"moonpug\", \"n\": 2 }") catch {
+    _ => @json.parse("{}") catch { _ => abort("unreachable") }
   }
-  let page = @moonpug.render(
-    template,
-    @json.parse(context) catch {
-      _ => @json.parse("{}")
-    },
-    syntax=Pug,
-  ) catch {
+}
+
+///|
+fn page_brace() -> String {
+  @moonpug.render("Hello, {{ name }}! {{ n * 2 }}", demo_context()) catch {
     fault => "error: \{fault}"
   }
-  println(page)
+}
+
+///|
+fn page_pug() -> String {
+  @moonpug.render("p= name", demo_context(), syntax=Pug) catch {
+    fault => "error: \{fault}"
+  }
 }
