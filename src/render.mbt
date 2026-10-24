@@ -279,7 +279,7 @@ fn run_node(env : Env, node : Node) -> Unit raise Fault {
       run_nodes(env, parse_template(source, opts))
     }
     Element(elem) => render_element(env, elem)
-    Doctype(name) => env.out.write_string(doctype_of(name) + "\n")
+    Doctype(name) => env.out.write_string(doctype_of(name))
     Comment(visible, children) =>
       if visible {
         let inner = env.capture(() => run_nodes(env, children))
@@ -949,18 +949,8 @@ fn render_element(env : Env, elem : Elem) -> Unit raise Fault {
   }
   let attrs : Array[Attr] = []
   for attr in elem.attrs {
-    if attr.name == "class" {
-      match attr.value {
-        Val(expr) =>
-          for part in class_parts(eval(env, expr)) {
-            classes.push(part)
-          }
-        _ => ()
-      }
-    } else {
-      match attr.value {
-        other => attrs.push({ name: attr.name, value: other, })
-      }
+    match attr.value {
+      other => attrs.push({ name: attr.name, value: other, })
     }
   }
   for splat in elem.splats {
@@ -995,8 +985,25 @@ fn render_element(env : Env, elem : Elem) -> Unit raise Fault {
     match attr.value {
       Bare => out.write_string(" \{attr.name}")
       Val(expr) => {
-        let value = eval(env, expr)
-        out.write_string(" \{attr.name}=\"\{escape_text(show_value(value))}\"")
+        // Pug's boolean attributes: true is bare, false is absent. A bare
+        // identifier that resolves nowhere reads as the word itself, which
+        // is how the surface writes `target=_blank`.
+        let value = eval(env, expr) catch {
+          Undefined(_) =>
+            match expr {
+              Name(word) => Text(word)
+              _ => raise Undefined(name=attr.name)
+            }
+          fault => raise fault
+        }
+        match value {
+          Bool(true) => out.write_string(" \{attr.name}")
+          Bool(false) => ()
+          other =>
+            out.write_string(
+              " \{attr.name}=\"\{escape_text(show_value(other))}\"",
+            )
+        }
       }
     }
   }
@@ -1004,27 +1011,12 @@ fn render_element(env : Env, elem : Elem) -> Unit raise Fault {
     out.write_string("/>")
     return
   }
-  out.write_string(">")
   if is_void_element(elem.tag) {
-    run_element_body(env, elem, false)
+    out.write_string(">")
     return
   }
+  out.write_string(">")
   run_element_body(env, elem, true)
-}
-
-///|
-/// A class attribute's value: one name, or a list of them.
-fn class_parts(value : Value) -> Array[String] {
-  match value {
-    Seq(items) => {
-      let parts = []
-      for item in items {
-        parts.push(show_value(item))
-      }
-      parts
-    }
-    other => [show_value(other)]
-  }
 }
 
 ///|

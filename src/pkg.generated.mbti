@@ -8,7 +8,7 @@ import {
 // Values
 pub let preset : Settings
 
-pub fn render(StringView, Json, settings? : Settings, name? : String, syntax? : Syntax, load? : (String) -> String?, translate? : (String, String?, Int32?) -> String?, cache? : (String, () -> String raise Fault) -> String raise Fault, undefined_policy? : UndefinedPolicy, wins? : Wins, clash? : OnClash[Entry]) -> String raise Fault
+pub fn render(StringView, Json, settings? : Settings, name? : String, syntax? : Syntax, force? : Bool, load? : (String) -> String?, translate? : (String, String?, Int32?) -> String?, cache? : (String, () -> String raise Fault) -> String raise Fault, undefined_policy? : UndefinedPolicy, wins? : Wins, clash? : OnClash[Entry]) -> String raise Fault
 
 pub fn show(Value) -> String
 

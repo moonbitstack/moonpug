@@ -522,7 +522,10 @@ fn scan_lang_block(
   let mut after = -1
   while i < src.length() {
     if src.at(i) == 0x7B && i + 1 < src.length() && src.at(i + 1) == 0x25 {
-      let word_start = i + 2
+      let mut word_start = i + 2
+      while word_start < src.length() && src.at(word_start) == 0x20 {
+        word_start = word_start + 1
+      }
       let mut j = word_start
       while j < src.length() && is_name_part(src.at(j)) {
         j = j + 1

@@ -15,6 +15,7 @@ pub fn render(
   settings? : Settings,
   name? : String,
   syntax? : Syntax,
+  force? : Bool,
   load? : (String) -> String?,
   translate? : (String, String?, Int32?) -> String?,
   cache? : (String, () -> String raise Fault) -> String raise Fault,
@@ -80,6 +81,10 @@ pub fn render(
     Some(given) => given
     None => chosen.syntax
   }
+  let forced = match force {
+    Some(given) => given
+    None => chosen.force
+  }
   let policy = match undefined_policy {
     Some(given) => given
     None => chosen.undefined_policy
@@ -108,7 +113,7 @@ pub fn render(
   let md_preset = surface is Markdown
   let opts : ReadOpts = {
     syntax: surface,
-    force: chosen.force,
+    force: forced,
     trim_blocks: chosen.trim_blocks || md_preset,
     lstrip_blocks: chosen.lstrip_blocks || md_preset,
     keep_trailing_newline: chosen.keep_trailing_newline || md_preset,

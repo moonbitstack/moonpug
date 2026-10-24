@@ -226,10 +226,10 @@ fn pug_line(ls : Lines, level : Int32, opts : ReadOpts) -> Node raise Fault {
     ls.at = ls.at + 1
     if text.contains("#") || text.contains("!") || text.contains("{") {
       let nodes = split_interpolation(text)
-      nodes.push(Text("\n"))
+      nodes.push(Text(""))
       return Group(nodes)
     }
-    return Text("\{text}\n")
+    return Text(text.to_owned())
   }
   // Slim's line prefixes are refused: the vocabulary is Jinja's.
   if first == 0x2D || (first == 0x3D && blank_then(text, 1)) {
@@ -249,10 +249,10 @@ fn pug_line(ls : Lines, level : Int32, opts : ReadOpts) -> Node raise Fault {
     }
     if content.contains("#") || content.contains("!") || content.contains("{") {
       let nodes = split_interpolation(content)
-      nodes.push(Text("\n"))
+      nodes.push(Text(""))
       return Group(nodes)
     }
-    return Text("\{content}\n")
+    return Text(content.to_owned())
   }
   // Comments: `//` visible, `//-` silent.
   if first == 0x2F && text.length() > 1 && text.at(1) == 0x2F {
@@ -268,12 +268,12 @@ fn pug_line(ls : Lines, level : Int32, opts : ReadOpts) -> Node raise Fault {
       return Text("")
     }
     if children.is_empty() {
-      return Text("<!-- \{head_trimmed} -->\n")
+      return Text("<!-- \{head_trimmed} -->")
     }
     for child in children {
       ignore(child)
     }
-    return Comment(true, [Text("\{head_trimmed}\n"), ..children])
+    return Comment(true, [Text("\{head_trimmed}"), ..children])
   }
   if text.has_prefix("doctype") {
     ls.at = ls.at + 1
@@ -313,20 +313,25 @@ fn pug_construct(
       let path = path_literal(rest_of(text, word))
       Extends(Lit(Text(path)))
     }
-    "block" => {
-      let after = rest_of(text, word).trim()
-      let mut mod : BlockMod = Override
-      let mut name = after.to_owned()
-      if after.has_prefix("append") {
-        mod = Append
-        name = view_sub(after, 6, after.length()).trim().to_owned()
-      } else if after.has_prefix("prepend") {
-        mod = Prepend
-        name = view_sub(after, 7, after.length()).trim().to_owned()
+    "block" =>
+      if rest_of(text, word).trim().is_empty() {
+        // A bare `block` inside a mixin body emits the caller's content.
+        ls.at = ls.at + 1
+        Out(Call(Name("caller"), []))
+      } else {
+        let after = rest_of(text, word).trim()
+        let mut mod : BlockMod = Override
+        let mut name = after.to_owned()
+        if after.has_prefix("append") {
+          mod = Append
+          name = view_sub(after, 6, after.length()).trim().to_owned()
+        } else if after.has_prefix("prepend") {
+          mod = Prepend
+          name = view_sub(after, 7, after.length()).trim().to_owned()
+        }
+        let children = pug_children(ls, level, opts)
+        Block(name, { body: children, scoped: false, required: false, mod, })
       }
-      let children = pug_children(ls, level, opts)
-      Block(name, { body: children, scoped: false, required: false, mod, })
-    }
     "append" | "prepend" => {
       let mod = if word == "append" { Append } else { Prepend }
       let name = rest_of(text, word).trim().to_owned()
@@ -403,8 +408,10 @@ fn pug_construct(
           let next_text = ls.items[ls.at].text
           if next_text.has_prefix("else") {
             let after_else = view_sub(next_text, 4, next_text.length()).trim()
-            ls.at = ls.at + 1
+            // `else if` continues on the same line; a bare `else` leaves the
+            // line for pug_children to advance past.
             if after_else.has_prefix("if") {
+              ls.at = ls.at + 1
               let head2 = view_sub(after_else, 2, after_else.length())
                 .trim()
                 .to_owned()
@@ -454,8 +461,7 @@ fn pug_construct(
           let children = pug_children(ls, ls.items[ls.at].level, opts)
           arms.push({ values, body: children, })
         } else if arm_text.has_prefix("default") {
-          ls.at = ls.at + 1
-          otherwise = pug_children(ls, level + 1, opts)
+          otherwise = pug_children(ls, ls.items[ls.at].level, opts)
         } else {
           let arm_line = ls.items[ls.at]
           raise lexical(
@@ -1330,37 +1336,62 @@ fn pug_lang_directive(
   inner : String,
   at : Int32,
 ) -> Node raise Fault {
-  let eq = inner.find("=").unwrap_or(9)
-  let lang = inner[eq + 1:inner.length()].trim().to_owned()
+  // The head ends at the first `%}`; the body may start on the same line.
+  let head_end = inner.find("%}").unwrap_or(inner.length())
+  let head = inner[0:head_end]
+  let eq = head.find("=").unwrap_or(9)
+  let lang = head[eq + 1:head.length()].trim().to_owned()
+  let same_line = inner[head_end + 2:inner.length()].to_owned()
+  fn finish(body : String) -> Node {
+    if lang_allowed(opts.syntax, opts.force, lang) {
+      LangBlock(lang, body)
+    } else {
+      // Under force the construct passes through as literal text.
+      Text("{% block lang=" + lang + " %}" + body + "{% endblock %}")
+    }
+  }
+  if same_line.contains("{% endblock") {
+    let close = same_line.find("{% endblock").unwrap_or(same_line.length())
+    ls.at = ls.at + 1
+    return finish(same_line[0:close].to_owned())
+  }
   ls.at = ls.at + 1
   let body = StringBuilder()
-  let mut depth = 1
-  while ls.at < ls.items.length() {
+  body.write_string(same_line)
+  if !same_line.is_empty() {
+    body.write_char(chr_nl())
+  }
+  // Collected lines lost their indent to the line reader; re-indent relative
+  // to the first one so the body nests the way the source did.
+  let base_level : Int32 = level
+  let mut done = false
+  while ls.at < ls.items.length() && !done {
     let line = ls.items[ls.at]
-    let trimmed = line.text.trim()
-    if line.level == level {
-      if trimmed.has_prefix("{% block") {
-        depth = depth + 1
-      } else if trimmed == "{% endblock %}" {
-        depth = depth - 1
-        if depth == 0 {
-          ls.at = ls.at + 1
-          break
+    let text = line.text.to_owned()
+    if text.contains("{% endblock") {
+      let close = text.find("{% endblock").unwrap_or(text.length())
+      if close > 0 {
+        for _k = 0; _k < line.level - base_level; _k = _k + 1 {
+          body.write_string("  ")
         }
+        body.write_string(text[0:close].to_owned())
+        body.write_char(chr_nl())
       }
+      ls.at = ls.at + 1
+      done = true
+      continue
     }
-    body.write_string(line.text.to_owned())
-    body.write_char('\n')
+    for _k = 0; _k < line.level - base_level; _k = _k + 1 {
+      body.write_string("  ")
+    }
+    body.write_string(text)
+    body.write_char(chr_nl())
     ls.at = ls.at + 1
   }
-  if depth != 0 {
+  if !done {
     raise lexical(at, "`block lang=\{lang}` is never closed")
   }
-  if lang_allowed(opts.syntax, opts.force, lang.to_string()) {
-    LangBlock(lang.to_string(), body.to_string())
-  } else {
-    Text("{% block lang=\{lang} %}\{body}{% endblock %}")
-  }
+  finish(body.to_string())
 }
 
 ///|
@@ -1573,4 +1604,9 @@ fn find_close(text : StringView, from : Int32, closer : String) -> Int32? {
     i = i + 1
   }
   None
+}
+
+///|
+fn chr_nl() -> Char {
+  (10).unsafe_to_char()
 }

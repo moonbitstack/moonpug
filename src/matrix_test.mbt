@@ -352,5 +352,5 @@ test "undefined policies: strict refuses, lenient prints empty, chainable walks"
 
 ///|
 test "pug surface greets through its own helper" {
-  assert_eq(pug_page("| hello", "{}"), "hello\n")
+  assert_eq(pug_page("| hello", "{}"), "hello")
 }
