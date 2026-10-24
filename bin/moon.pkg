@@ -1,6 +1,7 @@
-// The executable. Delete this directory in a repository that ships no binary.
+// The executable this repository installs: `moon run bin`.
 pkgtype(kind: "executable")
 
 import {
-  "moonbitstack/moonpug/lib",
+  "moonbitstack/moonpug",
+  "moonbitlang/core/json",
 }

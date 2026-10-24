@@ -1,0 +1,52 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbitstack/moonpug"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn render(StringView, Json, syntax? : Syntax, force? : Bool, load? : (String) -> String?, translate? : (String, String?, Int32?) -> String?, globals? : Map[String, (Array[Json]) -> Json], cache? : (String, () -> String raise Fault) -> String raise Fault, autoescape? : Bool, undefined_policy? : UndefinedPolicy, trim_blocks? : Bool, lstrip_blocks? : Bool, keep_trailing_newline? : Bool, line? : String, shortcuts? : Map[String, String]) -> String raise Fault
+
+// Errors
+pub(all) suberror Fault {
+  Lexical(at~ : Int32, because~ : String)
+  Unknown(name~ : String, kind~ : String)
+  Undefined(name~ : String)
+  Wrong(because~ : String)
+} derive(Eq, @debug.Debug)
+pub fn Fault::equal(Self, Self) -> Bool
+pub fn Fault::not_equal(Self, Self) -> Bool
+pub fn Fault::output(Self, &Logger) -> Unit
+pub fn Fault::to_repr(Self) -> @debug.Repr
+pub fn Fault::to_string(Self) -> String
+pub impl Show for Fault
+
+// Types and methods
+pub(all) enum Syntax {
+  Html
+  Pug
+  Markdown
+} derive(Eq, @debug.Debug)
+pub fn Syntax::equal(Self, Self) -> Bool
+pub fn Syntax::not_equal(Self, Self) -> Bool
+pub fn Syntax::output(Self, &Logger) -> Unit
+pub fn Syntax::to_repr(Self) -> @debug.Repr
+pub fn Syntax::to_string(Self) -> String
+pub impl Show for Syntax
+
+pub(all) enum UndefinedPolicy {
+  Strict
+  Lenient
+  Chainable
+} derive(Eq, @debug.Debug)
+pub fn UndefinedPolicy::equal(Self, Self) -> Bool
+pub fn UndefinedPolicy::not_equal(Self, Self) -> Bool
+pub fn UndefinedPolicy::output(Self, &Logger) -> Unit
+pub fn UndefinedPolicy::to_repr(Self) -> @debug.Repr
+pub fn UndefinedPolicy::to_string(Self) -> String
+pub impl Show for UndefinedPolicy
+
+// Type aliases
+
+// Traits
