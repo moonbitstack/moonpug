@@ -1,0 +1,117 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbitstack/moonpug/spec"
+
+import {
+  "moonbitlang/core/debug",
+}
+
+// Values
+pub fn code_point_compare(String, String) -> Int32
+
+pub fn escape(String) -> String
+
+pub fn invalid(String) -> Refused
+
+pub fn python_float(Double) -> String
+
+pub fn repr_text(String) -> String
+
+pub fn unknown(String, String) -> Refused
+
+// Errors
+pub(all) suberror Refused {
+  Syntax(template~ : String, line~ : Int32, column~ : Int32, reason~ : String)
+  Unknown(template~ : String, line~ : Int32, kind~ : String, name~ : String)
+  Invalid(template~ : String, line~ : Int32, reason~ : String)
+  Exceeded(template~ : String, line~ : Int32, limit~ : Int32, got~ : Int32)
+} derive(Eq, @debug.Debug)
+pub fn Refused::at(Self, String, Int32) -> Self
+pub fn Refused::equal(Self, Self) -> Bool
+pub fn Refused::not_equal(Self, Self) -> Bool
+pub fn Refused::output(Self, &Logger) -> Unit
+pub fn Refused::place(Self) -> (String, Int32)
+pub fn Refused::to_repr(Self) -> @debug.Repr
+pub fn Refused::to_string(Self) -> String
+pub impl Show for Refused
+
+// Types and methods
+pub struct Call {
+  autoescape : Bool
+  undefined : Undefined
+  range : Int32
+  // private fields
+}
+pub fn Call::check(Self, String, Value, Array[Value]) -> Bool raise Refused
+pub fn Call::draw(Self) -> Int32
+pub fn Call::escaping(Self, Bool) -> Self
+pub fn Call::filter(Self, String, Value, Array[Value], Map[String, Value]) -> Value raise Refused
+pub fn Call::has_filter(Self, String) -> Bool
+pub fn Call::has_test(Self, String) -> Bool
+pub fn Call::items(Self, Value) -> Array[Value] raise Refused
+pub fn Call::new(autoescape? : Bool, undefined? : Undefined, range? : Int32, filters? : Map[String, (Self, Value, Array[Value], Map[String, Value]) -> Value raise Refused], tests? : Map[String, (Self, Value, Array[Value]) -> Bool raise Refused], translate? : (String, String?, Int32?) -> String?) -> Self
+pub fn Call::refuses(Self, String) -> Bool
+pub fn Call::text(Self, Value) -> String raise Refused
+pub fn Call::translate(Self, String, context? : String, count? : Int32) -> String?
+pub fn Call::truthy(Self, Value) -> Bool raise Refused
+
+pub(all) enum Undefined {
+  Lenient
+  Chainable
+  Strict
+} derive(Eq)
+pub fn Undefined::equal(Self, Self) -> Bool
+pub fn Undefined::not_equal(Self, Self) -> Bool
+
+pub(all) enum Value {
+  Null
+  Bool(Bool)
+  Int(Int64)
+  Double(Double)
+  Text(String)
+  Markup(String)
+  Seq(Array[Value])
+  Tuple(Array[Value])
+  Dict(Map[String, Value])
+  Undefined(String)
+  Object(&Object)
+}
+pub fn Value::compare(Self, Self) -> Int32 raise Refused
+pub fn Value::contains(Self, Self) -> Bool raise Refused
+pub fn Value::equal(Self, Self) -> Bool
+pub fn Value::field(Self, String) -> Self?
+pub fn Value::func(String, (Call, Array[Self], Map[String, Self]) -> Self raise Refused) -> Self
+pub fn Value::index(Self) -> Int32?
+pub fn Value::item(Self, Self) -> Self?
+pub fn Value::iter(Self) -> Array[Self] raise Refused
+pub fn Value::kind(Self) -> String
+pub fn Value::markup(Self) -> String
+pub fn Value::not_equal(Self, Self) -> Bool
+pub fn Value::number(Self) -> Double?
+pub fn Value::of_json(Json) -> Self
+pub fn Value::output(Self, &Logger) -> Unit
+pub fn Value::path(Self, String) -> Self?
+pub fn Value::repr(Self) -> String
+pub fn Value::to_json(Self) -> Json
+pub fn Value::to_string(Self) -> String
+pub fn Value::truthy(Self) -> Bool
+pub impl Eq for Value
+pub impl Show for Value
+pub impl ToJson for Value
+
+// Type aliases
+pub type Filter = (Call, Value, Array[Value], Map[String, Value]) -> Value raise Refused
+
+pub type Func = (Call, Array[Value], Map[String, Value]) -> Value raise Refused
+
+pub type Test = (Call, Value, Array[Value]) -> Bool raise Refused
+
+// Traits
+pub(open) trait Object {
+  fn kind(Self) -> String
+  fn attr(Self, String) -> Value? = _
+  fn call(Self, Call, Array[Value], Map[String, Value]) -> Value raise Refused = _
+  fn callable(Self) -> Bool = _
+  fn assign(Self, String, Value) -> Unit raise Refused = _
+  fn show(Self) -> String = _
+  fn items(Self) -> Array[Value]? = _
+}

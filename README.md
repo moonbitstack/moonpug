@@ -1,150 +1,11 @@
 # moonpug
 
-[![check and test](https://github.com/moonbitstack/moonpug/actions/workflows/ci.yml/badge.svg)](https://github.com/moonbitstack/moonpug/actions/workflows/ci.yml)
-
-A template engine for MoonBit: **Jinja2 is the vocabulary**, Pug's
-indentation and Slim's attribute wrapping are surfaces over it, and
-Django's capability set fills the gaps — one expression language, one
-evaluator, one set of names.
-
-It writes text; it does not parse documents. Reading HTML back into a
-tree is [`moonxml`](https://github.com/moonbitstack/moonxml)'s job, and
-this does not depend on it: an engine that parsed its own output would be
-doing the work twice.
-
-## The three surfaces
-
-A source is read in one of three surfaces, and a block can switch language
-anywhere in the middle:
-
-| Surface | Spelling | Default for |
-|:--|:--|:--|
-| `Html` | text with `{{ }}`, `{% %}`, `{# #}` | `render(...)` |
-| `Pug` | indentation, `#{ }` interpolation, `<` lines pass HTML through | `syntax = Pug` |
-| `Markdown` | the brace surface with blank-line-friendly whitespace presets | `syntax = Markdown` |
+Templates for MoonBit. One expression language, three ways to write a page: text with braces, indented markup, or Markdown. A template compiles once and renders as many times as you like; nothing touches a file, a clock or a socket unless you hand it a function that does.
 
 ```moonbit
-@moonpug.render("Hello, {{ name }}!", @json.parse("{ \"name\": \"moonbit\" }"))
-@moonpug.render("p Hello #{name}", ctx, syntax = Pug)
-@moonpug.render("{{ n }}\n{% block lang=pug %}p= n * 2{% endblock %}", ctx)
+let out = @moonpug.render("Hello {{ name|title }}!", { "name": "ada" })
+// Hello Ada!
 ```
-
-A block recurses: `{% block lang=pug %} … {% endblock %}` nests, keeps the
-variables around it, and under `force = true` a language the outer surface
-does not speak stays literal text.
-
-## The interface
-
-Every function, its type, its errors, and where each default comes from.
-
-### `render`
-
-```moonbit
-pub fn render(
-  source : StringView,
-  context : Json,                     // a JSON object; the template's top scope
-  settings? : Settings,               // the record; `settings` is the preset
-  name? : String,                     // for fault messages; "<template>" otherwise
-  syntax? : Syntax,                   // flat mirror of settings.syntax
-  force? : Bool,                      // flat mirror of settings.force
-  load? : (String) -> String?,        // extends/include/import; None refuses them
-  translate? : (String, String?, Int?) -> String?,   // gettext seam; None = identity
-  cache? : (String, () -> String raise Fault) -> String raise Fault,  // {% once %}
-  undefined_policy? : UndefinedPolicy,               // flat mirror; Strict by default
-  wins? : Wins,                       // Base | Extra; Extra (the caller) by default
-  clash? : OnClash[Entry],            // Ignore | Panic | Handle; Ignore by default
-) -> String raise Fault
-```
-
-Defaults and their provenance:
-
-| Default | Value | Taken from |
-|:--|:--|:--|
-| `autoescape` | on | Jinja2's default; the one decision that stops a template writing an injection |
-| `undefined_policy` | `Strict` | Jinja2's `StrictUndefined`; the family's rule that safety is default and relaxation explicit |
-| `trim_blocks` / `lstrip_blocks` | off | Jinja2's defaults (both on automatically for the Markdown surface, as markdown expects) |
-| `wins` | `Extra` | the house priority: the more specific, the caller's, wins |
-| `clash` | `Ignore` | silent precedence, the Axios/Terraform shape |
-
-### The registries
-
-Filters, tests, globals and the loader are traits. Everything the library
-ships is registered through the same traits a caller uses — there is no
-second, privileged path.
-
-```moonbit
-pub trait Filter { filter(Self, Context, Value, Array[Value], Map[String, Value]) -> Value raise Fault }
-pub trait Test   { probe(Self, Value, Array[Value]) -> Bool raise Fault }
-pub trait Global { call(Self, Context, Array[Value], Map[String, Value]) -> Value raise Fault }
-pub trait Loader { load(Self, String) -> String? }
-```
-
-Register by putting implementations into `Settings.filters`, `.tests`,
-`.globals`, `.loader` — or write the record update:
-
-```moonbit
-let mine : MyFilter = MyFilter
-@moonpug.render(src, ctx, settings = { ..settings, filters: add_filter(mine) })
-```
-
-Host knowledge — `url()`, `static()`, `csrf_token()`, `now()` — is not
-built in. It enters as registered globals, the way Flask registers
-`url_for`; the engine defines the calling convention and the caller
-(moonapi) owns the implementation.
-
-### Configuration priority
-
-```
-library preset  <  the record passed  <  this call's flat mirrors
-```
-
-`wins = Base` reverses the last two; `clash = Panic` refuses a name that
-meets a builtin; `clash = Handle(f)` receives both entries and returns the
-one that stays. This paragraph appears here, on every registry-taking
-function's doc comment, and on the docs site, in the same words.
-
-### `Value`
-
-Templates see a dynamic value: `Null`, `Bool`, `Int`, `Double`, `Text`,
-`Markup` (already trusted), `Seq`, `Dict`, `Namespaced`, `Macro`, and the
-cycler/joiner handles. `Macro` is constructible by the engine and readable
-by callers (`name`, `params`, `rest`); its body stays the engine's.
-
-## What is in the box
-
-- **Jinja2 whole**: every statement, all 51 filters, all 30 tests, the six
-  globals, the complete `loop` object (including `cycle`, `changed`,
-  `previtem`/`nextitem` and recursion), the three undefined policies,
-  whitespace control, line statements, and the i18n extension with the
-  gettext family over the `translate` seam.
-- **Django's capability set**, spelled Jinja's way: `empty` → `else`,
-  `verbatim` → `raw`, `forloop.counter` → `loop.index`, `block.super` →
-  `super()`, `|f:a` refused, and the supplement filters (`date`, `slugify`,
-  `pluralize`, `linebreaks`, `yesno`, `json_script`, `truncatechars`,
-  `unordered_list`, `escapejs`, …) with Django's own semantics.
-- **Pug's surface**: elements and shorthand, three kinds of attribute
-  brackets (Slim's wrapping), `&attributes` splats, the `:key` diff key as
-  `data-key`, `each`/`if`/`unless`/`case`, mixins with caller bodies,
-  `block append`/`prepend`, doctype shorthands, content filters as
-  `{% filter %}` — minified output, like Pug's own.
-- **Vue-shaped extras**: `{% show cond %}` renders and hides with an inline
-  style when false; `{% once key %}` caches a fragment through the `cache`
-  seam; `:key` becomes `data-key`.
-- **A sandbox**: `sandbox = true` turns attribute access away (subscripts
-  still work) and pins escaping on.
-
-## Errors
-
-A lexical fault names the template, the one-based line and column, and the
-reason: `page.html:2:7: an expression cannot start here`. Every other
-fault — an unknown filter, a missing name under the strict policy, a
-wrong arity — says which of the three it is and what it saw.
-
-## Not here, on purpose
-
-No custom-tag plugin system, no async templates, no bytecode cache, no
-host-code compilation, no I/O of any kind: the engine opens no files,
-reads no clock, and touches no socket.
 
 ## Install
 
@@ -152,18 +13,170 @@ reads no clock, and touches no socket.
 moon add moonbitstack/moonpug
 ```
 
-Then run the examples:
-
-```bash
-moon run examples/tour    # every feature in one pass
-moon run examples/page    # one page, both surfaces, byte-identical
+```moonbit
+import {
+  "moonbitstack/moonpug",
+}
 ```
 
-## Documentation
+## A first page
 
-The full handbook — guides for each surface, the filter and test
-reference, the extension traits, and a live playground — ships in
-[`docs/`](docs/index.html) and renders at the project's GitHub Pages.
+Data goes in as anything that converts to `Json`: a `derive(ToJson)` struct, a map, a parsed document.
+
+```moonbit
+struct Book {
+  title : String
+  year : Int
+  tags : Array[String]
+} derive(ToJson)
+
+struct Shelf {
+  shelf : String
+  books : Array[Book]
+} derive(ToJson)
+
+let page =
+  #|<h1>{{ shelf }}</h1>
+  #|<ul>{% for b in books|sort(attribute='year') %}
+  #|  <li>{{ b.title }}, {{ b.year }}{% if b.tags %} ({{ b.tags|join(', ') }}){% endif %}</li>
+  #|{% endfor %}</ul>
+let html = @moonpug.render(page, Shelf::{ shelf: "Reading <list>", books: [...] })
+```
+
+Output is escaped by default: `Reading <list>` is written as `Reading &lt;list&gt;`. `|safe` marks text you trust.
+
+## Three languages
+
+| Name | Also | Reads | Preset |
+|:--:|:--:|:--|:--:|
+| `html` | | text with `{{ }}`, `{% %}` and `{# #}` | `html` (escaped), `text` (not escaped) |
+| `pug` | `pg` | elements by indentation, `<` lines passed through, `{% %}` lines as statements | `pug` |
+| `md` | `markdown` | the brace syntax, with a tag on a line of its own leaving no blank line | `markdown` |
+
+```moonbit
+let data : Json = { "title": "Notes", "items": ["ink", "paper"] }
+@moonpug.render("h1= title\neach i in items\n  p= i", data, format=@moonpug.pug)
+// <h1>Notes</h1><p>ink</p><p>paper</p>
+```
+
+A named template picks its format from the extension: `.pug` and `.pg` read as `pug`, `.md` as Markdown, `.html` `.htm` `.xml` `.svg` as escaped HTML, anything else as text.
+
+### Language blocks
+
+Any part of a template can switch language, and blocks nest:
+
+```text
+<section>
+{% block lang=pug %}
+ul
+  each i in items
+    li= i
+{% endblock %}
+</section>
+```
+
+A whole template is one big block in its own language. With `force=true` a stretch reads only its own language: inside `pug` and `md`, blocks in another language stay as text and HTML still reads; inside `html`, `pug` and `md` blocks stay as text. A block's own `force=` wins over the one around it; `Settings.force` sets it for the whole template.
+
+## What a template can say
+
+Statements: `if`/`elif`/`else`, `for`/`else` with `loop`, `break`, `continue`, `set` (with a block and a filter), `with`, `macro` and `call`, `filter`, `include` (`ignore missing`, `with context`), `import` and `from … import`, `extends` and `block` (`super()`, `scoped`, `required`, `append`, `prepend`), `raw`, `autoescape`, `do`, `trans`/`pluralize`, `once`, `show`, `debug`.
+
+Expressions: literals, lists, tuples and maps, attributes and subscripts, slices, arithmetic with `//`, `%` and `**`, comparisons that chain, `in`, `and`/`or`/`not`, `~` to join as text, inline `if`/`else`, filters with `|` and tests with `is`. Strings, lists and maps carry their methods: `'a,b'.split(',')`, `'{:>8.2f}'.format(x)`, `'%s=%d' % (k, v)`, `d.items()`.
+
+Built in: 79 filters (among them `date`, `timesince`, `floatformat`, `pluralize`, `urlize`, `wordwrap`, `tojson`, `json_script`, `groupby`, `dictsort`, `xmlattr`), 39 tests, and the globals `range`, `dict`, `lipsum`, `cycler`, `joiner`, `namespace` and the `gettext` family.
+
+In the indentation syntax: tags with `#id` and `.class`, attributes in `( )`, or `[ ]` and `{ }` when a long list wraps, `&attributes`, `#{}` and `!{}` interpolation, `#[tag]` inline, `|` and `.` text, `if`/`unless`/`each`/`case`, mixins with blocks and attributes, `include` with a block that lands at `yield`, `extends` with `block append` and `prepend`, `doctype`, comments, and `:name` content filters.
+
+## Data, functions and objects
+
+```moonbit
+let env = @moonpug.Env::new()
+env.add_global("today", @moonpug.Value::func("today", (_, _, _) => Text("2026-10-25")))
+env.add_filter("money", (call, value, _, _) => Text("¥" + call.text(value)))
+env.add_test("short", (call, value, _) => call.text(value).length() <= 3)
+```
+
+A host value joins a template by implementing `Object`. Every method has a default; implement the ones it needs:
+
+```moonbit
+impl @moonpug.Object for Cart with fn kind(_) { "the cart" }
+impl @moonpug.Object for Cart with fn attr(self, name) { ... }     // cart.total
+impl @moonpug.Object for Cart with fn items(self) { ... }          // for x in cart
+impl @moonpug.Object for Cart with fn assign(self, name, value) { ... }  // {% set cart.coupon = … %}
+
+env.compile(source).render_values({ "cart": Object(cart) })
+```
+
+`call`, `callable` and `show` complete the set.
+
+## Templates by name
+
+```moonbit
+let env = @moonpug.Env::new(load=name => sources.get(name))
+let page = env.template("page.html")   // read, compiled and kept
+page.render(data)
+```
+
+`load` serves `extends`, `include`, `import` and `Env::template`. `translate` answers `{% trans %}` and `gettext`: given a message, its context and the plural count, the translation or `None`. `cache` stores what `{% once key %}` renders. All three are functions you pass in.
+
+## Your own language
+
+A language is a name, its aliases, how its brace tags treat whitespace, and a reader that turns source into the tree. The built-in three are registered the same way:
+
+```moonbit
+fn read_csv(source : String, reading : @moonpug.Reading) -> Array[@syntax.Node] raise @moonpug.Refused {
+  ...
+  nodes.append(reading.block(cell, "html", None, reading.line))   // cells read as HTML
+  ...
+}
+
+env.add_lang({ name: "csv", aliases: ["table"], options: @syntax.options, read: read_csv })
+```
+
+Then `{% block lang=csv %}` and `Format.lang = "csv"` both work. `moonbitstack/moonpug/syntax` has the tree and the parsers for expressions and statements, so a reader can reuse them.
+
+## Settings
+
+| Record | Fields | Preset |
+|:--|:--|:--|
+| `Format` | `lang`, `autoescape`, `trim_blocks`, `lstrip_blocks`, `keep_trailing_newline` | `html`, `pug`, `markdown`, `text` |
+| `Settings` | `format`, `formats`, `force`, `undefined`, `line_statement`, `line_comment`, `limits` | `settings` |
+| `Limits` | `depth` (1000), `range` (100 000) | `limits` |
+
+`undefined` is `Strict` by default: a missing name is refused, except where a template asks `is defined` or gives a `default`. `Lenient` prints it as nothing; `Chainable` also lets its attributes be missing.
+
+### Configuration precedence
+
+```
+library preset  <  the record you pass  <  the same name passed to this call
+```
+
+`render(source, data, settings=s, format=f, force=b)`: `format` and `force` override the ones in `s`, and `s` overrides the preset `settings`.
+
+## Errors
+
+Every refusal is a `Refused` and names the template and line:
+
+| Variant | When |
+|:--|:--|
+| `Syntax(template, line, column, reason)` | the source is not well formed |
+| `Unknown(template, line, kind, name)` | a name, filter, test, template, language or attribute that resolves to nothing |
+| `Invalid(template, line, reason)` | values that do not fit: wrong arguments, an operation a type does not take |
+| `Exceeded(template, line, limit, got)` | a bound in `Limits` was crossed |
+
+```text
+page.html:3: price is undefined
+```
+
+## Examples
+
+```bash
+moon run src/examples/01-first-page
+moon run src/examples/02-three-languages
+moon run src/examples/03-template-set
+moon run src/examples/04-own-language
+moon run src/examples/05-host-objects
+```
 
 ## Licence
 

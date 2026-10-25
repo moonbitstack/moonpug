@@ -1,0 +1,9 @@
+import {
+  "moonbitstack/moonpug",
+  "moonbitstack/moonpug/defaults",
+  "moonbitlang/core/json",
+}
+
+options(
+  link: { "js": { "exports": [ "render_page", "names" ], "format": "esm" } },
+)

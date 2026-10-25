@@ -1,165 +1,162 @@
-// Copyright 2026 Leo Cheng
-// SPDX-License-Identifier: Apache-2.0
-
 ///|
-/// The parsing choices a surface carries, so a nested read — an included
-/// file, a language block — parses the way its surroundings did.
-priv struct ReadOpts {
-  syntax : Syntax
-  force : Bool
-  trim_blocks : Bool
-  lstrip_blocks : Bool
-  keep_trailing_newline : Bool
-  line : String?
-  shortcuts : Map[String, String]
-  sandbox : Bool
+/// Where templates come from and what they all see: the settings, the
+/// filters, tests and global values, the loader and the seams for
+/// translation and caching. Compiled templates are kept per environment.
+pub struct Env {
+  priv settings : Settings
+  priv filters : Map[String, @spec.Filter]
+  priv tests : Map[String, @spec.Test]
+  priv globals : Map[String, @spec.Value]
+  priv load : ((String) -> String?)?
+  priv langs : Map[String, Lang]
+  priv translate : ((String, String?, Int32?) -> String?)?
+  priv cache : ((String, () -> String raise @spec.Refused) -> String raise @spec.Refused)?
+  priv compiled : Map[String, Template]
 }
 
 ///|
-/// Everything a render walks with: the output buffer, the scope stack, the
-/// seams the caller fed, and the block registry the `extends` chain filled.
-priv struct Env {
-  mut out : StringBuilder
-  mut stack : Array[Map[String, Value]]
-  mut blocks : Map[String, Array[BlockDef]]
-  filters : Map[String, &Filter]
-  tests : Map[String, &Test]
-  globals : Map[String, &Global]
-  once : Map[String, String]
-  tally : Tally
-  load : ((String) -> String?)?
-  translate : ((String, String?, Int32?) -> String?)?
-  cache_fn : ((String, () -> String raise Fault) -> String raise Fault)?
-  opts : ReadOpts
-  policy : UndefinedPolicy
-  mut autoescape : Bool
-  mut braking : Bool // a `break` is waiting for the innermost loop
-  mut skipping : Bool // a `continue` is
-}
-
-///|
-fn Env::push(env : Env, scope : Map[String, Value]) -> Unit {
-  env.stack.push(scope)
-}
-
-///|
-fn Env::pop(env : Env) -> Unit {
-  ignore(env.stack.pop())
-}
-
-///|
-/// The innermost scope a name is bound in, or none.
-fn Env::find(env : Env, name : String) -> Map[String, Value]? {
-  let mut i = env.stack.length() - 1
-  while i >= 0 {
-    let scope = env.stack[i]
-    if scope.contains(name) {
-      return Some(scope)
-    }
-    i = i - 1
+/// An environment with the built-in languages, filters, tests and globals.
+///
+/// `load` turns a template name into its source for `extends`, `include`,
+/// `import` and `Env::template`; without it those are refused. `translate`
+/// answers gettext and `{% trans %}`: given a message, its context and the
+/// plural count, the translation or `None`. `cache` stores what
+/// `{% once key %}` renders: given the key and a way to render, the text.
+pub fn Env::new(
+  settings~ : Settings = settings,
+  load? : (String) -> String?,
+  translate? : (String, String?, Int32?) -> String?,
+  cache? : (String, () -> String raise @spec.Refused) -> String raise @spec.Refused,
+) -> Env {
+  let env = {
+    settings,
+    filters: @defaults.filters(),
+    tests: @defaults.tests(),
+    globals: @defaults.globals(),
+    langs: Map([]),
+    load,
+    translate,
+    cache,
+    compiled: Map([]),
   }
-  None
+  for lang in [@syntax.html, @syntax.markdown, @syntax.pug] {
+    env.add_lang(lang)
+  }
+  env
 }
 
 ///|
-/// A name as a statement sees it: bound, or the undefined value the policy
-/// hands back. Strict refuses on the spot; the other two carry the name for
-/// the day someone asks `is defined`.
-fn Env::get(env : Env, name : String) -> Value raise Fault {
-  match env.find(name) {
-    Some(scope) => scope.get_or_default(name, Absent(name))
+/// Register a language under its name and aliases, replacing any that
+/// answer to the same; `Format.lang` and `{% block lang=… %}` find it.
+pub fn Env::add_lang(self : Env, lang : Lang) -> Unit {
+  self.langs[lang.name] = lang
+  for other in lang.aliases {
+    self.langs[other] = lang
+  }
+}
+
+///|
+/// Register a filter, replacing any of the same name.
+pub fn Env::add_filter(
+  self : Env,
+  name : String,
+  filter : @spec.Filter,
+) -> Unit {
+  self.filters[name] = filter
+}
+
+///|
+/// Register a test, replacing any of the same name.
+pub fn Env::add_test(self : Env, name : String, test_ : @spec.Test) -> Unit {
+  self.tests[name] = test_
+}
+
+///|
+/// Make a value visible to every template, replacing any of the same name;
+/// a function is `Value::func(name, …)`.
+pub fn Env::add_global(self : Env, name : String, value : @spec.Value) -> Unit {
+  self.globals[name] = value
+}
+
+///|
+/// Read a source into a template. A `name` picks the format by its
+/// extension and appears in errors; `format` overrides either.
+pub fn Env::compile(
+  self : Env,
+  source : StringView,
+  name? : String,
+  format? : Format,
+) -> Template raise @spec.Refused {
+  let chosen = match (format, name) {
+    (Some(f), _) => f
+    (None, Some(n)) => (self.settings.formats)(n)
+    (None, None) => self.settings.format
+  }
+  let template = name.unwrap_or("<template>")
+  let settings = self.settings
+  let lang = match self.langs.get(chosen.lang) {
+    Some(l) => l
+    None => raise Unknown(template~, line=0, kind="language", name=chosen.lang)
+  }
+  let reading : Reading = {
+    lang,
+    force: settings.force,
+    template,
+    line: 1,
+    options: {
+      trim_blocks: chosen.trim_blocks,
+      lstrip_blocks: chosen.lstrip_blocks,
+      keep_trailing_newline: chosen.keep_trailing_newline,
+      line_statement: settings.line_statement,
+      line_comment: settings.line_comment,
+    },
+    langs: n => self.langs.get(n),
+  }
+  let nodes = @syntax.read(source.to_owned(), reading)
+  { env: self, name: template, format: chosen, nodes, }
+}
+
+///|
+/// The template the loader finds under `name`, compiled once and kept.
+pub fn Env::template(self : Env, name : String) -> Template raise @spec.Refused {
+  match self.find(name) {
+    Some(t) => t
+    None => raise Unknown(template="", line=0, kind="template", name~)
+  }
+}
+
+///|
+fn Env::find(self : Env, name : String) -> Template? raise @spec.Refused {
+  match self.compiled.get(name) {
+    Some(t) => Some(t)
     None =>
-      match env.globals.get(name) {
-        Some(call) => GlobalV(call)
-        None =>
-          match env.policy {
-            Strict => raise Undefined(name~)
-            _ => Absent(name)
-          }
+      match self.source(name) {
+        Some(source) => {
+          let t = self.compile(source, name~)
+          self.compiled[name] = t
+          Some(t)
+        }
+        None => None
       }
   }
 }
 
 ///|
-fn Env::set(env : Env, name : String, value : Value) -> Unit {
-  env.stack[env.stack.length() - 1].set(name, value)
-}
-
-///|
-/// Every name visible right now, flattened innermost-wins. Blocks with
-/// `scoped`, `include` with context, and macros capturing their module all
-/// read the world through this.
-fn Env::flatten(env : Env) -> Map[String, Value] {
-  let flat : Map[String, Value] = Map([])
-  for scope in env.stack {
-    for name, value in scope {
-      flat.set(name, value)
-    }
-  }
-  flat
-}
-
-///|
-/// Render a section into a string of its own: macros, block assignments,
-/// `show` and `once` all borrow the buffer this way.
-fn Env::capture(env : Env, body : () -> Unit raise Fault) -> String raise Fault {
-  let outer = env.out
-  env.out = StringBuilder()
-  errdefer {
-    env.out = outer
-  }
-  body()
-  let taken = env.out.to_string()
-  env.out = outer
-  taken
-}
-
-///|
-/// What an output node writes: trusted text as it stands, plain text escaped
-/// when autoescaping is on, everything else the way it prints.
-fn Env::emit(env : Env, value : Value) -> Unit {
-  match value {
-    Markup(text) => env.out.write_string(text)
-    Text(text) =>
-      if env.autoescape {
-        env.out.write_string(escape_text(text))
-      } else {
-        env.out.write_string(text)
-      }
-    other => {
-      let shown = show_value(other)
-      if env.autoescape {
-        env.out.write_string(escape_text(shown))
-      } else {
-        env.out.write_string(shown)
-      }
-    }
+fn Env::source(self : Env, name : String) -> String? {
+  match self.load {
+    Some(load) => load(name)
+    None => None
   }
 }
 
 ///|
-/// Output that never escapes, the indentation surface's `!=` and `!{…}`.
-fn Env::emit_raw(env : Env, value : Value) -> Unit {
-  env.out.write_string(show_value(value))
-}
-
-///|
-/// The undefined value for a name that did not resolve, after the policy has
-/// had its say. Attribute and subscript misses land here too.
-fn Env::absent(env : Env, name : String) -> Value raise Fault {
-  match env.policy {
-    Strict => raise Undefined(name~)
-    _ => Absent(name)
-  }
-}
-
-///|
-/// The context an extension sees, gathered from the render in flight.
-fn context_of(env : Env) -> Context {
-  {
-    filters: env.filters,
-    tests: env.tests,
-    translate: env.translate,
-    tally: env.tally,
-  }
+fn Env::call(self : Env, autoescape : Bool) -> @spec.Call {
+  @spec.Call::new(
+    autoescape~,
+    undefined=self.settings.undefined,
+    range=self.settings.limits.range,
+    filters=self.filters,
+    tests=self.tests,
+    translate?=self.translate,
+  )
 }

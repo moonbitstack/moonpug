@@ -1,0 +1,13 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbitstack/moonpug/examples/05-host-objects"
+
+// Values
+
+// Errors
+
+// Types and methods
+type Cart
+
+// Type aliases
+
+// Traits

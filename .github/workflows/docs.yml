@@ -1,7 +1,5 @@
 name: Docs
 
-# The documentation site deploys to GitHub Pages. The playground embeds the
-# engine compiled to JavaScript; the build step produces it before upload.
 on:
   push:
     branches: [master]
@@ -29,12 +27,12 @@ jobs:
           curl -fsSL https://cli.moonbitlang.com/install/unix.sh | bash
           echo "$HOME/.moon/bin" >> "$GITHUB_PATH"
 
-      - name: build the js engine
+      - name: build the engine for the page
         run: |
           moon update
-          moon build --target js src/examples/page
+          moon build --target js --release src/examples/playground
           mkdir -p docs/engine
-          cp _build/js/release/build/examples/page/page.js docs/engine/moonpug.js || true
+          cp _build/js/release/build/examples/playground/playground.js docs/engine/moonpug.js
 
       - uses: actions/upload-pages-artifact@v3
         with:

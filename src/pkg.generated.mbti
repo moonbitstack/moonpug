@@ -2,293 +2,96 @@
 package "moonbitstack/moonpug"
 
 import {
-  "moonbitlang/core/debug",
+  "moonbitstack/moonpug/spec",
+  "moonbitstack/moonpug/syntax",
 }
 
 // Values
-pub let preset : Settings
+pub fn escape(String) -> String
 
-pub fn render(StringView, Json, settings? : Settings, name? : String, syntax? : Syntax, force? : Bool, load? : (String) -> String?, translate? : (String, String?, Int32?) -> String?, cache? : (String, () -> String raise Fault) -> String raise Fault, undefined_policy? : UndefinedPolicy, wins? : Wins, clash? : OnClash[Entry]) -> String raise Fault
+pub fn format_of(String) -> Format
 
-pub fn show(Value) -> String
+pub let html : Format
+
+pub fn invalid(String) -> @spec.Refused
+
+pub let limits : Limits
+
+pub let markdown : Format
+
+pub let pug : Format
+
+pub fn[C : ToJson] render(StringView, C, settings? : Settings, format? : Format, force? : Bool, load? : (String) -> String?, translate? : (String, String?, Int32?) -> String?, cache? : (String, () -> String raise @spec.Refused) -> String raise @spec.Refused) -> String raise @spec.Refused
+
+pub let settings : Settings
+
+pub let text : Format
+
+pub fn unknown(String, String) -> @spec.Refused
 
 // Errors
-pub(all) suberror Fault {
-  Lexical(at~ : Int32, name~ : String, line~ : Int32, column~ : Int32, because~ : String)
-  Unknown(name~ : String, kind~ : String)
-  Undefined(name~ : String)
-  Wrong(because~ : String)
-} derive(Eq, @debug.Debug)
-pub fn Fault::equal(Self, Self) -> Bool
-pub fn Fault::not_equal(Self, Self) -> Bool
-pub fn Fault::output(Self, &Logger) -> Unit
-pub fn Fault::to_repr(Self) -> @debug.Repr
-pub fn Fault::to_string(Self) -> String
-pub impl Show for Fault
 
 // Types and methods
-pub enum Arg {
-  Pos(Expr)
-  Kw(String, Expr)
+pub struct Env {
+  // private fields
 }
+pub fn Env::add_filter(Self, String, (@spec.Call, @spec.Value, Array[@spec.Value], Map[String, @spec.Value]) -> @spec.Value raise @spec.Refused) -> Unit
+pub fn Env::add_global(Self, String, @spec.Value) -> Unit
+pub fn Env::add_lang(Self, @syntax.Lang) -> Unit
+pub fn Env::add_test(Self, String, (@spec.Call, @spec.Value, Array[@spec.Value]) -> Bool raise @spec.Refused) -> Unit
+pub fn Env::compile(Self, StringView, name? : String, format? : Format) -> Template raise @spec.Refused
+pub fn Env::new(settings? : Settings, load? : (String) -> String?, translate? : (String, String?, Int32?) -> String?, cache? : (String, () -> String raise @spec.Refused) -> String raise @spec.Refused) -> Self
+pub fn Env::template(Self, String) -> Template raise @spec.Refused
 
-pub struct Attr {
-  name : String
-  mut value : AttrVal
-}
-
-pub enum AttrVal {
-  Bare
-  Val(Expr)
-}
-
-pub enum Binop {
-  Add
-  Sub
-  Mul
-  Div
-  FloorDiv
-  Mod
-  Pow
-  Concat
-  Eq
-  Ne
-  Lt
-  Gt
-  Le
-  Ge
-  In
-  NotIn
-  And
-  Or
-}
-
-pub struct BlockDef {
-  body : Array[Node]
-  scoped : Bool
-  required : Bool
-  mod : BlockMod
-}
-
-pub enum BlockMod {
-  Override
-  Append
-  Prepend
-}
-
-pub(all) struct Context {
-  filters : Map[String, &Filter]
-  tests : Map[String, &Test]
-  translate : ((String, String?, Int32?) -> String?)?
-  tally : Tally
-}
-
-pub(all) struct CyclerState {
-  items : Array[Value]
-  mut at : Int32
-}
-
-pub struct Elem {
-  tag : String
-  id : String?
-  classes : Array[String]
-  attrs : Array[Attr]
-  splats : Array[Expr]
-  key : Expr?
-  self_close : Bool
-  inline : Array[Node]
-  out : Expr?
-  out_raw : Bool
-  children : Array[Node]
-}
-
-pub(all) enum Entry {
-  FilterOf(&Filter)
-  TestOf(&Test)
-  GlobalOf(&Global)
-}
-
-pub enum Expr {
-  Lit(Value)
-  Name(String)
-  ListLit(Array[Expr])
-  TupleLit(Array[Expr])
-  DictLit(Array[(Expr, Expr)])
-  Attr(Expr, String)
-  Index(Expr, Expr)
-  Slice(Expr, Expr?, Expr?, Expr?)
-  Call(Expr, Array[Arg])
-  Unary(Unop, Expr)
-  Binary(Binop, Expr, Expr)
-  Ternary(Expr, Expr, Expr)
-  Filter(Expr, String, Array[Arg])
-  Is(Expr, String, Array[Arg], Bool)
-}
-
-pub(all) struct JoinerState {
-  sep : String
-  mut used : Bool
-}
-
-pub(all) struct Macro {
-  name : String
-  params : Array[String]
-  rest : String?
-  body : Array[Node]
-  defaults : Array[(Int32, Expr)]
-  mut home : Map[String, Value]
-}
-pub fn Macro::of_name_params(Self) -> (String, Array[String], String?)
-
-pub enum Node {
-  Text(String)
-  Group(Array[Node])
-  Out(Expr)
-  OutRaw(Expr)
-  For(names~ : Array[String], iter~ : Expr, filter~ : Expr?, recursive~ : Bool, swap~ : Bool, body~ : Array[Node], otherwise~ : Array[Node])
-  If(Array[(Expr, Array[Node])], Array[Node])
-  SetVar(Array[String], Expr)
-  SetPath(Array[String], Expr)
-  SetBlock(String, Array[Node])
-  MacroDef(String, Macro)
-  CallBlock(Array[String], Expr, Array[Node])
-  FilterBlock(Array[(String, Array[Arg])], Array[Node])
-  Extends(Expr)
-  Block(String, BlockDef)
-  Include(Expr, Bool, Bool)
-  Import(Expr, String, Bool)
-  FromImport(Expr, Array[(String, String?)], Bool)
-  With(Array[(String, Expr)], Array[Node])
-  Autoescape(Expr, Array[Node])
-  Do(Array[Expr])
-  Debug
-  Show(Expr, Array[Node])
-  Once(String?, Array[Node])
-  Trans(TransSpec)
-  Break
-  Continue
-  LangBlock(String, String)
-  Element(Elem)
-  Doctype(String)
-  Comment(Bool, Array[Node])
-  Case(Expr, Array[WhenArm], Array[Node])
-}
-
-pub(all) enum OnClash[T] {
-  Ignore
-  Panic
-  Handle((T, T) -> T)
-}
-
-pub(all) struct Settings {
-  syntax : Syntax
-  force : Bool
+pub(all) struct Format {
+  lang : String
   autoescape : Bool
-  undefined_policy : UndefinedPolicy
   trim_blocks : Bool
   lstrip_blocks : Bool
   keep_trailing_newline : Bool
-  line : String?
-  shortcuts : Map[String, String]
-  sandbox : Bool
-  loader : &Loader?
-  translate : ((String, String?, Int32?) -> String?)?
-  cache : ((String, () -> String raise Fault) -> String raise Fault)?
-  filters : Map[String, &Filter]
-  tests : Map[String, &Test]
-  globals : Map[String, &Global]
 }
 
-pub(all) enum Syntax {
-  Html
-  Pug
-  Markdown
-} derive(Eq, @debug.Debug)
-pub fn Syntax::equal(Self, Self) -> Bool
-pub fn Syntax::not_equal(Self, Self) -> Bool
-pub fn Syntax::output(Self, &Logger) -> Unit
-pub fn Syntax::to_repr(Self) -> @debug.Repr
-pub fn Syntax::to_string(Self) -> String
-pub impl Show for Syntax
-
-pub(all) struct Tally {
-  mut n : Int32
+pub(all) struct Limits {
+  depth : Int32
+  range : Int32
 }
 
-pub struct TransSpec {
-  singular : String
-  plural : String?
-  bindings : Array[(String, Expr)]
-  count_name : String?
+pub(all) struct Settings {
+  format : Format
+  formats : (String) -> Format
+  force : Bool
+  undefined : @spec.Undefined
+  line_statement : String?
+  line_comment : String?
+  limits : Limits
 }
 
-pub(all) enum UndefinedPolicy {
-  Strict
-  Lenient
-  Chainable
-} derive(Eq, @debug.Debug)
-pub fn UndefinedPolicy::equal(Self, Self) -> Bool
-pub fn UndefinedPolicy::not_equal(Self, Self) -> Bool
-pub fn UndefinedPolicy::output(Self, &Logger) -> Unit
-pub fn UndefinedPolicy::to_repr(Self) -> @debug.Repr
-pub fn UndefinedPolicy::to_string(Self) -> String
-pub impl Show for UndefinedPolicy
-
-pub enum Unop {
-  Neg
-  Not
+pub struct Template {
+  // private fields
 }
-
-pub(all) enum Value {
-  Null
-  Bool(Bool)
-  Int(Int64)
-  Double(Double)
-  Text(String)
-  Markup(String)
-  Seq(Array[Value])
-  Dict(Map[String, Value])
-  Absent(String)
-  Native(String, (Array[Value]) -> Value raise Fault)
-  NativeKw(String, (Array[Value], Map[String, Value]) -> Value raise Fault)
-  GlobalV(&Global)
-  CyclerV(CyclerState)
-  JoinerV(JoinerState)
-  Namespaced(Map[String, Value])
-  MacroV(Macro)
-}
-
-pub struct WhenArm {
-  values : Array[Expr]
-  body : Array[Node]
-}
-
-pub(all) enum Wins {
-  Base
-  Extra
-} derive(Eq, @debug.Debug)
-pub fn Wins::equal(Self, Self) -> Bool
-pub fn Wins::not_equal(Self, Self) -> Bool
-pub fn Wins::output(Self, &Logger) -> Unit
-pub fn Wins::to_repr(Self) -> @debug.Repr
-pub fn Wins::to_string(Self) -> String
-pub impl Show for Wins
+pub fn Template::name(Self) -> String
+pub fn[C : ToJson] Template::render(Self, C) -> String raise @spec.Refused
+pub fn Template::render_values(Self, Map[String, @spec.Value]) -> String raise @spec.Refused
 
 // Type aliases
+pub using @spec {type Call}
+
+pub type Filter = (@spec.Call, @spec.Value, Array[@spec.Value], Map[String, @spec.Value]) -> @spec.Value raise @spec.Refused
+
+pub type Func = (@spec.Call, Array[@spec.Value], Map[String, @spec.Value]) -> @spec.Value raise @spec.Refused
+
+pub using @syntax {type Lang}
+
+pub using @syntax {type Reading}
+
+pub using @spec {type Refused}
+
+pub type Test = (@spec.Call, @spec.Value, Array[@spec.Value]) -> Bool raise @spec.Refused
+
+pub using @spec {type Undefined}
+
+pub using @spec {type Value}
+
+pub using @spec {trait Object}
 
 // Traits
-pub(open) trait Filter {
-  fn filter(Self, Context, Value, Array[Value], Map[String, Value]) -> Value raise Fault
-}
-
-pub(open) trait Global {
-  fn call(Self, Context, Array[Value], Map[String, Value]) -> Value raise Fault
-}
-
-pub(open) trait Loader {
-  fn load(Self, String) -> String?
-}
-
-pub(open) trait Test {
-  fn probe(Self, Value, Array[Value]) -> Bool raise Fault
-}

@@ -8,14 +8,15 @@ repository = "https://github.com/moonbitstack/moonpug"
 
 license = "Apache-2.0"
 
-keywords = [ "template", "pug", "html", "jinja", "render", "moonbit" ]
+keywords = [ "template", "html", "pug", "markdown", "render", "moonbit" ]
 
-description = "moonpug — a template engine for MoonBit (← Jinja2 / Pug): two syntaxes, Pug's indentation and plain HTML, over one expression language. It writes text; it does not parse documents — that is moonxml."
+description = "Templates for MoonBit: text with braces, indented markup or Markdown over one expression language; compiled once, rendered many times."
 
 source = "src"
 
 import {
   "moonbitstack/moondate@0.1.0",
+  "moonbitstack/moonucd@0.1.0",
 }
 
 preferred_target = "wasm-gc"

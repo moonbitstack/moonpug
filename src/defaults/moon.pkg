@@ -1,0 +1,10 @@
+import {
+  "moonbitstack/moonpug/spec",
+  "moonbitstack/moonucd",
+  "moonbitstack/moondate",
+  "moonbitlang/core/string",
+  "moonbitlang/core/double",
+  "moonbitlang/core/math",
+  "moonbitlang/core/bigint",
+  "moonbitlang/core/encoding/utf8",
+}

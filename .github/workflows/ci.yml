@@ -47,8 +47,8 @@ jobs:
 
       - name: lint (fmt is clean)
         run: |
-          moon fmt && git diff --exit-code
+          moon fmt && git diff --exit-code --ignore-cr-at-eol
 
       - name: interfaces are up to date
         run: |
-          moon info --target all && git diff --exit-code
+          moon info --target all && git diff --exit-code --ignore-cr-at-eol

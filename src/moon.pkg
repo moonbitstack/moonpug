@@ -1,11 +1,12 @@
 import {
-  "moonbitstack/moondate",
-  "moonbitlang/core/string",
-  "moonbitlang/core/double",
+  "moonbitstack/moonpug/spec",
+  "moonbitstack/moonpug/defaults",
+  "moonbitstack/moonpug/syntax",
   "moonbitlang/core/math",
-  "moonbitlang/core/json",
 }
 
 import {
   "moonbitstack/moonpug",
+  "moonbitstack/moonpug/syntax",
+  "moonbitlang/core/json",
 } for "test"

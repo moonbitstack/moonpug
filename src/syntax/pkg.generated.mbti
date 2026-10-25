@@ -1,0 +1,254 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbitstack/moonpug/syntax"
+
+import {
+  "moonbitstack/moonpug/spec",
+}
+
+// Values
+pub let html : Lang
+
+pub fn lex_expression(String, String, line? : Int32, column? : Int32) -> Array[Token] raise @spec.Refused
+
+pub fn lex_template(String, Options, String, reading? : Reading, first_line? : Int32) -> Array[Token] raise @spec.Refused
+
+pub let markdown : Lang
+
+pub let options : Options
+
+pub let pug : Lang
+
+pub fn read(String, Reading) -> Array[Node] raise @spec.Refused
+
+pub fn read_braces(String, Reading) -> Array[Node] raise @spec.Refused
+
+pub fn read_indent(String, Reading) -> Array[Node] raise @spec.Refused
+
+pub fn resolve(String, String, line? : Int32) -> String raise @spec.Refused
+
+// Errors
+
+// Types and methods
+pub(all) enum Arg {
+  Pos(Expr)
+  Named(String, Expr)
+  Spread(Expr)
+  SpreadNamed(Expr)
+}
+
+pub(all) struct Attr {
+  name : String
+  value : Expr?
+  escape : Bool
+}
+
+pub(all) struct Block {
+  name : String
+  body : Array[Node]
+  scoped : Bool
+  required : Bool
+  placement : Placement
+}
+
+pub(all) struct Element {
+  tag : Expr
+  attrs : Array[Attr]
+  splats : Array[Expr]
+  self_close : Bool
+  body : Array[Node]
+}
+
+pub(all) enum Expr {
+  Lit(@spec.Value)
+  Name(String)
+  List(Array[Expr])
+  Tuple(Array[Expr])
+  Dict(Array[(Expr, Expr)])
+  Attr(Expr, String)
+  Item(Expr, Expr)
+  Slice(Expr?, Expr?, Expr?)
+  Call(Expr, Array[Arg])
+  Not(Expr)
+  Neg(Expr)
+  Pos(Expr)
+  Binary(Op, Expr, Expr)
+  Compare(Expr, Array[(Op, Expr)])
+  Concat(Array[Expr])
+  Cond(Expr, Expr, Expr?)
+  Filter(Expr?, String, Array[Arg])
+  Test(Expr, String, Array[Arg])
+  Attributes(Array[Attr], Array[Expr])
+}
+
+pub(all) struct Lang {
+  name : String
+  aliases : Array[String]
+  options : Options
+  read : (String, Reading) -> Array[Node] raise @spec.Refused
+}
+
+pub(all) struct Lexer {
+  src : String
+  template : String
+  mut pos : Int32
+  mut line : Int32
+  mut line_start : Int32
+}
+pub fn Lexer::column(Self) -> Int32
+pub fn Lexer::fail(Self, String) -> @spec.Refused
+pub fn Lexer::new(String, String, pos? : Int32, line? : Int32, line_start? : Int32) -> Self
+pub fn Lexer::token(Self) -> Token raise @spec.Refused
+
+pub(all) struct Macro {
+  name : String
+  params : Array[Param]
+  body : Array[Node]
+  pug : Bool
+}
+
+pub(all) enum Node {
+  Line(Int32)
+  Text(String)
+  Out(Expr)
+  Raw(Expr)
+  For(target~ : Target, iter~ : Expr, cond~ : Expr?, recursive~ : Bool, each~ : Bool, body~ : Array[Node], otherwise~ : Array[Node])
+  If(Array[(Expr, Array[Node])], Array[Node])
+  Set(Target, Expr)
+  SetBlock(Target, Expr?, Array[Node])
+  MacroDef(Macro)
+  CallBlock(Array[Param], Expr, Array[Node])
+  FilterBlock(Expr, Array[Node])
+  Extends(Expr)
+  BlockDef(Block)
+  Include(Expr, missing~ : Bool, context~ : Bool, raw~ : Bool, inline~ : Bool, block~ : Array[Node])
+  Yield
+  Import(Expr, String, context~ : Bool)
+  FromImport(Expr, Array[(String, String?)], context~ : Bool)
+  With(Array[(Target, Expr)], Array[Node])
+  Autoescape(Expr, Array[Node])
+  Do(Expr)
+  Debug
+  Show(Expr, Array[Node])
+  Once(Expr?, Array[Node])
+  TransOut(Trans)
+  Break
+  Continue
+  Element(Element)
+  Doctype(String)
+  Comment(Array[Node])
+  Case(Expr, Array[(Array[Expr], Array[Node])], Array[Node])
+}
+
+pub(all) enum Op {
+  Add
+  Sub
+  Mul
+  Div
+  FloorDiv
+  Mod
+  Pow
+  And
+  Or
+  Eq
+  Ne
+  Lt
+  Gt
+  Le
+  Ge
+  In
+  NotIn
+} derive(Eq)
+pub fn Op::equal(Self, Self) -> Bool
+pub fn Op::not_equal(Self, Self) -> Bool
+
+pub(all) struct Options {
+  trim_blocks : Bool
+  lstrip_blocks : Bool
+  keep_trailing_newline : Bool
+  line_statement : String?
+  line_comment : String?
+}
+
+pub(all) struct Param {
+  name : String
+  default : Expr?
+  rest : Bool
+}
+
+pub(all) struct Parser {
+  template : String
+  mut tokens : Array[Token]
+  mut at : Int32
+  body : (Parser, Array[String]) -> Array[Node] raise @spec.Refused
+}
+pub fn Parser::current(Self) -> Token
+pub fn Parser::expect(Self, Tok) -> Unit raise @spec.Refused
+pub fn Parser::fail(Self, String) -> @spec.Refused
+pub fn Parser::next(Self) -> Token
+pub fn Parser::parse_expression(Self) -> Expr raise @spec.Refused
+pub fn Parser::parse_filter(Self, Expr?) -> Expr raise @spec.Refused
+pub fn Parser::parse_signature(Self) -> Array[Param] raise @spec.Refused
+pub fn Parser::parse_statement(Self) -> Array[Node] raise @spec.Refused
+pub fn Parser::parse_tuple(Self, simplified? : Bool, condexpr? : Bool, extra? : Array[String], parenthesised? : Bool) -> Expr raise @spec.Refused
+pub fn Parser::statements(Self, Array[String], drop? : Bool) -> Array[Node] raise @spec.Refused
+
+pub(all) enum Placement {
+  Replace
+  Append
+  Prepend
+} derive(Eq)
+pub fn Placement::equal(Self, Self) -> Bool
+pub fn Placement::not_equal(Self, Self) -> Bool
+
+pub(all) struct Reading {
+  lang : Lang
+  force : Bool
+  template : String
+  line : Int32
+  options : Options
+  langs : (String) -> Lang?
+}
+pub fn Reading::allows(Self, Lang) -> Bool
+pub fn Reading::block(Self, String, String, Bool?, Int32) -> Array[Node] raise @spec.Refused
+pub fn Reading::inside(Self, Lang, Bool?, Int32) -> Self
+
+pub(all) enum Target {
+  Name(String)
+  Tuple(Array[Target])
+  Field(String, String)
+}
+
+pub(all) enum Tok {
+  Data(String)
+  VarBegin
+  VarEnd
+  BlockBegin
+  BlockEnd
+  Name(String)
+  Str(String)
+  Int(Int64)
+  Float(Double)
+  Op(String)
+  Lang(String, Bool?, String)
+  Eof
+} derive(Eq)
+pub fn Tok::equal(Self, Self) -> Bool
+pub fn Tok::not_equal(Self, Self) -> Bool
+
+pub(all) struct Token {
+  tok : Tok
+  line : Int32
+  column : Int32
+}
+
+pub(all) struct Trans {
+  context : String?
+  singular : String
+  plural : String?
+  vars : Array[(String, Expr)]
+  count : Expr?
+}
+
+// Type aliases
+
+// Traits

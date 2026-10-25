@@ -1,240 +1,207 @@
 <!doctype html>
-<html lang="en">
+<html lang="en-GB">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>moonpug — two surfaces, one vocabulary</title>
-<style>
-/* A distinct visual identity for moonpug: a dark, editorial "print shop"
-   theme — ink, paper and one vermilion accent — with an asymmetric layout
-   that mirrors the engine's own idea: two surfaces, one spine. */
-:root{
-  --ink:#191714; --paper:#f7f3ec; --paper-2:#efe8dc; --muted:#6f675c;
-  --line:#d8cfbf; --accent:#c8451f; --accent-soft:#f4ddd2;
-  --good:#3d7a4f; --code-bg:#211d18; --code-ink:#efe6d6;
-}
-@media (prefers-color-scheme:dark){
-  :root{ --ink:#e8e0d2; --paper:#191611; --paper-2:#201c15; --muted:#9a9082;
-    --line:#3a342a; --accent:#ff6b3d; --accent-soft:#3a231a;
-    --good:#7ac78f; --code-bg:#11100c; --code-ink:#e8dfcd; }
-}
-*{box-sizing:border-box}
-body{margin:0;background:var(--paper);color:var(--ink);
-  font-family:Georgia,'Times New Roman',serif;line-height:1.65}
-code,pre,.mono{font-family:'JetBrains Mono',ui-monospace,Consolas,monospace}
-a{color:var(--accent);text-decoration:none}
-a:hover{text-decoration:underline}
-
-/* masthead: an editorial colophon, not a hero banner */
-header{border-bottom:3px double var(--line);padding:3.2rem 1.4rem 2rem;max-width:1060px;margin:0 auto}
-.kicker{font-family:'JetBrains Mono',monospace;font-size:.78rem;letter-spacing:.22em;
-  text-transform:uppercase;color:var(--accent)}
-header h1{font-size:clamp(2.4rem,6vw,3.8rem);margin:.3rem 0 .4rem;letter-spacing:-.01em}
-header h1 .thin{font-weight:400;font-style:italic}
-.tagline{font-size:1.15rem;color:var(--muted);max-width:46rem;font-style:italic}
-.install{display:inline-flex;gap:.7rem;align-items:center;margin-top:1.4rem;
-  background:var(--code-bg);color:var(--code-ink);border-radius:10px;padding:.7rem 1rem}
-.install .p{color:var(--accent);font-weight:700}
-.install code{font-size:.95rem}
-.badges{margin-top:1.2rem;display:flex;gap:.6rem;flex-wrap:wrap}
-.badges img{height:20px}
-
-/* the split spine: two surfaces feeding one evaluator */
-.spine{max-width:1060px;margin:0 auto;padding:2.4rem 1.4rem;display:grid;
-  grid-template-columns:1fr 1fr;gap:1rem 2rem;align-items:center}
-@media (max-width:760px){.spine{grid-template-columns:1fr}}
-.surface{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--paper-2)}
-.surface h3{margin:0;padding:.6rem 1rem;font-family:'JetBrains Mono',monospace;
-  font-size:.8rem;letter-spacing:.14em;text-transform:uppercase;
-  border-bottom:1px solid var(--line);color:var(--muted)}
-.surface pre{margin:0;padding:1rem 1.1rem;font-size:.92rem;overflow-x:auto}
-.spine .equals{grid-column:1 / -1;text-align:center;font-family:'JetBrains Mono',monospace;
-  color:var(--accent);font-size:1.3rem;letter-spacing:.4em}
-
-main{max-width:1060px;margin:0 auto;padding:0 1.4rem 4rem}
-section{border-top:1px solid var(--line);padding:2.6rem 0 1rem;scroll-margin-top:1rem}
-section h2{font-size:1.7rem;margin:0 0 .4rem}
-section h2 .no{color:var(--accent);font-family:'JetBrains Mono',monospace;
-  font-size:1rem;margin-right:.6rem}
-.lead{color:var(--muted);max-width:44rem;margin:.2rem 0 1.2rem}
-
-pre.block{background:var(--code-bg);color:var(--code-ink);border-radius:12px;
-  padding:1rem 1.2rem;overflow-x:auto;font-size:.9rem}
-code.i{background:var(--paper-2);border:1px solid var(--line);border-radius:6px;
-  padding:.05rem .35rem;font-size:.9em}
-
-table{border-collapse:collapse;width:100%;font-size:.95rem}
-th,td{text-align:left;padding:.45rem .7rem;border-bottom:1px solid var(--line)}
-th{font-family:'JetBrains Mono',monospace;font-size:.78rem;letter-spacing:.1em;
-  text-transform:uppercase;color:var(--muted)}
-
-/* the playground: template above, context left of output */
-.pg{border:1px solid var(--line);border-radius:14px;overflow:hidden;background:var(--paper-2)}
-.pg .bar{display:flex;gap:.4rem;padding:.55rem .9rem;border-bottom:1px solid var(--line);
-  align-items:center;font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--muted)}
-.pg .bar .dot{width:10px;height:10px;border-radius:50%;background:var(--accent)}
-.pg textarea{width:100%;min-height:9.5rem;border:0;outline:0;resize:vertical;
-  padding:1rem 1.1rem;background:var(--code-bg);color:var(--code-ink);
-  font-family:'JetBrains Mono',monospace;font-size:.92rem;line-height:1.55;
-  border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
-.pg .row{display:grid;grid-template-columns:1fr 1fr;gap:0}
-@media (max-width:720px){.pg .row{grid-template-columns:1fr}}
-.pg .cell{padding:.8rem 1rem;font-family:'JetBrains Mono',monospace;font-size:.86rem;
-  white-space:pre-wrap;min-height:5rem}
-.pg .cell .lbl{display:block;font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;
-  color:var(--muted);margin-bottom:.4rem}
-.pg .out{background:var(--accent-soft);border-left:1px solid var(--line)}
-footer{border-top:3px double var(--line);margin-top:2rem;padding:1.4rem;
-  text-align:center;color:var(--muted);font-size:.9rem}
-</style>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>moonpug</title>
+<meta name="description" content="Templates for MoonBit: text with braces, indented markup or Markdown over one expression language.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@500;600&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
 </head>
 <body>
-
-<header>
-  <div class="kicker">moonbitstack · moonpug</div>
-  <h1>moon<span class="thin">pug</span></h1>
-  <p class="tagline">Two surfaces, one vocabulary. Jinja2 speaks; Pug and Slim
-  hold the pen; Django fills the pages.</p>
-  <div class="install"><span class="p">$</span><code>moon add moonbitstack/moonpug</code></div>
-  <div class="badges">
-    <a href="https://github.com/moonbitstack/moonpug/actions"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/moonbitstack/moonpug/ci.yml?branch=master&label=CI&logo=github"></a>
-    <img alt="backends" src="https://img.shields.io/badge/backends-wasm%20·%20wasm--gc%20·%20js%20·%20native-3d7a4f">
-    <a href="https://github.com/moonbitstack/moonpug"><img alt="GitHub" src="https://img.shields.io/badge/source-GitHub-191714?logo=github"></a>
-  </div>
+<header class="bar">
+  <a class="mark" href="#">moon<b>pug</b></a>
+  <nav>
+    <a href="#start">Start</a>
+    <a href="#languages">Languages</a>
+    <a href="#objects">Objects</a>
+    <a href="#own">Your language</a>
+    <a href="#reference">Reference</a>
+    <a href="https://github.com/moonbitstack/moonpug">Source</a>
+  </nav>
+  <button id="theme" type="button">Light / dark</button>
 </header>
 
-<div class="spine">
-  <div class="surface">
-    <h3>the brace surface · html</h3>
-    <pre>{% for it in items %}
-  &lt;li&gt;{{ it|title }}&lt;/li&gt;
-{% endfor %}</pre>
-  </div>
-  <div class="surface">
-    <h3>the indentation surface · pug</h3>
-    <pre>ul
-  each it in items
-    li= it|title</pre>
-  </div>
-  <div class="equals">= one evaluator</div>
-</div>
-
 <main>
-
-<section id="playground">
-  <h2><span class="no">01</span>Playground</h2>
-  <p class="lead">The engine compiled to WebAssembly, running this page. Edit
-  either field; the output re-renders as you type.</p>
-  <div class="pg">
-    <div class="bar"><span class="dot"></span> template.pug</div>
-    <textarea id="tpl" spellcheck="false">h1= title
-ul
-  each it in items
-    li= it|title</textarea>
-    <div class="row">
-      <div class="cell"><span class="lbl">context · json</span><textarea id="ctx" spellcheck="false">{
-  "title": "Shop",
-  "items": ["apple", "pear", "plum"]
-}</textarea></div>
-      <div class="cell out"><span class="lbl">output</span><span id="out"></span></div>
+  <div class="hero">
+    <div>
+      <div class="kicker">Templates for MoonBit</div>
+      <h1>One page, <em>three</em> ways to write it.</h1>
+      <p class="lede">Text with braces, indented markup, or Markdown, over one expression language. A template compiles once and renders as often as you like; it touches no file, clock or socket unless you hand it a function that does.</p>
+      <div class="install"><span>$</span>moon add moonbitstack/moonpug</div>
+    </div>
+    <div class="proof" aria-label="A live template">
+      <div class="tabs" role="group" aria-label="Language">
+        <button type="button" data-lang="html" aria-pressed="true">html</button>
+        <button type="button" data-lang="pug">pug</button>
+        <button type="button" data-lang="md">md</button>
+        <label><input id="force" type="checkbox"> force</label>
+      </div>
+      <div class="panes">
+        <div class="pane">
+          <h4>Template</h4>
+          <textarea id="source" spellcheck="false" aria-label="Template"></textarea>
+          <textarea id="data" class="data" spellcheck="false" aria-label="Data"></textarea>
+        </div>
+        <div class="pane">
+          <h4>Rendered</h4>
+          <pre id="out" class="out"></pre>
+          <div id="view" class="view"></div>
+        </div>
+      </div>
     </div>
   </div>
-</section>
 
-<section id="surfaces">
-  <h2><span class="no">02</span>Three surfaces, one tree</h2>
-  <p class="lead">The default surface is <code class="i">Html</code>: plain text
-  with Jinja's braces. <code class="i">Pug</code> reads indentation;
-  <code class="i">Markdown</code> is the brace surface with whitespace presets a
-  markdown file expects. A block switches language anywhere:</p>
-  <pre class="block">{{ n }}
-{% block lang=pug %}p doubled: #{n * 2}{% endblock %}</pre>
-  <p>Blocks nest recursively and keep the variables around them. With
-  <code class="i">force = true</code> a language the outer surface does not
-  speak stays literal text, markers and all.</p>
-</section>
+  <div class="figures">
+    <div><b>3</b><span>languages, and yours</span></div>
+    <div><b data-count="filters">79</b><span>filters</span></div>
+    <div><b data-count="tests">39</b><span>tests</span></div>
+    <div><b>0</b><span>files, clocks, sockets</span></div>
+    <div><b>4</b><span>backends</span></div>
+  </div>
 
-<section id="jinja">
-  <h2><span class="no">03</span>Jinja2, whole</h2>
-  <p class="lead">Every statement, all 51 filters, all 30 tests, the six
-  globals, the complete <code class="i">loop</code> object, three undefined
-  policies (strict by default), whitespace control, line statements, and the
-  i18n extension over a <code class="i">translate</code> seam. Nothing on the
-  checklist is missing.</p>
-</section>
+  <div class="features">
+    <div class="feature" data-n="i"><h3>Blocks in any language</h3><p>Switch language anywhere with <code>{% block lang=pug %}</code>. Blocks nest; <code>force</code> keeps a stretch to its own language.</p></div>
+    <div class="feature" data-n="ii"><h3>Escaped unless trusted</h3><p>Output is escaped by default. <code>|safe</code> and markup values pass through; filters that build markup escape what they wrap.</p></div>
+    <div class="feature" data-n="iii"><h3>Compile once</h3><p><code>Env</code> keeps compiled templates by name; <code>Template::render</code> takes any <code>ToJson</code> value.</p></div>
+    <div class="feature" data-n="iv"><h3>Host objects</h3><p>Implement <code>Object</code> and a value of yours has attributes, calls, loops and assignments in a template.</p></div>
+    <div class="feature" data-n="v"><h3>Your own language</h3><p>Register a reader with a name and aliases; the three built in go through the same door.</p></div>
+    <div class="feature" data-n="vi"><h3>Refusals with a place</h3><p>Every error names the template and line, and the column when the source is malformed. Deep recursion is refused, not overflowed.</p></div>
+  </div>
 
-<section id="django">
-  <h2><span class="no">04</span>Django's pages, Jinja's hand</h2>
-  <p class="lead">The capability set fills the gaps with Jinja's spelling:
-  <code class="i">{% empty %}</code> is <code class="i">{% else %}</code>,
-  <code class="i">block.super</code> is <code class="i">super()</code>, the
-  colon filter spelling is refused, and the supplement filters —
-  <code class="i">date</code>, <code class="i">slugify</code>,
-  <code class="i">yesno</code>, <code class="i">json_script</code>… — carry
-  Django's own semantics.</p>
-</section>
+  <div class="doc">
+    <aside>
+      <a href="#start">Start</a>
+      <a href="#languages">Languages</a>
+      <a href="#blocks">Language blocks</a>
+      <a href="#writing">Writing templates</a>
+      <a href="#objects">Data and objects</a>
+      <a href="#named">Templates by name</a>
+      <a href="#own">Your own language</a>
+      <a href="#settings">Settings</a>
+      <a href="#errors">Errors</a>
+      <a href="#reference">Reference</a>
+    </aside>
+    <div>
+      <section id="start">
+        <h2>Start</h2>
+        <pre class="code"><span class="k">struct</span> Book { title : String; year : Int } derive(ToJson)
+<span class="k">struct</span> Shelf { shelf : String; books : Array[Book] } derive(ToJson)
 
-<section id="extensions">
-  <h2><span class="no">05</span>Yours, through the same door</h2>
-  <p class="lead">Filters, tests, globals and the loader are traits. Everything
-  built in registers through them; your code registers through the same four.
-  Host knowledge — <code class="i">url()</code>,
-  <code class="i">csrf_token()</code>, <code class="i">now()</code> — enters as
-  globals the caller registers, the way Flask registers
-  <code class="i">url_for</code>.</p>
-  <table>
-    <tr><th>seam</th><th>trait</th><th>decides</th></tr>
-    <tr><td><code class="i">load</code></td><td>Loader</td><td>what a template name means</td></tr>
-    <tr><td><code class="i">filters</code></td><td>Filter</td><td>the pipe vocabulary</td></tr>
-    <tr><td><code class="i">tests</code></td><td>Test</td><td>the <code class="i">is</code> vocabulary</td></tr>
-    <tr><td><code class="i">globals</code></td><td>Global</td><td>the callable environment</td></tr>
-    <tr><td><code class="i">translate</code></td><td>function seam</td><td>the gettext question</td></tr>
-  </table>
-</section>
+<span class="k">let</span> page = <span class="s">"&lt;h1&gt;{{ shelf }}&lt;/h1&gt;{% for b in books %}&lt;p&gt;{{ b.title }}&lt;/p&gt;{% endfor %}"</span>
+<span class="k">let</span> html = @moonpug.render(page, Shelf::{ shelf: <span class="s">"Reading &lt;list&gt;"</span>, books })
+<span class="c">// &lt;h1&gt;Reading &amp;lt;list&amp;gt;&lt;/h1&gt;&lt;p&gt;…&lt;/p&gt;</span></pre>
+        <p>Data goes in as anything that converts to <code>Json</code>. <code>render</code> compiles and renders in one call; an <code>Env</code> keeps compiled templates when the same one renders again.</p>
+      </section>
 
-<section id="errors">
-  <h2><span class="no">06</span>Faults that find themselves</h2>
-  <pre class="block">page.html:2:7: an expression cannot start here</pre>
-  <p class="lead">The template's name, the one-based line and column, the
-  reason. A strict undefined names what was missing; an unknown filter names
-  the word that failed.</p>
-</section>
+      <section id="languages">
+        <h2>Languages</h2>
+        <table>
+          <tr><th>Name</th><th>Also</th><th>Reads</th><th>Preset</th></tr>
+          <tr><td><code>html</code></td><td></td><td>text with <code>{{ }}</code>, <code>{% %}</code>, <code>{# #}</code></td><td><code>html</code>, <code>text</code></td></tr>
+          <tr><td><code>pug</code></td><td><code>pg</code></td><td>elements by indentation; <code>&lt;</code> lines pass through; <code>{% %}</code> lines are statements</td><td><code>pug</code></td></tr>
+          <tr><td><code>md</code></td><td><code>markdown</code></td><td>the brace syntax, with a tag on a line of its own leaving no blank line</td><td><code>markdown</code></td></tr>
+        </table>
+        <p>A named template picks its format from the extension: <code>.pug</code> and <code>.pg</code> read as pug, <code>.md</code> as Markdown, <code>.html</code>, <code>.htm</code>, <code>.xml</code> and <code>.svg</code> as escaped HTML, anything else as text.</p>
+      </section>
 
+      <section id="blocks">
+        <h2>Language blocks</h2>
+        <pre class="code">&lt;section&gt;
+{% block lang=pug %}
+ul
+  each i in items
+    li= i
+{% endblock %}
+&lt;/section&gt;</pre>
+        <p>A whole template is one block in its own language, and blocks inside it may switch again, as deep as they like. With <code>force=true</code> a stretch reads only its own language: inside pug and Markdown, blocks in another language stay as text and HTML still reads; inside HTML, pug and Markdown blocks stay as text. A block's own <code>force=</code> wins over the one around it.</p>
+      </section>
+
+      <section id="writing">
+        <h2>Writing templates</h2>
+        <h3>Statements</h3>
+        <p><code>if</code>, <code>for</code> with <code>loop</code> and <code>else</code>, <code>break</code>, <code>continue</code>, <code>set</code>, <code>with</code>, <code>macro</code> and <code>call</code>, <code>filter</code>, <code>include</code>, <code>import</code>, <code>extends</code> and <code>block</code> with <code>super()</code>, <code>raw</code>, <code>autoescape</code>, <code>do</code>, <code>trans</code>, <code>once</code>, <code>show</code>, <code>debug</code>.</p>
+        <h3>Expressions</h3>
+        <p>Literals, lists, tuples and maps; attributes, subscripts and slices; arithmetic with <code>//</code>, <code>%</code> and <code>**</code>; comparisons that chain; <code>in</code>, <code>and</code>, <code>or</code>, <code>not</code>; <code>~</code> to join as text; inline <code>if</code>; filters with <code>|</code> and tests with <code>is</code>. Strings, lists and maps carry their methods: <code>'{:&gt;8.2f}'.format(x)</code>, <code>'%s=%d' % (k, v)</code>, <code>d.items()</code>.</p>
+        <h3>In pug</h3>
+        <p>Tags with <code>#id</code> and <code>.class</code>; attributes in <code>( )</code>, or <code>[ ]</code> and <code>{ }</code> when a long list wraps; <code>&amp;attributes</code>; <code>#{}</code> and <code>!{}</code>; <code>#[tag]</code> inline; <code>|</code> and <code>.</code> text; <code>if</code>, <code>unless</code>, <code>each</code>, <code>case</code> with <code>when a, b</code>; mixins with blocks; <code>include</code> with a block that lands at <code>yield</code>; <code>extends</code> with <code>block append</code> and <code>prepend</code>; <code>doctype</code>; <code>:name</code> content filters.</p>
+      </section>
+
+      <section id="objects">
+        <h2>Data and objects</h2>
+        <pre class="code"><span class="k">let</span> env = @moonpug.Env::new()
+env.add_global(<span class="s">"today"</span>, @moonpug.Value::func(<span class="s">"today"</span>, (_, _, _) =&gt; Text(<span class="s">"2026-10-25"</span>)))
+env.add_filter(<span class="s">"money"</span>, (call, value, _, _) =&gt; Text(<span class="s">"¥"</span> + call.text(value)))
+
+<span class="k">impl</span> @moonpug.Object <span class="k">for</span> Cart <span class="k">with fn</span> kind(_) { <span class="s">"the cart"</span> }
+<span class="k">impl</span> @moonpug.Object <span class="k">for</span> Cart <span class="k">with fn</span> attr(self, name) { … }   <span class="c">// cart.total</span>
+<span class="k">impl</span> @moonpug.Object <span class="k">for</span> Cart <span class="k">with fn</span> items(self) { … }        <span class="c">// for x in cart</span>
+
+env.compile(source).render_values({ <span class="s">"cart"</span>: Object(cart) })</pre>
+        <p><code>Object</code> has <code>kind</code>, <code>attr</code>, <code>call</code>, <code>callable</code>, <code>assign</code>, <code>show</code> and <code>items</code>; every one but <code>kind</code> has a default.</p>
+      </section>
+
+      <section id="named">
+        <h2>Templates by name</h2>
+        <pre class="code"><span class="k">let</span> env = @moonpug.Env::new(load=name =&gt; sources.get(name))
+<span class="k">let</span> page = env.template(<span class="s">"page.html"</span>)   <span class="c">// read, compiled and kept</span>
+page.render(data)</pre>
+        <p><code>load</code> serves <code>extends</code>, <code>include</code> and <code>import</code>. <code>translate</code> answers <code>trans</code> and <code>gettext</code> with a message, its context and the plural count. <code>cache</code> stores what <code>once</code> renders. All three are functions you pass in.</p>
+      </section>
+
+      <section id="own">
+        <h2>Your own language</h2>
+        <pre class="code"><span class="k">fn</span> read_csv(source : String, reading : @moonpug.Reading) -&gt; Array[@syntax.Node] <span class="k">raise</span> @moonpug.Refused {
+  …
+  nodes.append(reading.block(cell, <span class="s">"html"</span>, None, reading.line))
+  …
+}
+
+env.add_lang({ name: <span class="s">"csv"</span>, aliases: [<span class="s">"table"</span>], options: @syntax.options, read: read_csv })</pre>
+        <p>Then <code>{% block lang=csv %}</code> and <code>Format.lang = "csv"</code> both work. <code>moonbitstack/moonpug/syntax</code> has the tree and the parsers for expressions and statements, for a reader to reuse.</p>
+      </section>
+
+      <section id="settings">
+        <h2>Settings</h2>
+        <table>
+          <tr><th>Record</th><th>Fields</th><th>Preset</th></tr>
+          <tr><td><code>Format</code></td><td><code>lang</code>, <code>autoescape</code>, <code>trim_blocks</code>, <code>lstrip_blocks</code>, <code>keep_trailing_newline</code></td><td><code>html</code>, <code>pug</code>, <code>markdown</code>, <code>text</code></td></tr>
+          <tr><td><code>Settings</code></td><td><code>format</code>, <code>formats</code>, <code>force</code>, <code>undefined</code>, <code>line_statement</code>, <code>line_comment</code>, <code>limits</code></td><td><code>settings</code></td></tr>
+          <tr><td><code>Limits</code></td><td><code>depth</code> 1000, <code>range</code> 100 000</td><td><code>limits</code></td></tr>
+        </table>
+        <h3>Configuration precedence</h3>
+        <pre class="code">library preset  &lt;  the record you pass  &lt;  the same name passed to this call</pre>
+        <p><code>undefined</code> is <code>Strict</code> by default: a missing name is refused unless the template asks <code>is defined</code> or gives a <code>default</code>.</p>
+      </section>
+
+      <section id="errors">
+        <h2>Errors</h2>
+        <table>
+          <tr><th>Variant</th><th>When</th></tr>
+          <tr><td><code>Syntax</code></td><td>the source is not well formed; with template, line and column</td></tr>
+          <tr><td><code>Unknown</code></td><td>a name, filter, test, template, language or attribute resolves to nothing</td></tr>
+          <tr><td><code>Invalid</code></td><td>values that do not fit an operation or its arguments</td></tr>
+          <tr><td><code>Exceeded</code></td><td>a bound in <code>Limits</code> was crossed</td></tr>
+        </table>
+      </section>
+
+      <section id="reference">
+        <h2>Reference</h2>
+        <h3>Filters</h3>
+        <div class="chips" data-names="filters"><code>abs</code> <code>add</code> <code>batch</code> <code>date</code> <code>…</code></div>
+        <h3>Tests</h3>
+        <div class="chips" data-names="tests"><code>defined</code> <code>odd</code> <code>…</code></div>
+        <h3>Globals</h3>
+        <div class="chips" data-names="globals"><code>range</code> <code>dict</code> <code>…</code></div>
+      </section>
+    </div>
+  </div>
 </main>
 
-<footer>moonpug · Apache-2.0 · writes text, never parses it</footer>
+<footer>moonpug · Apache-2.0 · <a href="https://github.com/moonbitstack/moonpug">github.com/moonbitstack/moonpug</a> · <a href="https://mooncakes.io/docs/moonbitstack/moonpug">mooncakes.io</a></footer>
 
-<script>
-// The playground wires the wasm build when present; without it the section
-// degrades to a static example pair, which is still correct documentation.
-let renderPage = null;
-async function boot(){
-  try{
-    const mod = await import('./engine/moonpug.js');
-    renderPage = mod.render_playground || null;
-  }catch(e){ renderPage = null; }
-  render();
-}
-function run(tpl, ctx){
-  if(renderPage){ try{ return renderPage(tpl, ctx); }catch(e){ return 'error: '+e; } }
-  return '(build the wasm engine: moon build --target js src/examples/page)';
-}
-function render(){
-  const tpl = document.getElementById('tpl').value;
-  let ctx = {};
-  try{ ctx = JSON.parse(document.getElementById('ctx').value); }
-  catch(e){ document.getElementById('out').textContent = 'context is not valid JSON'; return; }
-  document.getElementById('out').textContent = run(tpl, ctx);
-}
-let timer = null;
-document.addEventListener('DOMContentLoaded', ()=>{
-  boot();
-  for(const id of ['tpl','ctx']){
-    document.getElementById(id).addEventListener('input', ()=>{
-      clearTimeout(timer); timer = setTimeout(render, 120);
-    });
-  }
-});
-</script>
+<script type="module" src="assets/site.js"></script>
 </body>
 </html>

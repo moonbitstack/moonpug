@@ -3,6 +3,4 @@
 !.moonignore
 _*
 target/
-mc_errs.txt
-dw.txt
-*.pkg.generated.mbti
+docs/engine/

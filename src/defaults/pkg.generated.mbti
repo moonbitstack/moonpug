@@ -1,0 +1,25 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonbitstack/moonpug/defaults"
+
+import {
+  "moonbitstack/moonpug/spec",
+}
+
+// Values
+pub fn attr(@spec.Value, String) -> @spec.Value?
+
+pub fn filters() -> Map[String, (@spec.Call, @spec.Value, Array[@spec.Value], Map[String, @spec.Value]) -> @spec.Value raise @spec.Refused]
+
+pub fn globals() -> Map[String, @spec.Value]
+
+pub fn percent(@spec.Call, String, @spec.Value, escape? : Bool) -> String raise @spec.Refused
+
+pub fn tests() -> Map[String, (@spec.Call, @spec.Value, Array[@spec.Value]) -> Bool raise @spec.Refused]
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits

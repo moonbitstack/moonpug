@@ -1,7 +1,0 @@
-// The executable this repository installs: `moon run bin`.
-pkgtype(kind: "executable")
-
-import {
-  "moonbitstack/moonpug",
-  "moonbitlang/core/json",
-}
