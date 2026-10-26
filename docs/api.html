@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>moonpug API</title>
+<meta name="description" content="Every public type, function and value of moonpug, with its signature and what it does.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@500;600&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body class="page api">
+<header class="bar">
+  <a class="mark" href="index.html">moon<b>pug</b></a>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="guide.html">Guide</a>
+    <a href="api.html" aria-current="page">API</a>
+  </nav>
+  <a class="github" href="https://github.com/moonbitstack/moonpug" aria-label="moonpug on GitHub"><svg viewBox="0 0 16 16" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38v-1.33c-2.23.48-2.7-1.07-2.7-1.07-.36-.92-.89-1.17-.89-1.17-.73-.5.06-.49.06-.49.8.06 1.23.83 1.23.83.72 1.22 1.88.87 2.34.66.07-.52.28-.87.5-1.07-1.78-.2-3.65-.89-3.65-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48v2.2c0 .21.15.46.55.38A8 8 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></a>
+  <button id="theme" type="button">Light / dark</button>
+</header>
+<main class="doc">
+  <aside class="index">
+<div class="group"><b>moonpug</b>
+<a href="#moonpug-env">Env</a>
+<a href="#moonpug-format">Format</a>
+<a href="#moonpug-limits">Limits</a>
+<a href="#moonpug-settings">Settings</a>
+<a href="#moonpug-template">Template</a>
+<a href="#moonpug-filter">Filter</a>
+<a href="#moonpug-func">Func</a>
+<a href="#moonpug-test">Test</a>
+<a href="#moonpug-functions">Functions</a>
+<a href="#moonpug-values">Values</a>
+</div>
+<div class="group"><b>moonpug/spec</b>
+<a href="#spec-refused">Refused</a>
+<a href="#spec-call">Call</a>
+<a href="#spec-undefined">Undefined</a>
+<a href="#spec-value">Value</a>
+<a href="#spec-filter">Filter</a>
+<a href="#spec-func">Func</a>
+<a href="#spec-test">Test</a>
+<a href="#spec-object">Object</a>
+<a href="#spec-functions">Functions</a>
+</div>
+<div class="group"><b>moonpug/syntax</b>
+<a href="#syntax-arg">Arg</a>
+<a href="#syntax-attr">Attr</a>
+<a href="#syntax-block">Block</a>
+<a href="#syntax-element">Element</a>
+<a href="#syntax-expr">Expr</a>
+<a href="#syntax-lang">Lang</a>
+<a href="#syntax-lexer">Lexer</a>
+<a href="#syntax-macro">Macro</a>
+<a href="#syntax-node">Node</a>
+<a href="#syntax-op">Op</a>
+<a href="#syntax-options">Options</a>
+<a href="#syntax-param">Param</a>
+<a href="#syntax-parser">Parser</a>
+<a href="#syntax-placement">Placement</a>
+<a href="#syntax-reading">Reading</a>
+<a href="#syntax-target">Target</a>
+<a href="#syntax-tok">Tok</a>
+<a href="#syntax-token">Token</a>
+<a href="#syntax-trans">Trans</a>
+<a href="#syntax-functions">Functions</a>
+<a href="#syntax-values">Values</a>
+</div>
+  </aside>
+  <div class="reference">
+    <div class="kicker">Reference</div>
+    <h1>API</h1>
+    <p class="lede">Every public type, function and value, by package. Signatures are the ones the compiler writes; the notes are the documentation comments in the source.</p>
+<section id="moonpug-top"><h2>moonpug</h2><p>The engine: environments, templates, settings, and one-call rendering.</p>
+<h3>Re-exported</h3>
+<p>Reachable from this package as well; each is documented in the package it comes from.</p>
+<pre class="sig"><code>pub using @spec {type Call}
+pub using @syntax {type Lang}
+pub using @syntax {type Reading}
+pub using @spec {type Refused}
+pub using @spec {type Undefined}
+pub using @spec {type Value}
+pub using @spec {trait Object}</code></pre>
+<article id="moonpug-env"><h3><span class="kind">struct</span> Env</h3>
+<p>Where templates come from and what they all see: the settings, the filters, tests and global values, the loader and the seams for translation and caching. Compiled templates are kept per environment.</p>
+<pre class="sig"><code>pub struct Env {
+  // private fields
+}</code></pre>
+<div class="member" id="moonpug-env-add_filter"><pre class="sig"><code>pub fn Env::add_filter(Self, String, (@spec.Call, @spec.Value, Array[@spec.Value], Map[String, @spec.Value]) -&gt; @spec.Value raise @spec.Refused) -&gt; Unit</code></pre><p>Register a filter, replacing any of the same name.</p></div>
+<div class="member" id="moonpug-env-add_global"><pre class="sig"><code>pub fn Env::add_global(Self, String, @spec.Value) -&gt; Unit</code></pre><p>Make a value visible to every template, replacing any of the same name; a function is <code>Value::func(name, …)</code>.</p></div>
+<div class="member" id="moonpug-env-add_lang"><pre class="sig"><code>pub fn Env::add_lang(Self, @syntax.Lang) -&gt; Unit</code></pre><p>Register a language under its name and aliases, replacing any that answer to the same; <code>Format.lang</code> and <code>{% block lang=… %}</code> find it.</p></div>
+<div class="member" id="moonpug-env-add_test"><pre class="sig"><code>pub fn Env::add_test(Self, String, (@spec.Call, @spec.Value, Array[@spec.Value]) -&gt; Bool raise @spec.Refused) -&gt; Unit</code></pre><p>Register a test, replacing any of the same name.</p></div>
+<div class="member" id="moonpug-env-compile"><pre class="sig"><code>pub fn Env::compile(Self, StringView, name? : String, format? : Format) -&gt; Template raise @spec.Refused</code></pre><p>Read a source into a template. A <code>name</code> picks the format by its extension and appears in errors; <code>format</code> overrides either.</p></div>
+<div class="member" id="moonpug-env-new"><pre class="sig"><code>pub fn Env::new(settings? : Settings, load? : (String) -&gt; String?, translate? : (String, String?, Int32?) -&gt; String?, cache? : (String, () -&gt; String raise @spec.Refused) -&gt; String raise @spec.Refused) -&gt; Self</code></pre><p>An environment with the built-in languages, filters, tests and globals.  <code>load</code> turns a template name into its source for <code>extends</code>, <code>include</code>, <code>import</code> and <code>Env::template</code>; without it those are refused. <code>translate</code> answers gettext and <code>{% trans %}</code>: given a message, its context and the plural count, the translation or <code>None</code>. <code>cache</code> stores what <code>{% once key %}</code> renders: given the key and a way to render, the text.</p></div>
+<div class="member" id="moonpug-env-template"><pre class="sig"><code>pub fn Env::template(Self, String) -&gt; Template raise @spec.Refused</code></pre><p>The template the loader finds under <code>name</code>, compiled once and kept.</p></div>
+</article>
+<article id="moonpug-format"><h3><span class="kind">struct</span> Format</h3>
+<p>What a template writes, and so how it reads: the name of its language, whether output is escaped, and how whitespace around tags is handled.</p>
+<pre class="sig"><code>pub(all) struct Format {
+  lang : String
+  autoescape : Bool
+  trim_blocks : Bool
+  lstrip_blocks : Bool
+  keep_trailing_newline : Bool
+}</code></pre>
+</article>
+<article id="moonpug-limits"><h3><span class="kind">struct</span> Limits</h3>
+<p>Bounds on what one render may do.</p>
+<pre class="sig"><code>pub(all) struct Limits {
+  depth : Int32
+  range : Int32
+}</code></pre>
+<dl class="fields"><dt><code>depth</code></dt><dd><p>Nested macro calls, includes, extends and recursive loops.</p></dd><dt><code>range</code></dt><dd><p>The longest sequence <code>range</code> builds.</p></dd></dl>
+</article>
+<article id="moonpug-settings"><h3><span class="kind">struct</span> Settings</h3>
+<p>Everything an environment is configured with.</p>
+<pre class="sig"><code>pub(all) struct Settings {
+  format : Format
+  formats : (String) -&gt; Format
+  force : Bool
+  undefined : @spec.Undefined
+  line_statement : String?
+  line_comment : String?
+  limits : Limits
+}</code></pre>
+<dl class="fields"><dt><code>format</code></dt><dd><p>The format of a source compiled without a name.</p></dd><dt><code>formats</code></dt><dd><p>The format of a template from its name.</p></dd><dt><code>force</code></dt><dd><p>Whether a template reads only its own language, leaving blocks in another as text.</p></dd><dt><code>undefined</code></dt><dd><p>What using an undefined name does.</p></dd><dt><code>line_statement</code></dt><dd><p>A prefix that makes a whole line a statement, as <code># for x in y</code>.</p></dd><dt><code>line_comment</code></dt><dd><p>A prefix that makes the rest of a line a comment.</p></dd></dl>
+</article>
+<article id="moonpug-template"><h3><span class="kind">struct</span> Template</h3>
+<p>A compiled template, ready to render any number of times.</p>
+<pre class="sig"><code>pub struct Template {
+  // private fields
+}</code></pre>
+<div class="member" id="moonpug-template-name"><pre class="sig"><code>pub fn Template::name(Self) -&gt; String</code></pre><p>The name the template was compiled under.</p></div>
+<div class="member" id="moonpug-template-render"><pre class="sig"><code>pub fn[C : ToJson] Template::render(Self, C) -&gt; String raise @spec.Refused</code></pre><p>Render with a context of data: a <code>Json</code> object, or any value whose <code>to_json</code> gives one.</p></div>
+<div class="member" id="moonpug-template-render_values"><pre class="sig"><code>pub fn Template::render_values(Self, Map[String, @spec.Value]) -&gt; String raise @spec.Refused</code></pre><p>Render with values that may hold functions and objects as well as data.</p></div>
+</article>
+<article id="moonpug-filter"><h3><span class="kind">type</span> Filter</h3>
+
+<pre class="sig"><code>pub type Filter = (@spec.Call, @spec.Value, Array[@spec.Value], Map[String, @spec.Value]) -&gt; @spec.Value raise @spec.Refused</code></pre>
+</article>
+<article id="moonpug-func"><h3><span class="kind">type</span> Func</h3>
+
+<pre class="sig"><code>pub type Func = (@spec.Call, Array[@spec.Value], Map[String, @spec.Value]) -&gt; @spec.Value raise @spec.Refused</code></pre>
+</article>
+<article id="moonpug-test"><h3><span class="kind">type</span> Test</h3>
+
+<pre class="sig"><code>pub type Test = (@spec.Call, @spec.Value, Array[@spec.Value]) -&gt; Bool raise @spec.Refused</code></pre>
+</article>
+<h3 id="moonpug-functions">Functions</h3>
+<div class="member" id="moonpug-escape"><pre class="sig"><code>pub fn escape(String) -&gt; String</code></pre></div>
+<div class="member" id="moonpug-format_of"><pre class="sig"><code>pub fn format_of(String) -&gt; Format</code></pre><p>The format a template&#x27;s name implies: <code>.pug</code> and <code>.pg</code> are Pug, <code>.html</code>, <code>.htm</code>, <code>.xml</code>, <code>.svg</code> and <code>.xhtml</code> are escaped HTML, <code>.md</code> and <code>.markdown</code> are Markdown, anything else is text.</p></div>
+<div class="member" id="moonpug-invalid"><pre class="sig"><code>pub fn invalid(String) -&gt; @spec.Refused</code></pre></div>
+<div class="member" id="moonpug-render"><pre class="sig"><code>pub fn[C : ToJson] render(StringView, C, settings? : Settings, format? : Format, force? : Bool, load? : (String) -&gt; String?, translate? : (String, String?, Int32?) -&gt; String?, cache? : (String, () -&gt; String raise @spec.Refused) -&gt; String raise @spec.Refused) -&gt; String raise @spec.Refused</code></pre><p>Compile and render <code>source</code> in one call. <code>format</code> and <code>force</code> override the settings&#x27; own; <code>load</code>, <code>translate</code> and <code>cache</code> are the seams <code>Env::new</code> takes.</p></div>
+<div class="member" id="moonpug-unknown"><pre class="sig"><code>pub fn unknown(String, String) -&gt; @spec.Refused</code></pre></div>
+<h3 id="moonpug-values">Values</h3>
+<div class="member" id="moonpug-html"><pre class="sig"><code>pub let html : Format</code></pre><p>HTML in the brace syntax, escaped.</p></div>
+<div class="member" id="moonpug-limits"><pre class="sig"><code>pub let limits : Limits</code></pre><p>A thousand levels, as Python allows; a hundred thousand items, Jinja&#x27;s sandbox bound on <code>range</code>.</p></div>
+<div class="member" id="moonpug-markdown"><pre class="sig"><code>pub let markdown : Format</code></pre><p>Markdown in the brace syntax: nothing escaped, and a tag on a line of its own leaves no blank line behind.</p></div>
+<div class="member" id="moonpug-pug"><pre class="sig"><code>pub let pug : Format</code></pre><p>Pug, escaped.</p></div>
+<div class="member" id="moonpug-settings"><pre class="sig"><code>pub let settings : Settings</code></pre><p>HTML for an unnamed source, the format by extension for a named one, every language read, undefined names refused, no line prefixes.</p></div>
+<div class="member" id="moonpug-text"><pre class="sig"><code>pub let text : Format</code></pre><p>Plain text in the brace syntax: nothing escaped.</p></div>
+</section>
+<section id="spec-top"><h2>moonpug/spec</h2><p>Values and the contract extensions build on: objects, filters, tests, refusals. The engine re-exports what a caller needs.</p>
+<article id="spec-refused"><h3><span class="kind">suberror</span> Refused</h3>
+<p>Why a template could not be read or rendered. Every variant names the template and the one-based line it stopped at; a fault raised by an extension carries an empty name and line <code>0</code> until the engine fills in where it was called from.</p>
+<pre class="sig"><code>pub(all) suberror Refused {
+  Syntax(template~ : String, line~ : Int32, column~ : Int32, reason~ : String)
+  Unknown(template~ : String, line~ : Int32, kind~ : String, name~ : String)
+  Invalid(template~ : String, line~ : Int32, reason~ : String)
+  Exceeded(template~ : String, line~ : Int32, limit~ : Int32, got~ : Int32)
+} derive(Eq, @debug.Debug)</code></pre>
+<dl class="fields"><dt><code>Syntax</code></dt><dd><p>The source is not well formed.</p></dd><dt><code>Unknown</code></dt><dd><p>A name that resolves to nothing: a variable under the strict policy, a filter, a test, a template, an attribute. <code>kind</code> says which.</p></dd><dt><code>Invalid</code></dt><dd><p>The source is well formed and the values do not fit: wrong arguments, a type an operation does not take.</p></dd><dt><code>Exceeded</code></dt><dd><p>A bound in <code>Limits</code> was crossed.</p></dd></dl>
+<div class="member" id="spec-refused-at"><pre class="sig"><code>pub fn Refused::at(Self, String, Int32) -&gt; Self</code></pre><p>The same fault, placed at <code>template</code> and <code>line</code> if it has no place yet.</p></div>
+<div class="member" id="spec-refused-place"><pre class="sig"><code>pub fn Refused::place(Self) -&gt; (String, Int32)</code></pre><p>The template and line a fault names.</p></div>
+</article>
+<article id="spec-call"><h3><span class="kind">struct</span> Call</h3>
+<p>What an extension can reach of the render in flight: whether output is being escaped, the undefined policy, the other filters and tests, the translation seam, and the bound on <code>range</code>.</p>
+<pre class="sig"><code>pub struct Call {
+  autoescape : Bool
+  undefined : Undefined
+  range : Int32
+  // private fields
+}</code></pre>
+<dl class="fields"><dt><code>autoescape</code></dt><dd><p>Whether <code>{{ }}</code> escapes here; a filter that builds markup reads it.</p></dd><dt><code>undefined</code></dt><dd><p>How an undefined value behaves when used.</p></dd><dt><code>range</code></dt><dd><p>The largest sequence <code>range</code> may build.</p></dd></dl>
+<div class="member" id="spec-call-check"><pre class="sig"><code>pub fn Call::check(Self, String, Value, Array[Value]) -&gt; Bool raise Refused</code></pre><p>Apply the test registered under <code>name</code>; <code>test</code> itself is a keyword.</p></div>
+<div class="member" id="spec-call-draw"><pre class="sig"><code>pub fn Call::draw(Self) -&gt; Int32</code></pre><p>A number that differs from call to call within a render and repeats on the next render, for filters such as <code>random</code> that must give the same page twice.</p></div>
+<div class="member" id="spec-call-escaping"><pre class="sig"><code>pub fn Call::escaping(Self, Bool) -&gt; Self</code></pre><p>The same render with escaping turned on or off.</p></div>
+<div class="member" id="spec-call-filter"><pre class="sig"><code>pub fn Call::filter(Self, String, Value, Array[Value], Map[String, Value]) -&gt; Value raise Refused</code></pre><p>Apply the filter registered under <code>name</code>.</p></div>
+<div class="member" id="spec-call-has_filter"><pre class="sig"><code>pub fn Call::has_filter(Self, String) -&gt; Bool</code></pre><p>Whether a filter is registered under <code>name</code>.</p></div>
+<div class="member" id="spec-call-has_test"><pre class="sig"><code>pub fn Call::has_test(Self, String) -&gt; Bool</code></pre><p>Whether a test is registered under <code>name</code>.</p></div>
+<div class="member" id="spec-call-items"><pre class="sig"><code>pub fn Call::items(Self, Value) -&gt; Array[Value] raise Refused</code></pre><p>The items a loop over the value walks; an undefined value is empty, or refused under the strict policy.</p></div>
+<div class="member" id="spec-call-new"><pre class="sig"><code>pub fn Call::new(autoescape? : Bool, undefined? : Undefined, range? : Int32, filters? : Map[String, (Self, Value, Array[Value], Map[String, Value]) -&gt; Value raise Refused], tests? : Map[String, (Self, Value, Array[Value]) -&gt; Bool raise Refused], translate? : (String, String?, Int32?) -&gt; String?) -&gt; Self</code></pre><p>The engine builds one per render; a test of an extension builds its own.</p></div>
+<div class="member" id="spec-call-refuses"><pre class="sig"><code>pub fn Call::refuses(Self, String) -&gt; Bool</code></pre><p>Whether using an undefined value of this name is refused. The strict policy refuses a name that was looked up and missing; the implicit else of an inline <code>if</code> has no name and is never refused.</p></div>
+<div class="member" id="spec-call-text"><pre class="sig"><code>pub fn Call::text(Self, Value) -&gt; String raise Refused</code></pre><p>A value as text, Python&#x27;s <code>str</code>: an undefined value is empty, or refused under the strict policy.</p></div>
+<div class="member" id="spec-call-translate"><pre class="sig"><code>pub fn Call::translate(Self, String, context? : String, count? : Int32) -&gt; String?</code></pre><p>Ask the translation seam for <code>msgid</code> in <code>context</code>, plural form for <code>count</code>. <code>None</code> when there is no seam or it has no translation.</p></div>
+<div class="member" id="spec-call-truthy"><pre class="sig"><code>pub fn Call::truthy(Self, Value) -&gt; Bool raise Refused</code></pre><p>Whether the value counts as true; an undefined value is false, or refused under the strict policy.</p></div>
+</article>
+<article id="spec-undefined"><h3><span class="kind">enum</span> Undefined</h3>
+<p>What happens when an undefined value is used, Jinja&#x27;s three answers: <code>Lenient</code> prints nothing and iterates as empty but refuses attribute access; <code>Chainable</code> also lets attributes of it be undefined in turn; <code>Strict</code> refuses every use except asking whether it is defined.</p>
+<pre class="sig"><code>pub(all) enum Undefined {
+  Lenient
+  Chainable
+  Strict
+} derive(Eq)</code></pre>
+</article>
+<article id="spec-value"><h3><span class="kind">enum</span> Value</h3>
+<p>A value in a template. The context arrives as data; functions and host objects enter as <code>Object</code>. <code>Markup</code> is text already safe to write as it stands. <code>Undefined</code> is a name that resolved to nothing, carrying the name for the message a later use may need.</p>
+<pre class="sig"><code>pub(all) enum Value {
+  Null
+  Bool(Bool)
+  Int(Int64)
+  Double(Double)
+  Text(String)
+  Markup(String)
+  Seq(Array[Value])
+  Tuple(Array[Value])
+  Dict(Map[String, Value])
+  Undefined(String)
+  Object(&amp;Object)
+}</code></pre>
+<div class="member" id="spec-value-contains"><pre class="sig"><code>pub fn Value::contains(Self, Self) -&gt; Bool raise Refused</code></pre><p>Python&#x27;s <code>item in self</code>: a substring of a string, an element of a list or tuple, a key of a mapping, what an object yields.</p></div>
+<div class="member" id="spec-value-field"><pre class="sig"><code>pub fn Value::field(Self, String) -&gt; Self?</code></pre><p><code>value.name</code>: an object&#x27;s attribute, else the item of that name.</p></div>
+<div class="member" id="spec-value-func"><pre class="sig"><code>pub fn Value::func(String, (Call, Array[Self], Map[String, Self]) -&gt; Self raise Refused) -&gt; Self</code></pre><p>A function as a template value: <code>env.global(&quot;now&quot;, Value::func(&quot;now&quot;, …))</code>.</p></div>
+<div class="member" id="spec-value-index"><pre class="sig"><code>pub fn Value::index(Self) -&gt; Int32?</code></pre><p>A whole number usable as an index.</p></div>
+<div class="member" id="spec-value-item"><pre class="sig"><code>pub fn Value::item(Self, Self) -&gt; Self?</code></pre><p><code>value[key]</code>: a mapping by key, a list or string by index (negative counts from the end), an object by attribute. <code>None</code> when there is nothing there.</p></div>
+<div class="member" id="spec-value-iter"><pre class="sig"><code>pub fn Value::iter(Self) -&gt; Array[Self] raise Refused</code></pre><p>The items a loop walks: a list&#x27;s elements, a mapping&#x27;s keys in insertion order, a string&#x27;s characters, or what an object yields.</p></div>
+<div class="member" id="spec-value-kind"><pre class="sig"><code>pub fn Value::kind(Self) -&gt; String</code></pre><p>The word a message uses for a value&#x27;s type.</p></div>
+<div class="member" id="spec-value-markup"><pre class="sig"><code>pub fn Value::markup(Self) -&gt; String</code></pre><p>A value as markup: safe text as it stands, anything else printed and escaped.</p></div>
+<div class="member" id="spec-value-number"><pre class="sig"><code>pub fn Value::number(Self) -&gt; Double?</code></pre><p>A number as Python sees one: <code>Bool</code> counts, being an <code>int</code>.</p></div>
+<div class="member" id="spec-value-of_json"><pre class="sig"><code>pub fn Value::of_json(Json) -&gt; Self</code></pre><p>Data read from JSON. A number written without a fraction or exponent is an <code>Int</code> when it fits, as Python reads it.</p></div>
+<div class="member" id="spec-value-path"><pre class="sig"><code>pub fn Value::path(Self, String) -&gt; Self?</code></pre><p>A dotted path such as <code>user.address.0</code>, each step a lookup by item; a step written in digits indexes a list.</p></div>
+<div class="member" id="spec-value-repr"><pre class="sig"><code>pub fn Value::repr(Self) -&gt; String</code></pre><p>Python&#x27;s <code>repr</code>: text quoted, lists and mappings with their elements in <code>repr</code> form. <code>pprint</code> and the printing of containers use it.</p></div>
+<div class="member" id="spec-value-to_json"><pre class="sig"><code>pub fn Value::to_json(Self) -&gt; Json</code></pre></div>
+<div class="member" id="spec-value-truthy"><pre class="sig"><code>pub fn Value::truthy(Self) -&gt; Bool</code></pre><p>What a condition sees: empty, zero, <code>None</code> and undefined are false.</p></div>
+</article>
+<article id="spec-filter"><h3><span class="kind">type</span> Filter</h3>
+<p>A filter: the value left of <code>|</code>, the arguments in parentheses.</p>
+<pre class="sig"><code>pub type Filter = (Call, Value, Array[Value], Map[String, Value]) -&gt; Value raise Refused</code></pre>
+</article>
+<article id="spec-func"><h3><span class="kind">type</span> Func</h3>
+<p>What a function receives: what the engine knows about the render in flight, positional arguments, named arguments.</p>
+<pre class="sig"><code>pub type Func = (Call, Array[Value], Map[String, Value]) -&gt; Value raise Refused</code></pre>
+</article>
+<article id="spec-test"><h3><span class="kind">type</span> Test</h3>
+<p>A test: the value left of <code>is</code>, the arguments after the name.</p>
+<pre class="sig"><code>pub type Test = (Call, Value, Array[Value]) -&gt; Bool raise Refused</code></pre>
+</article>
+<article id="spec-object"><h3><span class="kind">trait</span> Object</h3>
+<p>A host value a template can use. Each method is optional: an object that only has attributes implements <code>attr</code>, a function only <code>call</code>. Cyclers, macros, namespaces and the loop variable are objects too.</p>
+<pre class="sig"><code>pub(open) trait Object {
+  fn kind(Self) -&gt; String
+  fn attr(Self, String) -&gt; Value? = _
+  fn call(Self, Call, Array[Value], Map[String, Value]) -&gt; Value raise Refused = _
+  fn callable(Self) -&gt; Bool = _
+  fn assign(Self, String, Value) -&gt; Unit raise Refused = _
+  fn show(Self) -&gt; String = _
+  fn items(Self) -&gt; Array[Value]? = _
+}</code></pre>
+<dl class="fields"><dt><code>kind</code></dt><dd><p>What messages call it: <code>&quot;a cycler&quot;</code>, <code>&quot;the macro row&quot;</code>.</p></dd><dt><code>attr</code></dt><dd><p><code>obj.name</code>; <code>None</code> when there is no such attribute.</p></dd><dt><code>call</code></dt><dd><p><code>obj(args)</code>.</p></dd><dt><code>callable</code></dt><dd><p>Whether <code>call</code> does anything; the <code>callable</code> test asks this.</p></dd><dt><code>assign</code></dt><dd><p><code>{% set obj.name = value %}</code>.</p></dd><dt><code>show</code></dt><dd><p>What <code>{{ obj }}</code> prints.</p></dd><dt><code>items</code></dt><dd><p>What a loop over it walks; <code>None</code> when it cannot be iterated.</p></dd></dl>
+</article>
+<h3 id="spec-functions">Functions</h3>
+<div class="member" id="spec-code_point_compare"><pre class="sig"><code>pub fn code_point_compare(String, String) -&gt; Int32</code></pre><p>Strings ordered by code point, as Python orders them.</p></div>
+<div class="member" id="spec-escape"><pre class="sig"><code>pub fn escape(String) -&gt; String</code></pre><p>Text made safe for HTML and XML, element bodies and quoted attributes alike: the five characters markupsafe replaces, written the way it does.</p></div>
+<div class="member" id="spec-invalid"><pre class="sig"><code>pub fn invalid(String) -&gt; Refused</code></pre><p>A fault an extension raises; the engine adds the template and line.</p></div>
+<div class="member" id="spec-python_float"><pre class="sig"><code>pub fn python_float(Double) -&gt; String</code></pre><p>A float the way Python writes it: the shortest digits that read back the same, fixed between <code>1e-4</code> and <code>1e16</code>, scientific outside.</p></div>
+<div class="member" id="spec-repr_text"><pre class="sig"><code>pub fn repr_text(String) -&gt; String</code></pre><p>Python&#x27;s <code>repr</code> of a string: single quotes unless the text holds one and no double quote, with the escapes Python writes.</p></div>
+<div class="member" id="spec-unknown"><pre class="sig"><code>pub fn unknown(String, String) -&gt; Refused</code></pre><p>A name that resolves to nothing, raised from an extension.</p></div>
+</section>
+<section id="syntax-top"><h2>moonpug/syntax</h2><p>The tree and the readers, for a language of your own.</p>
+<article id="syntax-arg"><h3><span class="kind">enum</span> Arg</h3>
+<p>An argument: positional, named, or spread with <code>*</code> and <code>**</code>.</p>
+<pre class="sig"><code>pub(all) enum Arg {
+  Pos(Expr)
+  Named(String, Expr)
+  Spread(Expr)
+  SpreadNamed(Expr)
+}</code></pre>
+</article>
+<article id="syntax-attr"><h3><span class="kind">struct</span> Attr</h3>
+<p>An attribute of an element in the indentation syntax. <code>None</code> is a bare attribute such as <code>checked</code>.</p>
+<pre class="sig"><code>pub(all) struct Attr {
+  name : String
+  value : Expr?
+  escape : Bool
+}</code></pre>
+</article>
+<article id="syntax-block"><h3><span class="kind">struct</span> Block</h3>
+
+<pre class="sig"><code>pub(all) struct Block {
+  name : String
+  body : Array[Node]
+  scoped : Bool
+  required : Bool
+  placement : Placement
+}</code></pre>
+</article>
+<article id="syntax-element"><h3><span class="kind">struct</span> Element</h3>
+
+<pre class="sig"><code>pub(all) struct Element {
+  tag : Expr
+  attrs : Array[Attr]
+  splats : Array[Expr]
+  self_close : Bool
+  body : Array[Node]
+}</code></pre>
+</article>
+<article id="syntax-expr"><h3><span class="kind">enum</span> Expr</h3>
+<p>The tree both syntaxes read into. Nothing after reading knows which syntax a template was written in.</p>
+<pre class="sig"><code>pub(all) enum Expr {
+  Lit(@spec.Value)
+  Name(String)
+  List(Array[Expr])
+  Tuple(Array[Expr])
+  Dict(Array[(Expr, Expr)])
+  Attr(Expr, String)
+  Item(Expr, Expr)
+  Slice(Expr?, Expr?, Expr?)
+  Call(Expr, Array[Arg])
+  Not(Expr)
+  Neg(Expr)
+  Pos(Expr)
+  Binary(Op, Expr, Expr)
+  Compare(Expr, Array[(Op, Expr)])
+  Concat(Array[Expr])
+  Cond(Expr, Expr, Expr?)
+  Filter(Expr?, String, Array[Arg])
+  Test(Expr, String, Array[Arg])
+  Attributes(Array[Attr], Array[Expr])
+}</code></pre>
+<dl class="fields"><dt><code>Slice</code></dt><dd><p>A slice as a subscript: <code>a[1:2]</code> is <code>Item(a, Slice(1, 2, None))</code>.</p></dd><dt><code>Attributes</code></dt><dd><p>The attributes of a mixin call, merged the way an element merges its own: classes gather, <code>&amp;attributes</code> splats override.</p></dd></dl>
+</article>
+<article id="syntax-lang"><h3><span class="kind">struct</span> Lang</h3>
+<p>A language a template or a <code>{% block lang=… %}</code> is read in: its name, the other names it answers to, how its brace tags treat whitespace, and the reader that turns its source into the tree. The three built in are registered the same way a user&#x27;s own is.</p>
+<pre class="sig"><code>pub(all) struct Lang {
+  name : String
+  aliases : Array[String]
+  options : Options
+  read : (String, Reading) -&gt; Array[Node] raise @spec.Refused
+}</code></pre>
+</article>
+<article id="syntax-lexer"><h3><span class="kind">struct</span> Lexer</h3>
+<p>A cursor over source text that knows its line and column.</p>
+<pre class="sig"><code>pub(all) struct Lexer {
+  src : String
+  template : String
+  mut pos : Int32
+  mut line : Int32
+  mut line_start : Int32
+}</code></pre>
+<div class="member" id="syntax-lexer-column"><pre class="sig"><code>pub fn Lexer::column(Self) -&gt; Int32</code></pre></div>
+<div class="member" id="syntax-lexer-fail"><pre class="sig"><code>pub fn Lexer::fail(Self, String) -&gt; @spec.Refused</code></pre></div>
+<div class="member" id="syntax-lexer-new"><pre class="sig"><code>pub fn Lexer::new(String, String, pos? : Int32, line? : Int32, line_start? : Int32) -&gt; Self</code></pre></div>
+<div class="member" id="syntax-lexer-token"><pre class="sig"><code>pub fn Lexer::token(Self) -&gt; Token raise @spec.Refused</code></pre><p>The next token inside a tag. Whitespace between tokens is skipped; <code>Eof</code> at the end of the text.</p></div>
+</article>
+<article id="syntax-macro"><h3><span class="kind">struct</span> Macro</h3>
+<p>A macro, or a mixin of the indentation syntax: a mixin also receives the call&#x27;s attributes as <code>attributes</code> and its block as <code>block</code>.</p>
+<pre class="sig"><code>pub(all) struct Macro {
+  name : String
+  params : Array[Param]
+  body : Array[Node]
+  pug : Bool
+}</code></pre>
+</article>
+<article id="syntax-node"><h3><span class="kind">enum</span> Node</h3>
+
+<pre class="sig"><code>pub(all) enum Node {
+  Line(Int32)
+  Text(String)
+  Out(Expr)
+  Raw(Expr)
+  For(target~ : Target, iter~ : Expr, cond~ : Expr?, recursive~ : Bool, each~ : Bool, body~ : Array[Node], otherwise~ : Array[Node])
+  If(Array[(Expr, Array[Node])], Array[Node])
+  Set(Target, Expr)
+  SetBlock(Target, Expr?, Array[Node])
+  MacroDef(Macro)
+  CallBlock(Array[Param], Expr, Array[Node])
+  FilterBlock(Expr, Array[Node])
+  Extends(Expr)
+  BlockDef(Block)
+  Include(Expr, missing~ : Bool, context~ : Bool, raw~ : Bool, inline~ : Bool, block~ : Array[Node])
+  Yield
+  Import(Expr, String, context~ : Bool)
+  FromImport(Expr, Array[(String, String?)], context~ : Bool)
+  With(Array[(Target, Expr)], Array[Node])
+  Autoescape(Expr, Array[Node])
+  Do(Expr)
+  Debug
+  Show(Expr, Array[Node])
+  Once(Expr?, Array[Node])
+  TransOut(Trans)
+  Break
+  Continue
+  Element(Element)
+  Doctype(String)
+  Comment(Array[Node])
+  Case(Expr, Array[(Array[Expr], Array[Node])], Array[Node])
+}</code></pre>
+<dl class="fields"><dt><code>Line</code></dt><dd><p>The line in the template where the following node starts.</p></dd><dt><code>Raw</code></dt><dd><p>Output never escaped: the indentation syntax&#x27;s <code>!=</code> and <code>!{…}</code>.</p></dd><dt><code>For</code></dt><dd><p>A loop. <code>each</code> is the indentation syntax&#x27;s: with two names the value binds first, then the index or key.</p></dd><dt><code>Include</code></dt><dd><p><code>raw</code> includes the text as it stands, as the indentation syntax does for a file that is not a template. <code>inline</code> renders the file in place, as the indentation syntax does: what it defines stays defined and its blocks take part in inheritance. <code>block</code> is the indentation syntax&#x27;s body under an include, rendered where the included file says <code>yield</code>.</p></dd><dt><code>Yield</code></dt><dd><p>Where an include&#x27;s block goes.</p></dd></dl>
+</article>
+<article id="syntax-op"><h3><span class="kind">enum</span> Op</h3>
+
+<pre class="sig"><code>pub(all) enum Op {
+  Add
+  Sub
+  Mul
+  Div
+  FloorDiv
+  Mod
+  Pow
+  And
+  Or
+  Eq
+  Ne
+  Lt
+  Gt
+  Le
+  Ge
+  In
+  NotIn
+} derive(Eq)</code></pre>
+</article>
+<article id="syntax-options"><h3><span class="kind">struct</span> Options</h3>
+<p>How the brace syntax reads whitespace and line-oriented tags.</p>
+<pre class="sig"><code>pub(all) struct Options {
+  trim_blocks : Bool
+  lstrip_blocks : Bool
+  keep_trailing_newline : Bool
+  line_statement : String?
+  line_comment : String?
+}</code></pre>
+</article>
+<article id="syntax-param"><h3><span class="kind">struct</span> Param</h3>
+<p>A macro or call-block parameter.</p>
+<pre class="sig"><code>pub(all) struct Param {
+  name : String
+  default : Expr?
+  rest : Bool
+}</code></pre>
+</article>
+<article id="syntax-parser"><h3><span class="kind">struct</span> Parser</h3>
+<p>A token stream and the way its syntax reads a statement&#x27;s body. The brace syntax reads on through the same stream; the indentation syntax reads the indented lines and swaps in the tokens of the closing line.</p>
+<pre class="sig"><code>pub(all) struct Parser {
+  template : String
+  mut tokens : Array[Token]
+  mut at : Int32
+  body : (Parser, Array[String]) -&gt; Array[Node] raise @spec.Refused
+}</code></pre>
+<dl class="fields"><dt><code>body</code></dt><dd><p>Read nodes until one of the end tags; on return the current token is the end tag&#x27;s name.</p></dd></dl>
+<div class="member" id="syntax-parser-current"><pre class="sig"><code>pub fn Parser::current(Self) -&gt; Token</code></pre></div>
+<div class="member" id="syntax-parser-expect"><pre class="sig"><code>pub fn Parser::expect(Self, Tok) -&gt; Unit raise @spec.Refused</code></pre></div>
+<div class="member" id="syntax-parser-fail"><pre class="sig"><code>pub fn Parser::fail(Self, String) -&gt; @spec.Refused</code></pre></div>
+<div class="member" id="syntax-parser-next"><pre class="sig"><code>pub fn Parser::next(Self) -&gt; Token</code></pre></div>
+<div class="member" id="syntax-parser-parse_expression"><pre class="sig"><code>pub fn Parser::parse_expression(Self) -&gt; Expr raise @spec.Refused</code></pre></div>
+<div class="member" id="syntax-parser-parse_filter"><pre class="sig"><code>pub fn Parser::parse_filter(Self, Expr?) -&gt; Expr raise @spec.Refused</code></pre><p><code>|name(args)</code>, chained; <code>input</code> is <code>None</code> for a filter block&#x27;s head.</p></div>
+<div class="member" id="syntax-parser-parse_signature"><pre class="sig"><code>pub fn Parser::parse_signature(Self) -&gt; Array[Param] raise @spec.Refused</code></pre><p><code>(a, b=1, ...rest)</code>; the rest parameter is the indentation syntax&#x27;s.</p></div>
+<div class="member" id="syntax-parser-parse_statement"><pre class="sig"><code>pub fn Parser::parse_statement(Self) -&gt; Array[Node] raise @spec.Refused</code></pre><p>The statements both syntaxes share. The current token is the name after <code>{%</code>; on return it is the end of the tag.</p></div>
+<div class="member" id="syntax-parser-parse_tuple"><pre class="sig"><code>pub fn Parser::parse_tuple(Self, simplified? : Bool, condexpr? : Bool, extra? : Array[String], parenthesised? : Bool) -&gt; Expr raise @spec.Refused</code></pre><p>An expression, or several separated by commas as a tuple.</p></div>
+<div class="member" id="syntax-parser-statements"><pre class="sig"><code>pub fn Parser::statements(Self, Array[String], drop? : Bool) -&gt; Array[Node] raise @spec.Refused</code></pre><p>The body of a statement: the end of the head, then nodes up to one of <code>ends</code>. With <code>drop</code>, the end tag&#x27;s name is consumed.</p></div>
+</article>
+<article id="syntax-placement"><h3><span class="kind">enum</span> Placement</h3>
+
+<pre class="sig"><code>pub(all) enum Placement {
+  Replace
+  Append
+  Prepend
+} derive(Eq)</code></pre>
+</article>
+<article id="syntax-reading"><h3><span class="kind">struct</span> Reading</h3>
+<p>Where a reader stands: the language and whether it is forced, the template and the line the source starts on, the brace options in effect, and the languages a block may name.</p>
+<pre class="sig"><code>pub(all) struct Reading {
+  lang : Lang
+  force : Bool
+  template : String
+  line : Int32
+  options : Options
+  langs : (String) -&gt; Lang?
+}</code></pre>
+<div class="member" id="syntax-reading-allows"><pre class="sig"><code>pub fn Reading::allows(Self, Lang) -&gt; Bool</code></pre><p>Whether a block in <code>inner</code> is read inside this stretch. A forced stretch reads its own language and, outside HTML, HTML; any other block stays text, markers and all.</p></div>
+<div class="member" id="syntax-reading-block"><pre class="sig"><code>pub fn Reading::block(Self, String, String, Bool?, Int32) -&gt; Array[Node] raise @spec.Refused</code></pre><p>A block in the language named <code>name</code>, read into the tree; a reader of a user&#x27;s own language calls this for the blocks it finds.</p></div>
+<div class="member" id="syntax-reading-inside"><pre class="sig"><code>pub fn Reading::inside(Self, Lang, Bool?, Int32) -&gt; Self</code></pre><p>The reading inside a block starting at <code>line</code>: its own language and options, and its own force when it gives one, else the enclosing stretch&#x27;s. A block in the stretch&#x27;s own language keeps its options; line prefixes carry through.</p></div>
+</article>
+<article id="syntax-target"><h3><span class="kind">enum</span> Target</h3>
+<p>Where an assignment or a loop binds.</p>
+<pre class="sig"><code>pub(all) enum Target {
+  Name(String)
+  Tuple(Array[Target])
+  Field(String, String)
+}</code></pre>
+</article>
+<article id="syntax-tok"><h3><span class="kind">enum</span> Tok</h3>
+<p>One token. Template text and the delimiters of the brace syntax sit in the same stream as the tokens inside tags, as in Jinja&#x27;s lexer.</p>
+<pre class="sig"><code>pub(all) enum Tok {
+  Data(String)
+  VarBegin
+  VarEnd
+  BlockBegin
+  BlockEnd
+  Name(String)
+  Str(String)
+  Int(Int64)
+  Float(Double)
+  Op(String)
+  Lang(String, Bool?, String)
+  Eof
+} derive(Eq)</code></pre>
+<dl class="fields"><dt><code>Lang</code></dt><dd><p>A language block&#x27;s language, its force if given, and its body.</p></dd></dl>
+</article>
+<article id="syntax-token"><h3><span class="kind">struct</span> Token</h3>
+
+<pre class="sig"><code>pub(all) struct Token {
+  tok : Tok
+  line : Int32
+  column : Int32
+}</code></pre>
+</article>
+<article id="syntax-trans"><h3><span class="kind">struct</span> Trans</h3>
+<p>A <code>{% trans %}</code>: message ids with <code>%(name)s</code> placeholders, the values those names take, the plural count, and the message context.</p>
+<pre class="sig"><code>pub(all) struct Trans {
+  context : String?
+  singular : String
+  plural : String?
+  vars : Array[(String, Expr)]
+  count : Expr?
+}</code></pre>
+</article>
+<h3 id="syntax-functions">Functions</h3>
+<div class="member" id="syntax-lex_expression"><pre class="sig"><code>pub fn lex_expression(String, String, line? : Int32, column? : Int32) -&gt; Array[Token] raise @spec.Refused</code></pre><p>The tokens of a bare expression, as the indentation syntax and interpolation read them: everything to the end of the text.</p></div>
+<div class="member" id="syntax-lex_template"><pre class="sig"><code>pub fn lex_template(String, Options, String, reading? : Reading, first_line? : Int32) -&gt; Array[Token] raise @spec.Refused</code></pre><p>The token stream of a template in the brace syntax: template text and tags in order, ending in <code>Eof</code>.</p></div>
+<div class="member" id="syntax-read"><pre class="sig"><code>pub fn read(String, Reading) -&gt; Array[Node] raise @spec.Refused</code></pre><p>A source read in the reading&#x27;s language.</p></div>
+<div class="member" id="syntax-read_braces"><pre class="sig"><code>pub fn read_braces(String, Reading) -&gt; Array[Node] raise @spec.Refused</code></pre><p>A source in the brace syntax, read into the tree: the reader of <code>html</code> and <code>md</code>.</p></div>
+<div class="member" id="syntax-read_indent"><pre class="sig"><code>pub fn read_indent(String, Reading) -&gt; Array[Node] raise @spec.Refused</code></pre><p>A source in the indentation syntax, read into the tree: the reader of <code>pug</code>.</p></div>
+<div class="member" id="syntax-resolve"><pre class="sig"><code>pub fn resolve(String, String, line? : Int32) -&gt; String raise @spec.Refused</code></pre><p>A path the indentation syntax names, relative to the template naming it unless it starts with <code>/</code>; <code>.pug</code> is added when there is no extension.</p></div>
+<h3 id="syntax-values">Values</h3>
+<div class="member" id="syntax-html"><pre class="sig"><code>pub let html : Lang</code></pre><p>HTML: text with <code>{{ }}</code>, <code>{% %}</code> and <code>{# #}</code>.</p></div>
+<div class="member" id="syntax-markdown"><pre class="sig"><code>pub let markdown : Lang</code></pre><p>Markdown: the brace syntax, with a tag on a line of its own leaving no blank line behind.</p></div>
+<div class="member" id="syntax-options"><pre class="sig"><code>pub let options : Options</code></pre><p>Brace options with nothing trimmed and no line prefixes.</p></div>
+<div class="member" id="syntax-pug"><pre class="sig"><code>pub let pug : Lang</code></pre><p>Pug: elements by indentation, <code>&lt;</code> lines passed through, <code>{% %}</code> lines as statements.</p></div>
+</section>
+  </div>
+</main>
+<footer>moonpug · Apache-2.0 · <a href="https://github.com/moonbitstack/moonpug">github.com/moonbitstack/moonpug</a></footer>
+<script type="module" src="assets/page.js"></script>
+</body>
+</html>

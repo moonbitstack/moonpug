@@ -107,19 +107,7 @@ function theme() {
   });
 }
 
-function follow() {
-  const links = [...document.querySelectorAll(".doc aside a")];
-  const seen = new IntersectionObserver((entries) => {
-    for (const e of entries) {
-      if (!e.isIntersecting) continue;
-      for (const a of links) a.classList.toggle("on", a.getAttribute("href") === `#${e.target.id}`);
-    }
-  }, { rootMargin: "-40% 0px -55% 0px" });
-  for (const s of document.querySelectorAll(".doc section")) seen.observe(s);
-}
-
 theme();
-follow();
 $("#data").value = data;
 for (const b of document.querySelectorAll(".tabs button")) b.addEventListener("click", () => choose(b.dataset.lang));
 for (const el of ["#source", "#data", "#force"]) $(el).addEventListener("input", render);

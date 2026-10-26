@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>moonpug guide</title>
+<meta name="description" content="From a first render to template sets, your own filters, objects and languages.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@500;600&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/site.css">
+</head>
+<body class="page guide">
+<header class="bar">
+  <a class="mark" href="index.html">moon<b>pug</b></a>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="guide.html" aria-current="page">Guide</a>
+    <a href="api.html">API</a>
+  </nav>
+  <a class="github" href="https://github.com/moonbitstack/moonpug" aria-label="moonpug on GitHub"><svg viewBox="0 0 16 16" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38v-1.33c-2.23.48-2.7-1.07-2.7-1.07-.36-.92-.89-1.17-.89-1.17-.73-.5.06-.49.06-.49.8.06 1.23.83 1.23.83.72 1.22 1.88.87 2.34.66.07-.52.28-.87.5-1.07-1.78-.2-3.65-.89-3.65-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48v2.2c0 .21.15.46.55.38A8 8 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></a>
+  <button id="theme" type="button">Light / dark</button>
+</header>
+
+<main class="doc">
+  <aside class="index">
+    <div class="group"><b>Start</b>
+      <a href="#quick-start">Quick start</a>
+      <a href="#data">Data in</a>
+      <a href="#languages">Languages</a>
+    </div>
+    <div class="group"><b>Writing</b>
+      <a href="#output">Output and escaping</a>
+      <a href="#statements">Statements</a>
+      <a href="#expressions">Expressions</a>
+      <a href="#filters">Filters and tests</a>
+      <a href="#whitespace">Whitespace</a>
+      <a href="#pug">Indentation syntax</a>
+      <a href="#blocks">Language blocks</a>
+    </div>
+    <div class="group"><b>Going further</b>
+      <a href="#sets">Template sets</a>
+      <a href="#extending">Functions and filters</a>
+      <a href="#objects">Host objects</a>
+      <a href="#own">Your own language</a>
+      <a href="#i18n">Translation</a>
+      <a href="#once">Caching and showing</a>
+      <a href="#settings">Settings</a>
+      <a href="#errors">Errors</a>
+    </div>
+  </aside>
+
+  <div class="reference">
+    <div class="kicker">Guide</div>
+    <h1>From a first page to a language of your own</h1>
+    <p class="lede">Each section builds on the one before. Every example runs as written; the five programs in <code>src/examples</code> put them together.</p>
+
+    <section id="quick-start">
+      <h2>Quick start</h2>
+      <pre class="code">moon add moonbitstack/moonpug</pre>
+      <p>Add the package to the <code>moon.pkg</code> that uses it, then render:</p>
+      <pre class="code"><span class="k">let</span> out = @moonpug.render(<span class="s">"Hello {{ name|title }}!"</span>, { <span class="s">"name"</span>: <span class="s">"ada"</span> })
+<span class="c">// Hello Ada!</span></pre>
+      <p><code>render</code> compiles and renders in one call. When the same template renders many times, compile it once:</p>
+      <pre class="code"><span class="k">let</span> env = @moonpug.Env::new()
+<span class="k">let</span> greet = env.compile(<span class="s">"Hello {{ name }}!"</span>)
+greet.render({ <span class="s">"name"</span>: <span class="s">"Ada"</span> })
+greet.render({ <span class="s">"name"</span>: <span class="s">"Grace"</span> })</pre>
+    </section>
+
+    <section id="data">
+      <h2>Data in</h2>
+      <p>A context is anything that converts to <code>Json</code>: a <code>derive(ToJson)</code> struct, a map literal, a parsed document. Objects become mappings, arrays become lists, and whole numbers become integers.</p>
+      <pre class="code"><span class="k">struct</span> Book { title : String; year : Int; tags : Array[String] } derive(ToJson)
+<span class="k">struct</span> Shelf { shelf : String; books : Array[Book] } derive(ToJson)
+
+@moonpug.render(page, Shelf::{ shelf: <span class="s">"Reading"</span>, books })</pre>
+      <p>Values that are more than data, such as functions and your own objects, go in through <code>render_values</code> with a <code>Map[String, Value]</code>; see <a href="#objects">host objects</a>.</p>
+    </section>
+
+    <section id="languages">
+      <h2>Languages</h2>
+      <table>
+        <tr><th>Name</th><th>Also</th><th>Reads</th><th>Preset</th></tr>
+        <tr><td><code>html</code></td><td></td><td>text with <code>{{ }}</code>, <code>{% %}</code>, <code>{# #}</code></td><td><code>html</code> escaped, <code>text</code> not</td></tr>
+        <tr><td><code>pug</code></td><td><code>pg</code></td><td>elements by indentation</td><td><code>pug</code></td></tr>
+        <tr><td><code>md</code></td><td><code>markdown</code></td><td>braces, with a tag on a line of its own leaving no blank line</td><td><code>markdown</code></td></tr>
+      </table>
+      <pre class="code">@moonpug.render(source, data, format=@moonpug.pug)
+@moonpug.render(source, data, format=@moonpug.markdown)</pre>
+      <p>An unnamed source reads as <code>settings.format</code>, escaped HTML unless you change it. A named template takes its format from <code>settings.formats</code>, which by default goes by extension: <code>.pug</code> and <code>.pg</code> as pug, <code>.md</code> and <code>.markdown</code> as Markdown, <code>.html</code>, <code>.htm</code>, <code>.xml</code>, <code>.svg</code> and <code>.xhtml</code> as escaped HTML, anything else as unescaped text.</p>
+    </section>
+
+    <section id="output">
+      <h2>Output and escaping</h2>
+      <p><code>{{ expression }}</code> writes a value. With escaping on, <code>&amp; &lt; &gt; " '</code> become entities. A value marked safe passes through:</p>
+      <pre class="code">{{ title }}              <span class="c">&lt;!-- &amp;lt;b&amp;gt;x&amp;lt;/b&amp;gt; --&gt;</span>
+{{ title|safe }}         <span class="c">&lt;!-- &lt;b&gt;x&lt;/b&gt; --&gt;</span>
+{% autoescape false %}{{ title }}{% endautoescape %}</pre>
+      <p>Filters that build markup, such as <code>urlize</code>, <code>xmlattr</code>, <code>linebreaks</code> and <code>json_script</code>, escape what they wrap and return safe markup. <code>{# … #}</code> is a comment.</p>
+    </section>
+
+    <section id="statements">
+      <h2>Statements</h2>
+      <pre class="code">{% if user %}Hello {{ user.name }}{% elif guest %}Welcome{% else %}Sign in{% endif %}
+
+{% for item in items if item.visible %}
+  {{ loop.index }}/{{ loop.length }} {{ item.name }}{% if not loop.last %},{% endif %}
+{% else %}
+  Nothing yet.
+{% endfor %}
+
+{% set total = items|sum(attribute='price') %}
+{% set ns = namespace(count=0) %}{% for i in items %}{% set ns.count = ns.count + 1 %}{% endfor %}
+
+{% macro field(name, value='', type='text') %}
+  &lt;input name="{{ name }}" value="{{ value }}" type="{{ type }}"&gt;
+{% endmacro %}
+{{ field('email', type='email') }}
+
+{% call field_row('Name') %}{{ field('name') }}{% endcall %}
+{% filter upper %}shouted{% endfilter %}
+{% with total = 3 %}{{ total }}{% endwith %}</pre>
+      <p>Inside a loop, <code>loop</code> has <code>index</code>, <code>index0</code>, <code>revindex</code>, <code>first</code>, <code>last</code>, <code>length</code>, <code>depth</code>, <code>previtem</code>, <code>nextitem</code>, <code>cycle(…)</code> and <code>changed(…)</code>; a <code>recursive</code> loop calls <code>loop(children)</code>. <code>break</code>, <code>continue</code> and <code>do</code> are there too.</p>
+    </section>
+
+    <section id="expressions">
+      <h2>Expressions</h2>
+      <pre class="code">{{ 7 // 2 }} {{ 7 % 3 }} {{ 2 ** 10 }} {{ 1 &lt; x &lt;= 9 }} {{ 'a' in name }}
+{{ first ~ ' ' ~ last }} {{ 'yes' if ok else 'no' }} {{ items[1:3] }}
+{{ 'a,b'.split(',') }} {{ '{:&gt;8.2f}'.format(price) }} {{ '%s=%d' % (key, n) }}
+{{ user.address.city }} {{ user['first-name'] }} {{ data.items()|list }}</pre>
+      <p>Strings, lists and maps carry their methods. Numbers are 64-bit integers and doubles; integer arithmetic that would overflow is refused rather than wrapped.</p>
+    </section>
+
+    <section id="filters">
+      <h2>Filters and tests</h2>
+      <pre class="code">{{ name|default('anonymous')|title }}
+{{ posts|selectattr('published')|sort(attribute='date', reverse=true)|map(attribute='title')|join(', ') }}
+{{ created|date('N j, Y') }} {{ created|timesince(now) }} {{ price|floatformat(2) }}
+{{ n }} item{{ n|pluralize }}  {{ value is number }}  {{ 6 is divisibleby(3) }}</pre>
+      <p>The full list of built-in filters, tests and globals is on the <a href="index.html#reference">home page</a>, read from the engine itself.</p>
+    </section>
+
+    <section id="whitespace">
+      <h2>Whitespace</h2>
+      <p>A <code>-</code> inside a tag strips the whitespace on that side: <code>{%- if x -%}</code>. <code>trim_blocks</code> drops the newline after a block tag and <code>lstrip_blocks</code> the indentation before it; the <code>markdown</code> preset turns both on. With <code>line_statement</code> set to <code>"#"</code>, a line starting with <code>#</code> is a statement.</p>
+      <pre class="code"><span class="k">let</span> tidy = { ..@moonpug.html, trim_blocks: <span class="k">true</span>, lstrip_blocks: <span class="k">true</span> }
+@moonpug.render(source, data, format=tidy)</pre>
+    </section>
+
+    <section id="pug">
+      <h2>The indentation syntax</h2>
+      <div class="duo">
+        <div><h4>pug</h4><pre class="code">doctype html
+html
+  body
+    nav#top.bar
+      each l in links
+        a(href=l.url class=['link', l.kind])= l.label
+    p Hello #{user.name}, #[strong welcome].
+    if items
+      ul: each i in items
+        li= i
+    else
+      p.
+        Nothing here yet.
+        Come back later.</pre></div>
+        <div><h4>reads as</h4><pre class="code">&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;body&gt;
+&lt;nav class="bar" id="top"&gt;
+  &lt;a class="link …" href="…"&gt;…&lt;/a&gt;…
+&lt;/nav&gt;
+&lt;p&gt;Hello Ada, &lt;strong&gt;welcome&lt;/strong&gt;.&lt;/p&gt;
+&lt;ul&gt;&lt;li&gt;…&lt;/li&gt;&lt;/ul&gt;
+&lt;/body&gt;&lt;/html&gt;</pre></div>
+      </div>
+      <p>Attributes go in <code>( )</code>, or <code>[ ]</code> and <code>{ }</code> when a long list wraps; <code>&amp;attributes(map)</code> merges a mapping in; <code>:key</code> is written as <code>data-key</code>. <code>|</code> starts a line of text and a trailing <code>.</code> makes the indented block text. <code>&lt;</code> lines pass through as HTML, and <code>{% %}</code> lines are statements whose body is the indented block. Mixins take arguments, a block and attributes; <code>include</code> with an indented block puts it where the included file says <code>yield</code>; <code>case</code> takes <code>when a, b</code>.</p>
+    </section>
+
+    <section id="blocks">
+      <h2>Language blocks</h2>
+      <pre class="code">&lt;article&gt;
+{% block lang=md %}
+## {{ title }}
+{% for p in points %}
+- {{ p }}
+{% endfor %}
+{% endblock %}
+{% block lang=pug %}
+footer: small © {{ year }}
+{% endblock %}
+&lt;/article&gt;</pre>
+      <p>A whole template is one block in its own language; blocks inside may switch again, as deep as you like, and see the same variables. <code>force=true</code> on a block, <code>Settings.force</code>, or <code>render(…, force=true)</code> keep a stretch to its own language: inside pug and Markdown, blocks in another language stay as text and HTML still reads; inside HTML, pug and Markdown blocks stay as text.</p>
+    </section>
+
+    <section id="sets">
+      <h2>Template sets</h2>
+      <pre class="code"><span class="k">let</span> env = @moonpug.Env::new(load=name =&gt; sources.get(name))
+env.template(<span class="s">"page.html"</span>).render(data)</pre>
+      <pre class="code">{# layout.html #}
+&lt;title&gt;{% block title %}Site{% endblock %}&lt;/title&gt;&lt;main&gt;{% block body %}{% endblock %}&lt;/main&gt;
+
+{# page.html #}
+{% extends 'layout.html' %}
+{% import 'ui.html' as ui %}
+{% block title %}{{ name }} · {{ super() }}{% endblock %}
+{% block body %}{{ ui.card(name, note) }}{% include 'footer.html' ignore missing %}{% endblock %}</pre>
+      <p><code>Env::template</code> reads a template through <code>load</code>, compiles it and keeps it. Blocks may be <code>scoped</code> (they see the loop around them) or <code>required</code>; the indentation syntax also has <code>block append</code> and <code>block prepend</code>. Paths in the indentation syntax are relative to the including file and may not climb above the loader's root.</p>
+    </section>
+
+    <section id="extending">
+      <h2>Functions, filters and tests</h2>
+      <pre class="code"><span class="k">let</span> env = @moonpug.Env::new()
+env.add_global(<span class="s">"site"</span>, Text(<span class="s">"moonbitstack"</span>))
+env.add_global(<span class="s">"today"</span>, @moonpug.Value::func(<span class="s">"today"</span>, (_, _, _) =&gt; Text(<span class="s">"2026-10-25"</span>)))
+env.add_filter(<span class="s">"money"</span>, (call, value, args, named) =&gt; Text(<span class="s">"¥"</span> + call.text(value)))
+env.add_test(<span class="s">"short"</span>, (call, value, args) =&gt; call.text(value).length() &lt;= 3)</pre>
+      <p>A filter receives the <code>Call</code> (whether output is being escaped, the undefined policy, the other filters), the value left of <code>|</code>, and the arguments. Registering a name that already exists replaces the built-in. Raise <code>@moonpug.invalid(reason)</code>; the engine adds the template and line.</p>
+    </section>
+
+    <section id="objects">
+      <h2>Host objects</h2>
+      <pre class="code"><span class="k">impl</span> @moonpug.Object <span class="k">for</span> Cart <span class="k">with fn</span> kind(_) { <span class="s">"the cart"</span> }
+<span class="k">impl</span> @moonpug.Object <span class="k">for</span> Cart <span class="k">with fn</span> attr(self, name) {
+  <span class="k">match</span> name { <span class="s">"total"</span> =&gt; Some(Int(self.total())); _ =&gt; None }
+}
+<span class="k">impl</span> @moonpug.Object <span class="k">for</span> Cart <span class="k">with fn</span> items(self) { Some(self.lines()) }
+
+env.compile(source).render_values({ <span class="s">"cart"</span>: Object(cart) })</pre>
+      <table>
+        <tr><th>Method</th><th>Template</th><th>Default</th></tr>
+        <tr><td><code>kind</code></td><td>messages</td><td>required</td></tr>
+        <tr><td><code>attr</code></td><td><code>cart.total</code></td><td>no attributes</td></tr>
+        <tr><td><code>call</code>, <code>callable</code></td><td><code>cart()</code>, <code>is callable</code></td><td>refused, false</td></tr>
+        <tr><td><code>assign</code></td><td><code>{% set cart.coupon = … %}</code></td><td>refused</td></tr>
+        <tr><td><code>show</code></td><td><code>{{ cart }}</code></td><td><code>&lt;kind&gt;</code></td></tr>
+        <tr><td><code>items</code></td><td><code>for x in cart</code></td><td>not iterable</td></tr>
+      </table>
+    </section>
+
+    <section id="own">
+      <h2>Your own language</h2>
+      <pre class="code"><span class="k">fn</span> read_csv(source : String, reading : @moonpug.Reading) -&gt; Array[@syntax.Node] <span class="k">raise</span> @moonpug.Refused {
+  <span class="k">let</span> nodes : Array[@syntax.Node] = [Text(<span class="s">"&lt;table&gt;"</span>)]
+  <span class="k">for</span> line <span class="k">in</span> source.split(<span class="s">"\n"</span>) {
+    nodes.push(Text(<span class="s">"&lt;tr&gt;"</span>))
+    <span class="k">for</span> cell <span class="k">in</span> line.split(<span class="s">","</span>) {
+      nodes.append(reading.block(cell.trim().to_owned(), <span class="s">"html"</span>, None, reading.line))
+    }
+    nodes.push(Text(<span class="s">"&lt;/tr&gt;"</span>))
+  }
+  nodes.push(Text(<span class="s">"&lt;/table&gt;"</span>))
+  nodes
+}
+
+env.add_lang({ name: <span class="s">"csv"</span>, aliases: [<span class="s">"table"</span>], options: @syntax.options, read: read_csv })</pre>
+      <p>A reader turns source into the tree in <code>moonbitstack/moonpug/syntax</code>. <code>Reading</code> says where it stands (language, force, template, line, brace options) and <code>reading.block</code> reads a stretch in any registered language, so a reader can lean on the built-in ones. After <code>add_lang</code>, <code>{% block lang=csv %}</code> and <code>Format.lang = "csv"</code> both work.</p>
+    </section>
+
+    <section id="i18n">
+      <h2>Translation</h2>
+      <pre class="code"><span class="k">let</span> env = @moonpug.Env::new(translate=(message, context, count) =&gt; catalogue.find(message, context, count))</pre>
+      <pre class="code">{% trans user=name %}Hello {{ user }}!{% endtrans %}
+{% trans count=n %}{{ count }} item{% pluralize %}{{ count }} items{% endtrans %}
+{% trans "menu" %}Open{% endtrans %}
+{{ _('Hello') }} {{ ngettext('%(num)d apple', '%(num)d apples', n) }} {{ pgettext('menu', 'Open') }}</pre>
+      <p><code>translate</code> receives the message, its context and the plural count, and returns the translation or <code>None</code> to keep the source text. Translations are format strings filled with <code>%(name)s</code>; with escaping on they are trusted and the values escaped into them.</p>
+    </section>
+
+    <section id="once">
+      <h2>Caching and showing</h2>
+      <pre class="code">{% once 'sidebar' %}{{ expensive() }}{% endonce %}
+{% show expanded %}&lt;div class="more"&gt;…&lt;/div&gt;{% endshow %}</pre>
+      <p><code>once</code> stores what it renders through the <code>cache</code> function passed to <code>Env::new</code>, keyed by the expression; without one it renders every time. <code>show</code> writes its content either way and hides it with an inline style when the condition is false.</p>
+    </section>
+
+    <section id="settings">
+      <h2>Settings</h2>
+      <pre class="code"><span class="k">let</span> settings = {
+  ..@moonpug.settings,
+  undefined: Lenient,
+  line_statement: Some(<span class="s">"#"</span>),
+  limits: { ..@moonpug.limits, depth: 200 },
+}
+<span class="k">let</span> env = @moonpug.Env::new(settings~)</pre>
+      <table>
+        <tr><th>Field</th><th>Preset</th><th>Means</th></tr>
+        <tr><td><code>format</code></td><td><code>html</code></td><td>how an unnamed source reads</td></tr>
+        <tr><td><code>formats</code></td><td><code>format_of</code></td><td>how a named template reads</td></tr>
+        <tr><td><code>force</code></td><td>false</td><td>read only the template's own language</td></tr>
+        <tr><td><code>undefined</code></td><td><code>Strict</code></td><td>what using a missing name does</td></tr>
+        <tr><td><code>line_statement</code>, <code>line_comment</code></td><td>none</td><td>line prefixes</td></tr>
+        <tr><td><code>limits.depth</code></td><td>1000</td><td>nested macro calls, includes, extends and recursive loops</td></tr>
+        <tr><td><code>limits.range</code></td><td>100 000</td><td>the longest list <code>range</code> builds</td></tr>
+      </table>
+      <h3>Configuration precedence</h3>
+      <pre class="code">library preset  &lt;  the record you pass  &lt;  the same name passed to this call</pre>
+      <p>In <code>render(source, data, settings=s, format=f, force=b)</code>, <code>format</code> and <code>force</code> override <code>s</code>, and <code>s</code> overrides the preset. <code>Strict</code> refuses a missing name unless the template asks <code>is defined</code> or gives a <code>default</code>; <code>Lenient</code> prints it as nothing; <code>Chainable</code> also lets its attributes be missing. The implicit <code>else</code> of an inline <code>if</code> is never refused.</p>
+    </section>
+
+    <section id="errors">
+      <h2>Errors</h2>
+      <pre class="code"><span class="k">let</span> page = env.template(<span class="s">"page.html"</span>).render(data) <span class="k">catch</span> {
+  Unknown(template~, line~, kind=<span class="s">"name"</span>, name~) =&gt; <span class="s">"\{template}:\{line}: \{name} is missing"</span>
+  e =&gt; e.to_string()
+}</pre>
+      <table>
+        <tr><th>Variant</th><th>When</th></tr>
+        <tr><td><code>Syntax(template, line, column, reason)</code></td><td>the source is not well formed</td></tr>
+        <tr><td><code>Unknown(template, line, kind, name)</code></td><td>a name, filter, test, template, language or attribute resolves to nothing</td></tr>
+        <tr><td><code>Invalid(template, line, reason)</code></td><td>values that do not fit an operation or its arguments</td></tr>
+        <tr><td><code>Exceeded(template, line, limit, got)</code></td><td>a bound in <code>Limits</code> was crossed</td></tr>
+      </table>
+    </section>
+  </div>
+</main>
+<footer>moonpug · Apache-2.0 · <a href="https://github.com/moonbitstack/moonpug">github.com/moonbitstack/moonpug</a></footer>
+<script type="module" src="assets/page.js"></script>
+</body>
+</html>

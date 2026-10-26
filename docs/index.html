@@ -14,45 +14,53 @@
 <header class="bar">
   <a class="mark" href="#">moon<b>pug</b></a>
   <nav>
-    <a href="#start">Start</a>
-    <a href="#languages">Languages</a>
-    <a href="#objects">Objects</a>
-    <a href="#own">Your language</a>
-    <a href="#reference">Reference</a>
-    <a href="https://github.com/moonbitstack/moonpug">Source</a>
+    <a href="guide.html">Guide</a>
+    <a href="api.html">API</a>
+    <a href="#reference">Built in</a>
   </nav>
+  <a class="github" href="https://github.com/moonbitstack/moonpug" aria-label="moonpug on GitHub"><svg viewBox="0 0 16 16" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38v-1.33c-2.23.48-2.7-1.07-2.7-1.07-.36-.92-.89-1.17-.89-1.17-.73-.5.06-.49.06-.49.8.06 1.23.83 1.23.83.72 1.22 1.88.87 2.34.66.07-.52.28-.87.5-1.07-1.78-.2-3.65-.89-3.65-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48v2.2c0 .21.15.46.55.38A8 8 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></a>
   <button id="theme" type="button">Light / dark</button>
 </header>
 
 <main>
   <div class="hero">
-    <div>
-      <div class="kicker">Templates for MoonBit</div>
-      <h1>One page, <em>three</em> ways to write it.</h1>
-      <p class="lede">Text with braces, indented markup, or Markdown, over one expression language. A template compiles once and renders as often as you like; it touches no file, clock or socket unless you hand it a function that does.</p>
+    <div class="kicker">Templates for MoonBit</div>
+    <h1>One page, <em>three</em> ways to write it.</h1>
+    <p class="lede">Text with braces, indented markup, or Markdown, over one expression language. A template compiles once and renders as often as you like; it touches no file, clock or socket unless you hand it a function that does.</p>
+    <div class="actions">
       <div class="install"><span>$</span>moon add moonbitstack/moonpug</div>
+      <a class="button" href="guide.html">Read the guide</a>
+      <a class="button quiet" href="https://github.com/moonbitstack/moonpug">View on GitHub</a>
     </div>
-    <div class="proof" aria-label="A live template">
+  </div>
+
+  <section class="bench" aria-label="A live template">
+    <div class="bench-head">
       <div class="tabs" role="group" aria-label="Language">
         <button type="button" data-lang="html" aria-pressed="true">html</button>
         <button type="button" data-lang="pug">pug</button>
         <button type="button" data-lang="md">md</button>
-        <label><input id="force" type="checkbox"> force</label>
       </div>
-      <div class="panes">
-        <div class="pane">
-          <h4>Template</h4>
-          <textarea id="source" spellcheck="false" aria-label="Template"></textarea>
-          <textarea id="data" class="data" spellcheck="false" aria-label="Data"></textarea>
-        </div>
-        <div class="pane">
-          <h4>Rendered</h4>
-          <pre id="out" class="out"></pre>
-          <div id="view" class="view"></div>
-        </div>
+      <span class="note">Edit anything: the engine below is moonpug compiled to JavaScript.</span>
+      <label><input id="force" type="checkbox"> force</label>
+    </div>
+    <div class="bench-body">
+      <div class="pane">
+        <h4>Template</h4>
+        <textarea id="source" wrap="off" spellcheck="false" aria-label="Template"></textarea>
+      </div>
+      <div class="pane">
+        <h4>Data</h4>
+        <textarea id="data" wrap="off" spellcheck="false" aria-label="Data"></textarea>
+      </div>
+      <div class="pane result">
+        <h4>Rendered</h4>
+        <pre id="out" class="out"></pre>
+        <h4>Preview</h4>
+        <div id="view" class="view"></div>
       </div>
     </div>
-  </div>
+  </section>
 
   <div class="figures">
     <div><b>3</b><span>languages, and yours</span></div>
@@ -71,133 +79,39 @@
     <div class="feature" data-n="vi"><h3>Refusals with a place</h3><p>Every error names the template and line, and the column when the source is malformed. Deep recursion is refused, not overflowed.</p></div>
   </div>
 
-  <div class="doc">
-    <aside>
-      <a href="#start">Start</a>
-      <a href="#languages">Languages</a>
-      <a href="#blocks">Language blocks</a>
-      <a href="#writing">Writing templates</a>
-      <a href="#objects">Data and objects</a>
-      <a href="#named">Templates by name</a>
-      <a href="#own">Your own language</a>
-      <a href="#settings">Settings</a>
-      <a href="#errors">Errors</a>
-      <a href="#reference">Reference</a>
-    </aside>
-    <div>
-      <section id="start">
-        <h2>Start</h2>
-        <pre class="code"><span class="k">struct</span> Book { title : String; year : Int } derive(ToJson)
-<span class="k">struct</span> Shelf { shelf : String; books : Array[Book] } derive(ToJson)
-
-<span class="k">let</span> page = <span class="s">"&lt;h1&gt;{{ shelf }}&lt;/h1&gt;{% for b in books %}&lt;p&gt;{{ b.title }}&lt;/p&gt;{% endfor %}"</span>
-<span class="k">let</span> html = @moonpug.render(page, Shelf::{ shelf: <span class="s">"Reading &lt;list&gt;"</span>, books })
-<span class="c">// &lt;h1&gt;Reading &amp;lt;list&amp;gt;&lt;/h1&gt;&lt;p&gt;…&lt;/p&gt;</span></pre>
-        <p>Data goes in as anything that converts to <code>Json</code>. <code>render</code> compiles and renders in one call; an <code>Env</code> keeps compiled templates when the same one renders again.</p>
-      </section>
-
-      <section id="languages">
-        <h2>Languages</h2>
-        <table>
-          <tr><th>Name</th><th>Also</th><th>Reads</th><th>Preset</th></tr>
-          <tr><td><code>html</code></td><td></td><td>text with <code>{{ }}</code>, <code>{% %}</code>, <code>{# #}</code></td><td><code>html</code>, <code>text</code></td></tr>
-          <tr><td><code>pug</code></td><td><code>pg</code></td><td>elements by indentation; <code>&lt;</code> lines pass through; <code>{% %}</code> lines are statements</td><td><code>pug</code></td></tr>
-          <tr><td><code>md</code></td><td><code>markdown</code></td><td>the brace syntax, with a tag on a line of its own leaving no blank line</td><td><code>markdown</code></td></tr>
-        </table>
-        <p>A named template picks its format from the extension: <code>.pug</code> and <code>.pg</code> read as pug, <code>.md</code> as Markdown, <code>.html</code>, <code>.htm</code>, <code>.xml</code> and <code>.svg</code> as escaped HTML, anything else as text.</p>
-      </section>
-
-      <section id="blocks">
-        <h2>Language blocks</h2>
-        <pre class="code">&lt;section&gt;
-{% block lang=pug %}
-ul
-  each i in items
-    li= i
-{% endblock %}
-&lt;/section&gt;</pre>
-        <p>A whole template is one block in its own language, and blocks inside it may switch again, as deep as they like. With <code>force=true</code> a stretch reads only its own language: inside pug and Markdown, blocks in another language stay as text and HTML still reads; inside HTML, pug and Markdown blocks stay as text. A block's own <code>force=</code> wins over the one around it.</p>
-      </section>
-
-      <section id="writing">
-        <h2>Writing templates</h2>
-        <h3>Statements</h3>
-        <p><code>if</code>, <code>for</code> with <code>loop</code> and <code>else</code>, <code>break</code>, <code>continue</code>, <code>set</code>, <code>with</code>, <code>macro</code> and <code>call</code>, <code>filter</code>, <code>include</code>, <code>import</code>, <code>extends</code> and <code>block</code> with <code>super()</code>, <code>raw</code>, <code>autoescape</code>, <code>do</code>, <code>trans</code>, <code>once</code>, <code>show</code>, <code>debug</code>.</p>
-        <h3>Expressions</h3>
-        <p>Literals, lists, tuples and maps; attributes, subscripts and slices; arithmetic with <code>//</code>, <code>%</code> and <code>**</code>; comparisons that chain; <code>in</code>, <code>and</code>, <code>or</code>, <code>not</code>; <code>~</code> to join as text; inline <code>if</code>; filters with <code>|</code> and tests with <code>is</code>. Strings, lists and maps carry their methods: <code>'{:&gt;8.2f}'.format(x)</code>, <code>'%s=%d' % (k, v)</code>, <code>d.items()</code>.</p>
-        <h3>In pug</h3>
-        <p>Tags with <code>#id</code> and <code>.class</code>; attributes in <code>( )</code>, or <code>[ ]</code> and <code>{ }</code> when a long list wraps; <code>&amp;attributes</code>; <code>#{}</code> and <code>!{}</code>; <code>#[tag]</code> inline; <code>|</code> and <code>.</code> text; <code>if</code>, <code>unless</code>, <code>each</code>, <code>case</code> with <code>when a, b</code>; mixins with blocks; <code>include</code> with a block that lands at <code>yield</code>; <code>extends</code> with <code>block append</code> and <code>prepend</code>; <code>doctype</code>; <code>:name</code> content filters.</p>
-      </section>
-
-      <section id="objects">
-        <h2>Data and objects</h2>
-        <pre class="code"><span class="k">let</span> env = @moonpug.Env::new()
-env.add_global(<span class="s">"today"</span>, @moonpug.Value::func(<span class="s">"today"</span>, (_, _, _) =&gt; Text(<span class="s">"2026-10-25"</span>)))
-env.add_filter(<span class="s">"money"</span>, (call, value, _, _) =&gt; Text(<span class="s">"¥"</span> + call.text(value)))
-
-<span class="k">impl</span> @moonpug.Object <span class="k">for</span> Cart <span class="k">with fn</span> kind(_) { <span class="s">"the cart"</span> }
-<span class="k">impl</span> @moonpug.Object <span class="k">for</span> Cart <span class="k">with fn</span> attr(self, name) { … }   <span class="c">// cart.total</span>
-<span class="k">impl</span> @moonpug.Object <span class="k">for</span> Cart <span class="k">with fn</span> items(self) { … }        <span class="c">// for x in cart</span>
-
-env.compile(source).render_values({ <span class="s">"cart"</span>: Object(cart) })</pre>
-        <p><code>Object</code> has <code>kind</code>, <code>attr</code>, <code>call</code>, <code>callable</code>, <code>assign</code>, <code>show</code> and <code>items</code>; every one but <code>kind</code> has a default.</p>
-      </section>
-
-      <section id="named">
-        <h2>Templates by name</h2>
-        <pre class="code"><span class="k">let</span> env = @moonpug.Env::new(load=name =&gt; sources.get(name))
-<span class="k">let</span> page = env.template(<span class="s">"page.html"</span>)   <span class="c">// read, compiled and kept</span>
-page.render(data)</pre>
-        <p><code>load</code> serves <code>extends</code>, <code>include</code> and <code>import</code>. <code>translate</code> answers <code>trans</code> and <code>gettext</code> with a message, its context and the plural count. <code>cache</code> stores what <code>once</code> renders. All three are functions you pass in.</p>
-      </section>
-
-      <section id="own">
-        <h2>Your own language</h2>
-        <pre class="code"><span class="k">fn</span> read_csv(source : String, reading : @moonpug.Reading) -&gt; Array[@syntax.Node] <span class="k">raise</span> @moonpug.Refused {
-  …
-  nodes.append(reading.block(cell, <span class="s">"html"</span>, None, reading.line))
-  …
-}
-
-env.add_lang({ name: <span class="s">"csv"</span>, aliases: [<span class="s">"table"</span>], options: @syntax.options, read: read_csv })</pre>
-        <p>Then <code>{% block lang=csv %}</code> and <code>Format.lang = "csv"</code> both work. <code>moonbitstack/moonpug/syntax</code> has the tree and the parsers for expressions and statements, for a reader to reuse.</p>
-      </section>
-
-      <section id="settings">
-        <h2>Settings</h2>
-        <table>
-          <tr><th>Record</th><th>Fields</th><th>Preset</th></tr>
-          <tr><td><code>Format</code></td><td><code>lang</code>, <code>autoescape</code>, <code>trim_blocks</code>, <code>lstrip_blocks</code>, <code>keep_trailing_newline</code></td><td><code>html</code>, <code>pug</code>, <code>markdown</code>, <code>text</code></td></tr>
-          <tr><td><code>Settings</code></td><td><code>format</code>, <code>formats</code>, <code>force</code>, <code>undefined</code>, <code>line_statement</code>, <code>line_comment</code>, <code>limits</code></td><td><code>settings</code></td></tr>
-          <tr><td><code>Limits</code></td><td><code>depth</code> 1000, <code>range</code> 100 000</td><td><code>limits</code></td></tr>
-        </table>
-        <h3>Configuration precedence</h3>
-        <pre class="code">library preset  &lt;  the record you pass  &lt;  the same name passed to this call</pre>
-        <p><code>undefined</code> is <code>Strict</code> by default: a missing name is refused unless the template asks <code>is defined</code> or gives a <code>default</code>.</p>
-      </section>
-
-      <section id="errors">
-        <h2>Errors</h2>
-        <table>
-          <tr><th>Variant</th><th>When</th></tr>
-          <tr><td><code>Syntax</code></td><td>the source is not well formed; with template, line and column</td></tr>
-          <tr><td><code>Unknown</code></td><td>a name, filter, test, template, language or attribute resolves to nothing</td></tr>
-          <tr><td><code>Invalid</code></td><td>values that do not fit an operation or its arguments</td></tr>
-          <tr><td><code>Exceeded</code></td><td>a bound in <code>Limits</code> was crossed</td></tr>
-        </table>
-      </section>
-
-      <section id="reference">
-        <h2>Reference</h2>
-        <h3>Filters</h3>
-        <div class="chips" data-names="filters"><code>abs</code> <code>add</code> <code>batch</code> <code>date</code> <code>…</code></div>
-        <h3>Tests</h3>
-        <div class="chips" data-names="tests"><code>defined</code> <code>odd</code> <code>…</code></div>
-        <h3>Globals</h3>
-        <div class="chips" data-names="globals"><code>range</code> <code>dict</code> <code>…</code></div>
-      </section>
-    </div>
+  <h2 class="lead-in">One page, three spellings</h2>
+  <div class="duo">
+    <div><h4>html</h4><pre class="code">&lt;ul&gt;
+{% for b in books %}
+  &lt;li&gt;{{ b.title }}, {{ b.year }}&lt;/li&gt;
+{% endfor %}
+&lt;/ul&gt;</pre></div>
+    <div><h4>pug</h4><pre class="code">ul
+  each b in books
+    li #{b.title}, #{b.year}</pre></div>
+    <div><h4>md</h4><pre class="code">{% for b in books %}
+- {{ b.title }}, {{ b.year }}
+{% endfor %}</pre></div>
+    <div><h4>one engine</h4><pre class="code"><span class="k">let</span> env = @moonpug.Env::new(load=read)
+env.template(<span class="s">"shelf.pug"</span>).render(shelf)
+env.template(<span class="s">"shelf.md"</span>).render(shelf)</pre></div>
   </div>
+
+  <div class="next">
+    <a href="guide.html"><b>Guide</b><span>From a first render to template sets, translation, host objects and a language of your own.</span></a>
+    <a href="api.html"><b>API</b><span>Every public type, function and value, with its signature and what it does.</span></a>
+    <a href="https://github.com/moonbitstack/moonpug/tree/master/src/examples"><b>Examples</b><span>Five programs: a first page, three languages, a template set, a CSV language, host objects.</span></a>
+  </div>
+
+  <section id="reference" class="names">
+    <h2 class="lead-in">Built in</h2>
+    <h3>Filters</h3>
+    <div class="chips" data-names="filters"><code>abs</code> <code>…</code></div>
+    <h3>Tests</h3>
+    <div class="chips" data-names="tests"><code>defined</code> <code>…</code></div>
+    <h3>Globals</h3>
+    <div class="chips" data-names="globals"><code>range</code> <code>…</code></div>
+  </section>
 </main>
 
 <footer>moonpug · Apache-2.0 · <a href="https://github.com/moonbitstack/moonpug">github.com/moonbitstack/moonpug</a> · <a href="https://mooncakes.io/docs/moonbitstack/moonpug">mooncakes.io</a></footer>

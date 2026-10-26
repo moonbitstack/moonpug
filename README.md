@@ -1,6 +1,57 @@
-# moonpug
+<div align="center">
 
-Templates for MoonBit. One expression language, three ways to write a page: text with braces, indented markup, or Markdown. A template compiles once and renders as many times as you like; nothing touches a file, a clock or a socket unless you hand it a function that does.
+<h1>moonpug</h1>
+
+<p><em>One page, three ways to write it.</em></p>
+
+<p>Templates for MoonBit: text with braces, indented markup, or Markdown, over one expression language.<br>
+Compiled once, rendered as often as you like; no file, clock or socket unless you hand one in.</p>
+
+<p>
+  <a href="https://moonbitstack.github.io/moonpug/">Home</a> ·
+  <a href="https://moonbitstack.github.io/moonpug/guide.html">Guide</a> ·
+  <a href="https://moonbitstack.github.io/moonpug/api.html">API</a> ·
+  <a href="https://mooncakes.io/docs/moonbitstack/moonpug">mooncakes.io</a>
+</p>
+
+</div>
+
+<table>
+<tr>
+<th>html</th><th>pug</th><th>md</th>
+</tr>
+<tr>
+<td>
+
+```html
+<ul>
+{% for b in books %}
+  <li>{{ b.title }}</li>
+{% endfor %}
+</ul>
+```
+
+</td>
+<td>
+
+```pug
+ul
+  each b in books
+    li= b.title
+```
+
+</td>
+<td>
+
+```markdown
+{% for b in books %}
+- {{ b.title }}
+{% endfor %}
+```
+
+</td>
+</tr>
+</table>
 
 ```moonbit
 let out = @moonpug.render("Hello {{ name|title }}!", { "name": "ada" })
