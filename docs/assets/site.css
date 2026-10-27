@@ -436,3 +436,5 @@ p.note {
 @media (width <= 980px) {
   .demo { margin: 1rem 0 1.3rem; }
 }
+
+html, button, input, textarea, select { font-variant-ligatures: no-contextual; }
