@@ -76,6 +76,8 @@ function choose(name) {
   render();
 }
 
+const anchor = { filters: "filter", tests: "test", globals: "global" };
+
 function reference() {
   if (!engine) return;
   const names = JSON.parse(engine.names());
@@ -83,9 +85,12 @@ function reference() {
     const box = document.querySelector(`[data-names="${key}"]`);
     if (!box) continue;
     box.replaceChildren(...list.map((n) => {
+      const a = document.createElement("a");
+      a.href = `builtins.html#${anchor[key]}-${encodeURIComponent(n)}`;
       const c = document.createElement("code");
       c.textContent = n;
-      return c;
+      a.append(c);
+      return a;
     }));
     const count = document.querySelector(`[data-count="${key}"]`);
     if (count) count.textContent = String(list.length);

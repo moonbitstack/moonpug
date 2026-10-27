@@ -45,6 +45,13 @@ jobs:
       - name: moon test (all backends)
         run: moon test --target all
 
+      - name: examples run
+        if: runner.os == 'Linux'
+        run: |
+          for dir in src/examples/[0-9]*/; do
+            moon run "$dir" --target native > /dev/null
+          done
+
       - name: lint (fmt is clean)
         run: |
           moon fmt && git diff --exit-code --ignore-cr-at-eol

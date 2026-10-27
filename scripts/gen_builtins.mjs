@@ -272,8 +272,13 @@ function paramsBlock(params) {
 function article(kind, id, name, summary, usage, params, demo, aliasNote) {
   const kindTag = `<span class="kind">${kind}</span>`;
   const alias = aliasNote ? ` <span class="alias">${esc(aliasNote)}</span>` : "";
-  return `<article id="${id}"><h3>${kindTag} ${esc(name)}${alias}</h3>
-<p>${esc(summary)}</p>
+  const prefix = id.slice(0, id.indexOf("-") + 1);
+  const of = /^An alias of (.+)\.$/.exec(summary);
+  const text = of
+    ? `An alias of <a href="#${prefix}${encodeURIComponent(of[1])}"><code>${esc(of[1])}</code></a>.`
+    : esc(summary);
+  return `<article id="${id}"><h3>${kindTag} <a class="self" href="#${prefix}${encodeURIComponent(name)}">${esc(name)}</a>${alias}</h3>
+<p>${text}</p>
 <pre class="sig"><code>${esc(usage)}</code></pre>
 ${paramsBlock(params)}
 ${demoBlock(demo, id)}
@@ -360,7 +365,7 @@ const html = `<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>moonpug built-ins</title>
+<title>moonpug BtIns</title>
 <meta name="description" content="Every filter, test, global and statement of the moonpug template language, with an example rendered by the engine itself.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -374,7 +379,7 @@ const html = `<!doctype html>
     <a href="index.html">Home</a>
     <a href="guide.html">Guide</a>
     <a href="api.html">API</a>
-    <a href="builtins.html" aria-current="page">Built-ins</a>
+    <a href="builtins.html" aria-current="page">BtIns</a>
   </nav>
   <a class="github" href="https://github.com/moonbitstack/moonpug" aria-label="moonpug on GitHub">${githubSvg}</a>
   <button id="theme" type="button">Light / dark</button>
@@ -383,7 +388,7 @@ const html = `<!doctype html>
   ${asideIndex()}
   <div class="reference">
     <div class="kicker">Reference</div>
-    <h1>Built-ins</h1>
+    <h1>BtIns</h1>
     <p class="lede">What a template can reach without being handed anything: the filters, tests and globals, and the statements that shape a page. Every live example below is rendered by the same engine this site is built from &mdash; edit nothing, the output is the real one.</p>
     ${filtersSection()}
     ${testsSection()}

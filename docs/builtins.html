@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>moonpug built-ins</title>
+<title>moonpug BtIns</title>
 <meta name="description" content="Every filter, test, global and statement of the moonpug template language, with an example rendered by the engine itself.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,7 +17,7 @@
     <a href="index.html">Home</a>
     <a href="guide.html">Guide</a>
     <a href="api.html">API</a>
-    <a href="builtins.html" aria-current="page">Built-ins</a>
+    <a href="builtins.html" aria-current="page">BtIns</a>
   </nav>
   <a class="github" href="https://github.com/moonbitstack/moonpug" aria-label="moonpug on GitHub"><svg viewBox="0 0 16 16" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38v-1.33c-2.23.48-2.7-1.07-2.7-1.07-.36-.92-.89-1.17-.89-1.17-.73-.5.06-.49.06-.49.8.06 1.23.83 1.23.83.72 1.22 1.88.87 2.34.66.07-.52.28-.87.5-1.07-1.78-.2-3.65-.89-3.65-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48v2.2c0 .21.15.46.55.38A8 8 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></a>
   <button id="theme" type="button">Light / dark</button>
@@ -26,367 +26,367 @@
   <aside class="index"><div class="group"><b>Text and letters</b><a href="#filter-capitalize">capitalize</a><a href="#filter-capfirst">capfirst</a><a href="#filter-center">center</a><a href="#filter-cut">cut</a><a href="#filter-escape">escape</a><a href="#filter-e">e</a><a href="#filter-escapejs">escapejs</a><a href="#filter-forceescape">forceescape</a><a href="#filter-indent">indent</a><a href="#filter-linebreaks">linebreaks</a><a href="#filter-linebreaksbr">linebreaksbr</a><a href="#filter-linenumbers">linenumbers</a><a href="#filter-lower">lower</a><a href="#filter-replace">replace</a><a href="#filter-safe">safe</a><a href="#filter-spaceless">spaceless</a><a href="#filter-string">string</a><a href="#filter-striptags">striptags</a><a href="#filter-title">title</a><a href="#filter-trim">trim</a><a href="#filter-truncate">truncate</a><a href="#filter-upper">upper</a><a href="#filter-wordcount">wordcount</a><a href="#filter-wordwrap">wordwrap</a><a href="#filter-addslashes">addslashes</a><a href="#filter-iriencode">iriencode</a><a href="#filter-phone2numeric">phone2numeric</a><a href="#filter-format">format</a></div><div class="group"><b>Numbers</b><a href="#filter-abs">abs</a><a href="#filter-add">add</a><a href="#filter-filesizeformat">filesizeformat</a><a href="#filter-float">float</a><a href="#filter-floatformat">floatformat</a><a href="#filter-get_digit">get_digit</a><a href="#filter-int">int</a><a href="#filter-round">round</a><a href="#filter-sum">sum</a></div><div class="group"><b>Lists and tables</b><a href="#filter-batch">batch</a><a href="#filter-dictsort">dictsort</a><a href="#filter-first">first</a><a href="#filter-groupby">groupby</a><a href="#filter-items">items</a><a href="#filter-join">join</a><a href="#filter-last">last</a><a href="#filter-length">length</a><a href="#filter-count">count</a><a href="#filter-list">list</a><a href="#filter-map">map</a><a href="#filter-max">max</a><a href="#filter-min">min</a><a href="#filter-pprint">pprint</a><a href="#filter-random">random</a><a href="#filter-reject">reject</a><a href="#filter-rejectattr">rejectattr</a><a href="#filter-reverse">reverse</a><a href="#filter-select">select</a><a href="#filter-selectattr">selectattr</a><a href="#filter-slice">slice</a><a href="#filter-sort">sort</a><a href="#filter-unique">unique</a><a href="#filter-attr">attr</a></div><div class="group"><b>Choosing a value</b><a href="#filter-default">default</a><a href="#filter-d">d</a><a href="#filter-default_if_none">default_if_none</a></div><div class="group"><b>Markup and URLs</b><a href="#filter-urlencode">urlencode</a><a href="#filter-urlize">urlize</a><a href="#filter-xmlattr">xmlattr</a><a href="#filter-tojson">tojson</a><a href="#filter-json_script">json_script</a><a href="#filter-truncatewords">truncatewords</a><a href="#filter-unordered_list">unordered_list</a><a href="#filter-ljust">ljust</a><a href="#filter-rjust">rjust</a><a href="#filter-yesno">yesno</a><a href="#filter-pluralize">pluralize</a></div><div class="group"><b>Dates and times</b><a href="#filter-date">date</a><a href="#filter-time">time</a><a href="#filter-timesince">timesince</a><a href="#filter-timeuntil">timeuntil</a></div><div class="group"><b>Tests</b><a href="#test-none">none</a><a href="#test-boolean">boolean</a><a href="#test-true">true</a><a href="#test-false">false</a><a href="#test-integer">integer</a><a href="#test-float">float</a><a href="#test-number">number</a><a href="#test-string">string</a><a href="#test-mapping">mapping</a><a href="#test-sequence">sequence</a><a href="#test-iterable">iterable</a><a href="#test-callable">callable</a><a href="#test-escaped">escaped</a><a href="#test-odd">odd</a><a href="#test-even">even</a><a href="#test-divisibleby">divisibleby</a><a href="#test-==">==</a><a href="#test-eq">eq</a><a href="#test-equalto">equalto</a><a href="#test-!=">!=</a><a href="#test-ne">ne</a><a href="#test-<">&lt;</a><a href="#test-lt">lt</a><a href="#test-lessthan">lessthan</a><a href="#test->">&gt;</a><a href="#test-gt">gt</a><a href="#test-greaterthan">greaterthan</a><a href="#test-<=">&lt;=</a><a href="#test-le">le</a><a href="#test->=">&gt;=</a><a href="#test-ge">ge</a><a href="#test-lower">lower</a><a href="#test-upper">upper</a><a href="#test-sameas">sameas</a><a href="#test-in">in</a><a href="#test-defined">defined</a><a href="#test-undefined">undefined</a><a href="#test-filter">filter</a><a href="#test-test">test</a></div><div class="group"><b>Globals</b><a href="#global-range">range</a><a href="#global-dict">dict</a><a href="#global-lipsum">lipsum</a><a href="#global-cycler">cycler</a><a href="#global-joiner">joiner</a><a href="#global-namespace">namespace</a><a href="#global-gettext">gettext</a><a href="#global-_">_</a><a href="#global-ngettext">ngettext</a><a href="#global-pgettext">pgettext</a><a href="#global-npgettext">npgettext</a></div><div class="group"><b>Flow control</b><a href="#stmt-if">if</a><a href="#stmt-for">for</a><a href="#stmt-set">set</a><a href="#stmt-with">with</a></div><div class="group"><b>Templates and reuse</b><a href="#stmt-macro">macro</a><a href="#stmt-filter">filter</a><a href="#stmt-block">block</a><a href="#stmt-include">include</a><a href="#stmt-import">import</a></div><div class="group"><b>Output and escaping</b><a href="#stmt-raw">raw</a><a href="#stmt-autoescape">autoescape</a><a href="#stmt-show">show</a><a href="#stmt-debug">debug</a></div><div class="group"><b>Internationalisation</b><a href="#stmt-trans">trans</a></div><div class="group"><b>Side effects and caching</b><a href="#stmt-do">do</a><a href="#stmt-once">once</a></div></aside>
   <div class="reference">
     <div class="kicker">Reference</div>
-    <h1>Built-ins</h1>
+    <h1>BtIns</h1>
     <p class="lede">What a template can reach without being handed anything: the filters, tests and globals, and the statements that shape a page. Every live example below is rendered by the same engine this site is built from &mdash; edit nothing, the output is the real one.</p>
     <section id="filters"><h2>Filters</h2>
-<p class="lede">Seventy-nine filters, written after a value with <code>|</code>. Aliases are noted where they stand in for another.</p><h3 id="filters-text">Text and letters</h3><article id="filter-capitalize"><h3><span class="kind">filter</span> capitalize</h3>
+<p class="lede">Seventy-nine filters, written after a value with <code>|</code>. Aliases are noted where they stand in for another.</p><h3 id="filters-text">Text and letters</h3><article id="filter-capitalize"><h3><span class="kind">filter</span> <a class="self" href="#filter-capitalize">capitalize</a></h3>
 <p>Capitalise the first character and lowercase the rest.</p>
 <pre class="sig"><code>value|capitalize</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ "hello WORLD"|capitalize }}</pre><span class="demo-label">output</span><div class="demo-out">Hello world</div></div>
-</article><article id="filter-capfirst"><h3><span class="kind">filter</span> capfirst</h3>
+</article><article id="filter-capfirst"><h3><span class="kind">filter</span> <a class="self" href="#filter-capfirst">capfirst</a></h3>
 <p>Capitalise only the first character, leaving the rest.</p>
 <pre class="sig"><code>value|capfirst</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ "hello"|capfirst }}</pre><span class="demo-label">output</span><div class="demo-out">Hello</div></div>
-</article><article id="filter-center"><h3><span class="kind">filter</span> center</h3>
+</article><article id="filter-center"><h3><span class="kind">filter</span> <a class="self" href="#filter-center">center</a></h3>
 <p>Centre the text in a field of the given width.</p>
 <pre class="sig"><code>value|center(width)</code></pre>
 <dl class="fields"><dt><code>width</code> <i>int</i></dt><dd>field width</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ "hi"|center(10) }}</pre><span class="demo-label">output</span><div class="demo-out">    hi    </div></div>
-</article><article id="filter-cut"><h3><span class="kind">filter</span> cut</h3>
+</article><article id="filter-cut"><h3><span class="kind">filter</span> <a class="self" href="#filter-cut">cut</a></h3>
 <p>Remove every occurrence of a substring.</p>
 <pre class="sig"><code>value|cut(arg)</code></pre>
 <dl class="fields"><dt><code>arg</code> <i>string</i></dt><dd>text to remove</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ "a-b-c"|cut("-") }}</pre><span class="demo-label">output</span><div class="demo-out">abc</div></div>
-</article><article id="filter-escape"><h3><span class="kind">filter</span> escape</h3>
+</article><article id="filter-escape"><h3><span class="kind">filter</span> <a class="self" href="#filter-escape">escape</a></h3>
 <p>Escape HTML so the text is safe to write. Markup is left as it stands.</p>
 <pre class="sig"><code>value|escape</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ "&lt;b&gt;"|escape }}</pre><span class="demo-label">output</span><div class="demo-out">&amp;lt;b&amp;gt;</div></div>
-</article><article id="filter-e"><h3><span class="kind">filter</span> e</h3>
-<p>An alias of escape.</p>
+</article><article id="filter-e"><h3><span class="kind">filter</span> <a class="self" href="#filter-e">e</a></h3>
+<p>An alias of <a href="#filter-escape"><code>escape</code></a>.</p>
 <pre class="sig"><code>value|e</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ "&lt;b&gt;"|e }}</pre><span class="demo-label">output</span><div class="demo-out">&amp;lt;b&amp;gt;</div></div>
-</article><article id="filter-escapejs"><h3><span class="kind">filter</span> escapejs</h3>
+</article><article id="filter-escapejs"><h3><span class="kind">filter</span> <a class="self" href="#filter-escapejs">escapejs</a></h3>
 <p>Escape text so it is safe inside a JavaScript string.</p>
 <pre class="sig"><code>value|escapejs</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ "a'b&lt;c"|escapejs }}</pre><span class="demo-label">output</span><div class="demo-out">a\u0027b\u003Cc</div></div>
-</article><article id="filter-forceescape"><h3><span class="kind">filter</span> forceescape</h3>
+</article><article id="filter-forceescape"><h3><span class="kind">filter</span> <a class="self" href="#filter-forceescape">forceescape</a></h3>
 <p>Escape even text already marked safe.</p>
 <pre class="sig"><code>value|forceescape</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ ("&lt;b&gt;"|safe)|forceescape }}</pre><span class="demo-label">output</span><div class="demo-out">&amp;lt;b&amp;gt;</div></div>
-</article><article id="filter-indent"><h3><span class="kind">filter</span> indent</h3>
+</article><article id="filter-indent"><h3><span class="kind">filter</span> <a class="self" href="#filter-indent">indent</a></h3>
 <p>Indent each line (after the first unless first) by a width.</p>
 <pre class="sig"><code>value|indent(width, first, blank)</code></pre>
 <dl class="fields"><dt><code>width</code> <i>int or string</i></dt><dd>spaces or a literal prefix</dd><dt><code>first</code> <i>bool</i></dt><dd>indent the first line too</dd><dt><code>blank</code> <i>bool</i></dt><dd>indent blank lines too</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ "a\nb"|indent(2) }}</pre><span class="demo-label">output</span><div class="demo-out">a
   b</div></div>
-</article><article id="filter-linebreaks"><h3><span class="kind">filter</span> linebreaks</h3>
+</article><article id="filter-linebreaks"><h3><span class="kind">filter</span> <a class="self" href="#filter-linebreaks">linebreaks</a></h3>
 <p>Turn newlines into paragraphs and line breaks, returned as safe HTML.</p>
 <pre class="sig"><code>value|linebreaks</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ "one\n\ntwo"|linebreaks }}</pre><span class="demo-label">output</span><div class="demo-out">&lt;p&gt;one&lt;/p&gt;
 
 &lt;p&gt;two&lt;/p&gt;</div></div>
-</article><article id="filter-linebreaksbr"><h3><span class="kind">filter</span> linebreaksbr</h3>
+</article><article id="filter-linebreaksbr"><h3><span class="kind">filter</span> <a class="self" href="#filter-linebreaksbr">linebreaksbr</a></h3>
 <p>Turn newlines into line breaks, returned as safe HTML.</p>
 <pre class="sig"><code>value|linebreaksbr</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ "a\nb"|linebreaksbr }}</pre><span class="demo-label">output</span><div class="demo-out">a&lt;br&gt;b</div></div>
-</article><article id="filter-linenumbers"><h3><span class="kind">filter</span> linenumbers</h3>
+</article><article id="filter-linenumbers"><h3><span class="kind">filter</span> <a class="self" href="#filter-linenumbers">linenumbers</a></h3>
 <p>Prefix every line with its one-based number.</p>
 <pre class="sig"><code>value|linenumbers</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ "a\nb\nc"|linenumbers }}</pre><span class="demo-label">output</span><div class="demo-out">1. a
 2. b
 3. c</div></div>
-</article><article id="filter-lower"><h3><span class="kind">filter</span> lower</h3>
+</article><article id="filter-lower"><h3><span class="kind">filter</span> <a class="self" href="#filter-lower">lower</a></h3>
 <p>Lowercase the text.</p>
 <pre class="sig"><code>value|lower</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ "HELLO"|lower }}</pre><span class="demo-label">output</span><div class="demo-out">hello</div></div>
-</article><article id="filter-replace"><h3><span class="kind">filter</span> replace</h3>
+</article><article id="filter-replace"><h3><span class="kind">filter</span> <a class="self" href="#filter-replace">replace</a></h3>
 <p>Replace occurrences of old with new, at most count times.</p>
 <pre class="sig"><code>value|replace(old, new, count)</code></pre>
 <dl class="fields"><dt><code>old</code> <i>string</i></dt><dd>text to find</dd><dt><code>new</code> <i>string</i></dt><dd>replacement</dd><dt><code>count</code> <i>int</i></dt><dd>most replacements, -1 for all</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ "a-b-c"|replace("-", " ") }}</pre><span class="demo-label">output</span><div class="demo-out">a b c</div></div>
-</article><article id="filter-safe"><h3><span class="kind">filter</span> safe</h3>
+</article><article id="filter-safe"><h3><span class="kind">filter</span> <a class="self" href="#filter-safe">safe</a></h3>
 <p>Mark the text safe; it passes through without escaping.</p>
 <pre class="sig"><code>value|safe</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ ("&lt;b&gt;"|safe) }}</pre><span class="demo-label">output</span><div class="demo-out">&lt;b&gt;</div></div>
-</article><article id="filter-spaceless"><h3><span class="kind">filter</span> spaceless</h3>
+</article><article id="filter-spaceless"><h3><span class="kind">filter</span> <a class="self" href="#filter-spaceless">spaceless</a></h3>
 <p>Remove the whitespace between tags.</p>
 <pre class="sig"><code>value|spaceless</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ "&lt;a&gt;  &lt;/a&gt;"|spaceless }}</pre><span class="demo-label">output</span><div class="demo-out">&amp;lt;a&amp;gt;&amp;lt;/a&amp;gt;</div></div>
-</article><article id="filter-string"><h3><span class="kind">filter</span> string</h3>
+</article><article id="filter-string"><h3><span class="kind">filter</span> <a class="self" href="#filter-string">string</a></h3>
 <p>Cast the value to text.</p>
 <pre class="sig"><code>value|string</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ 7|string }}</pre><span class="demo-label">output</span><div class="demo-out">7</div></div>
-</article><article id="filter-striptags"><h3><span class="kind">filter</span> striptags</h3>
+</article><article id="filter-striptags"><h3><span class="kind">filter</span> <a class="self" href="#filter-striptags">striptags</a></h3>
 <p>Strip tags and decode entities, collapsing whitespace.</p>
 <pre class="sig"><code>value|striptags</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ "&lt;b&gt;hi&lt;/b&gt;"|striptags }}</pre><span class="demo-label">output</span><div class="demo-out">hi</div></div>
-</article><article id="filter-title"><h3><span class="kind">filter</span> title</h3>
+</article><article id="filter-title"><h3><span class="kind">filter</span> <a class="self" href="#filter-title">title</a></h3>
 <p>Title-case the text: capitalise each word.</p>
 <pre class="sig"><code>value|title</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ "hello world"|title }}</pre><span class="demo-label">output</span><div class="demo-out">Hello World</div></div>
-</article><article id="filter-trim"><h3><span class="kind">filter</span> trim</h3>
+</article><article id="filter-trim"><h3><span class="kind">filter</span> <a class="self" href="#filter-trim">trim</a></h3>
 <p>Strip surrounding characters (default whitespace).</p>
 <pre class="sig"><code>value|trim(chars)</code></pre>
 <dl class="fields"><dt><code>chars</code> <i>string</i></dt><dd>characters to strip</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ "  hi  "|trim }}</pre><span class="demo-label">output</span><div class="demo-out">hi</div></div>
-</article><article id="filter-truncate"><h3><span class="kind">filter</span> truncate</h3>
+</article><article id="filter-truncate"><h3><span class="kind">filter</span> <a class="self" href="#filter-truncate">truncate</a></h3>
 <p>Cut to a length, ending with an ellipsis, keeping whole words unless killwords.</p>
 <pre class="sig"><code>value|truncate(length, killwords, end, leeway)</code></pre>
 <dl class="fields"><dt><code>length</code> <i>int</i></dt><dd>maximum length</dd><dt><code>killwords</code> <i>bool</i></dt><dd>cut mid-word</dd><dt><code>end</code> <i>string</i></dt><dd>the ending, … by default</dd><dt><code>leeway</code> <i>int</i></dt><dd>grace before cutting</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ "a long sentence about the weather"|truncate(20) }}</pre><span class="demo-label">output</span><div class="demo-out">a long sentence...</div></div>
-</article><article id="filter-upper"><h3><span class="kind">filter</span> upper</h3>
+</article><article id="filter-upper"><h3><span class="kind">filter</span> <a class="self" href="#filter-upper">upper</a></h3>
 <p>Uppercase the text.</p>
 <pre class="sig"><code>value|upper</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ "héllo"|upper }}</pre><span class="demo-label">output</span><div class="demo-out">HÉLLO</div></div>
-</article><article id="filter-wordcount"><h3><span class="kind">filter</span> wordcount</h3>
+</article><article id="filter-wordcount"><h3><span class="kind">filter</span> <a class="self" href="#filter-wordcount">wordcount</a></h3>
 <p>Count the words.</p>
 <pre class="sig"><code>value|wordcount</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ "the quick brown"|wordcount }}</pre><span class="demo-label">output</span><div class="demo-out">3</div></div>
-</article><article id="filter-wordwrap"><h3><span class="kind">filter</span> wordwrap</h3>
+</article><article id="filter-wordwrap"><h3><span class="kind">filter</span> <a class="self" href="#filter-wordwrap">wordwrap</a></h3>
 <p>Wrap the text at a column width.</p>
 <pre class="sig"><code>value|wordwrap(width, break_long_words, wrapstring, break_on_hyphens)</code></pre>
 <dl class="fields"><dt><code>width</code> <i>int</i></dt><dd>column width</dd><dt><code>break_long_words</code> <i>bool</i></dt><dd>split long words</dd><dt><code>wrapstring</code> <i>string</i></dt><dd>line separator</dd><dt><code>break_on_hyphens</code> <i>bool</i></dt><dd>break on hyphens</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ "one two three four five"|wordwrap(10) }}</pre><span class="demo-label">output</span><div class="demo-out">one two
 three four
 five</div></div>
-</article><article id="filter-addslashes"><h3><span class="kind">filter</span> addslashes</h3>
+</article><article id="filter-addslashes"><h3><span class="kind">filter</span> <a class="self" href="#filter-addslashes">addslashes</a></h3>
 <p>Escape quotes and backslashes for a JavaScript string.</p>
 <pre class="sig"><code>value|addslashes</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ "it's"|addslashes }}</pre><span class="demo-label">output</span><div class="demo-out">it\&amp;#39;s</div></div>
-</article><article id="filter-iriencode"><h3><span class="kind">filter</span> iriencode</h3>
+</article><article id="filter-iriencode"><h3><span class="kind">filter</span> <a class="self" href="#filter-iriencode">iriencode</a></h3>
 <p>Percent-encode an IRI for use in a URL.</p>
 <pre class="sig"><code>value|iriencode</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ "a path/c?d"|iriencode }}</pre><span class="demo-label">output</span><div class="demo-out">a%20path/c?d</div></div>
-</article><article id="filter-phone2numeric"><h3><span class="kind">filter</span> phone2numeric</h3>
+</article><article id="filter-phone2numeric"><h3><span class="kind">filter</span> <a class="self" href="#filter-phone2numeric">phone2numeric</a></h3>
 <p>Map letters to the digits of a telephone keypad.</p>
 <pre class="sig"><code>value|phone2numeric</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ "0800cafe"|phone2numeric }}</pre><span class="demo-label">output</span><div class="demo-out">08002233</div></div>
-</article><article id="filter-format"><h3><span class="kind">filter</span> format</h3>
+</article><article id="filter-format"><h3><span class="kind">filter</span> <a class="self" href="#filter-format">format</a></h3>
 <p>Fill % placeholders with positional or named arguments.</p>
 <pre class="sig"><code>value|format(*args, **named)</code></pre>
 <dl class="fields"><dt><code>args</code> <i>values</i></dt><dd>positional %s, %d, …</dd><dt><code>named</code> <i>mapping</i></dt><dd>named %(name)s</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ "%s = %s"|format("x", 1) }}</pre><span class="demo-label">output</span><div class="demo-out">x = 1</div></div>
-</article><h3 id="filters-numbers">Numbers</h3><article id="filter-abs"><h3><span class="kind">filter</span> abs</h3>
+</article><h3 id="filters-numbers">Numbers</h3><article id="filter-abs"><h3><span class="kind">filter</span> <a class="self" href="#filter-abs">abs</a></h3>
 <p>The absolute value of a number.</p>
 <pre class="sig"><code>value|abs</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ -7|abs }}</pre><span class="demo-label">output</span><div class="demo-out">7</div></div>
-</article><article id="filter-add"><h3><span class="kind">filter</span> add</h3>
+</article><article id="filter-add"><h3><span class="kind">filter</span> <a class="self" href="#filter-add">add</a></h3>
 <p>Add a number, or concatenate strings and lists.</p>
 <pre class="sig"><code>value|add(arg)</code></pre>
 <dl class="fields"><dt><code>arg</code> <i>value</i></dt><dd>the value to add or join</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ 10|add(5) }}</pre><span class="demo-label">output</span><div class="demo-out">15</div></div>
-</article><article id="filter-filesizeformat"><h3><span class="kind">filter</span> filesizeformat</h3>
+</article><article id="filter-filesizeformat"><h3><span class="kind">filter</span> <a class="self" href="#filter-filesizeformat">filesizeformat</a></h3>
 <p>Format a count of bytes as a human size.</p>
 <pre class="sig"><code>value|filesizeformat(binary)</code></pre>
 <dl class="fields"><dt><code>binary</code> <i>bool</i></dt><dd>use 1024-based units</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ 1234567|filesizeformat }}</pre><span class="demo-label">output</span><div class="demo-out">1.2 MB</div></div>
-</article><article id="filter-float"><h3><span class="kind">filter</span> float</h3>
+</article><article id="filter-float"><h3><span class="kind">filter</span> <a class="self" href="#filter-float">float</a></h3>
 <p>Parse a number or string as a floating point value.</p>
 <pre class="sig"><code>value|float(default)</code></pre>
 <dl class="fields"><dt><code>default</code> <i>float</i></dt><dd>fallback when not a number</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ "3.14"|float }}</pre><span class="demo-label">output</span><div class="demo-out">3.14</div></div>
-</article><article id="filter-floatformat"><h3><span class="kind">filter</span> floatformat</h3>
+</article><article id="filter-floatformat"><h3><span class="kind">filter</span> <a class="self" href="#filter-floatformat">floatformat</a></h3>
 <p>Format a number to fixed places, Django style (g groups thousands, u ungroups).</p>
 <pre class="sig"><code>value|floatformat(arg)</code></pre>
 <dl class="fields"><dt><code>arg</code> <i>string or int</i></dt><dd>places; -1 drops empty fraction; default -1</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ 3.14159|floatformat(2) }}</pre><span class="demo-label">output</span><div class="demo-out">3.14</div></div>
-</article><article id="filter-get_digit"><h3><span class="kind">filter</span> get_digit</h3>
+</article><article id="filter-get_digit"><h3><span class="kind">filter</span> <a class="self" href="#filter-get_digit">get_digit</a></h3>
 <p>Return the nth digit of an integer, counting from the right; 1 is the units digit.</p>
 <pre class="sig"><code>value|get_digit(arg)</code></pre>
 <dl class="fields"><dt><code>arg</code> <i>int</i></dt><dd>which digit</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ 12345|get_digit(2) }}</pre><span class="demo-label">output</span><div class="demo-out">4</div></div>
-</article><article id="filter-int"><h3><span class="kind">filter</span> int</h3>
+</article><article id="filter-int"><h3><span class="kind">filter</span> <a class="self" href="#filter-int">int</a></h3>
 <p>Parse a number or string as an integer, in a given base.</p>
 <pre class="sig"><code>value|int(default, base)</code></pre>
 <dl class="fields"><dt><code>default</code> <i>int</i></dt><dd>fallback when not a number</dd><dt><code>base</code> <i>int</i></dt><dd>number base, 10 by default</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ "42"|int }}</pre><span class="demo-label">output</span><div class="demo-out">42</div></div>
-</article><article id="filter-round"><h3><span class="kind">filter</span> round</h3>
+</article><article id="filter-round"><h3><span class="kind">filter</span> <a class="self" href="#filter-round">round</a></h3>
 <p>Round a number: common, ceil or floor, to a number of places.</p>
 <pre class="sig"><code>value|round(precision, method)</code></pre>
 <dl class="fields"><dt><code>precision</code> <i>int</i></dt><dd>decimal places</dd><dt><code>method</code> <i>string</i></dt><dd>common, ceil or floor</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ 3.14159|round(2) }}</pre><span class="demo-label">output</span><div class="demo-out">3.14</div></div>
-</article><article id="filter-sum"><h3><span class="kind">filter</span> sum</h3>
+</article><article id="filter-sum"><h3><span class="kind">filter</span> <a class="self" href="#filter-sum">sum</a></h3>
 <p>Add the items, or a named field of each.</p>
 <pre class="sig"><code>value|sum(attribute, start)</code></pre>
 <dl class="fields"><dt><code>attribute</code> <i>string</i></dt><dd>field to sum</dd><dt><code>start</code> <i>value</i></dt><dd>starting value</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ items|sum(attribute="n") }}</pre><span class="demo-label">data</span><pre class="code demo-data">{"items":[{"n":1},{"n":2},{"n":3}]}</pre><span class="demo-label">output</span><div class="demo-out">6</div></div>
-</article><h3 id="filters-lists">Lists and tables</h3><article id="filter-batch"><h3><span class="kind">filter</span> batch</h3>
+</article><h3 id="filters-lists">Lists and tables</h3><article id="filter-batch"><h3><span class="kind">filter</span> <a class="self" href="#filter-batch">batch</a></h3>
 <p>Group items into rows of a given size, padding the last with fill_with.</p>
 <pre class="sig"><code>value|batch(linecount, fill_with)</code></pre>
 <dl class="fields"><dt><code>linecount</code> <i>int</i></dt><dd>items per row</dd><dt><code>fill_with</code> <i>value</i></dt><dd>padding for the last row</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ [1,2,3,4,5]|batch(2)|list }}</pre><span class="demo-label">output</span><div class="demo-out">[[1, 2], [3, 4], [5]]</div></div>
-</article><article id="filter-dictsort"><h3><span class="kind">filter</span> dictsort</h3>
+</article><article id="filter-dictsort"><h3><span class="kind">filter</span> <a class="self" href="#filter-dictsort">dictsort</a></h3>
 <p>Sort a mapping into (key, value) pairs, by key, value or with a case-sensitive order.</p>
 <pre class="sig"><code>value|dictsort(case_sensitive, by, reverse)</code></pre>
 <dl class="fields"><dt><code>case_sensitive</code> <i>bool</i></dt><dd>compare letters as written</dd><dt><code>by</code> <i>string</i></dt><dd>key or value</dd><dt><code>reverse</code> <i>bool</i></dt><dd>reverse the order</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ {"b":2,"a":1}|dictsort|list }}</pre><span class="demo-label">output</span><div class="demo-out">[(&amp;#39;a&amp;#39;, 1), (&amp;#39;b&amp;#39;, 2)]</div></div>
-</article><article id="filter-first"><h3><span class="kind">filter</span> first</h3>
+</article><article id="filter-first"><h3><span class="kind">filter</span> <a class="self" href="#filter-first">first</a></h3>
 <p>The first item of a sequence.</p>
 <pre class="sig"><code>value|first</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ [1,2,3]|first }}</pre><span class="demo-label">output</span><div class="demo-out">1</div></div>
-</article><article id="filter-groupby"><h3><span class="kind">filter</span> groupby</h3>
+</article><article id="filter-groupby"><h3><span class="kind">filter</span> <a class="self" href="#filter-groupby">groupby</a></h3>
 <p>Group items that share an attribute, each group read as grouper and list.</p>
 <pre class="sig"><code>value|groupby(attribute, default, case_sensitive)</code></pre>
 <dl class="fields"><dt><code>attribute</code> <i>string</i></dt><dd>field to group by</dd><dt><code>default</code> <i>value</i></dt><dd>value for missing fields</dd><dt><code>case_sensitive</code> <i>bool</i></dt><dd>compare letters as written</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ users|groupby("kind")|map(attribute="grouper")|join(", ") }}</pre><span class="demo-label">data</span><pre class="code demo-data">{"users":[{"kind":"a","name":"x"},{"kind":"b","name":"y"},{"kind":"a","name":"z"}]}</pre><span class="demo-label">output</span><div class="demo-out">a, b</div></div>
-</article><article id="filter-items"><h3><span class="kind">filter</span> items</h3>
+</article><article id="filter-items"><h3><span class="kind">filter</span> <a class="self" href="#filter-items">items</a></h3>
 <p>A mapping's entries as (key, value) pairs.</p>
 <pre class="sig"><code>value|items</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ {"a":1,"b":2}|items|list }}</pre><span class="demo-label">output</span><div class="demo-out">[(&amp;#39;a&amp;#39;, 1), (&amp;#39;b&amp;#39;, 2)]</div></div>
-</article><article id="filter-join"><h3><span class="kind">filter</span> join</h3>
+</article><article id="filter-join"><h3><span class="kind">filter</span> <a class="self" href="#filter-join">join</a></h3>
 <p>Join items with a separator, or a named field of each.</p>
 <pre class="sig"><code>value|join(d, attribute)</code></pre>
 <dl class="fields"><dt><code>d</code> <i>string</i></dt><dd>the separator</dd><dt><code>attribute</code> <i>string</i></dt><dd>field to join</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ ["a","b","c"]|join(", ") }}</pre><span class="demo-label">output</span><div class="demo-out">a, b, c</div></div>
-</article><article id="filter-last"><h3><span class="kind">filter</span> last</h3>
+</article><article id="filter-last"><h3><span class="kind">filter</span> <a class="self" href="#filter-last">last</a></h3>
 <p>The last item of a sequence.</p>
 <pre class="sig"><code>value|last</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ [1,2,3]|last }}</pre><span class="demo-label">output</span><div class="demo-out">3</div></div>
-</article><article id="filter-length"><h3><span class="kind">filter</span> length</h3>
+</article><article id="filter-length"><h3><span class="kind">filter</span> <a class="self" href="#filter-length">length</a></h3>
 <p>The length: characters of a string, items of a list, keys of a mapping.</p>
 <pre class="sig"><code>value|length</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ [1,2,3]|length }}</pre><span class="demo-label">output</span><div class="demo-out">3</div></div>
-</article><article id="filter-count"><h3><span class="kind">filter</span> count</h3>
-<p>An alias of length.</p>
+</article><article id="filter-count"><h3><span class="kind">filter</span> <a class="self" href="#filter-count">count</a></h3>
+<p>An alias of <a href="#filter-length"><code>length</code></a>.</p>
 <pre class="sig"><code>value|count</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ "hello"|count }}</pre><span class="demo-label">output</span><div class="demo-out">5</div></div>
-</article><article id="filter-list"><h3><span class="kind">filter</span> list</h3>
+</article><article id="filter-list"><h3><span class="kind">filter</span> <a class="self" href="#filter-list">list</a></h3>
 <p>Turn the value into a list.</p>
 <pre class="sig"><code>value|list</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ "abc"|list }}</pre><span class="demo-label">output</span><div class="demo-out">[&amp;#39;a&amp;#39;, &amp;#39;b&amp;#39;, &amp;#39;c&amp;#39;]</div></div>
-</article><article id="filter-map"><h3><span class="kind">filter</span> map</h3>
+</article><article id="filter-map"><h3><span class="kind">filter</span> <a class="self" href="#filter-map">map</a></h3>
 <p>Apply a filter to each item, or pull a named field out of each.</p>
 <pre class="sig"><code>value|map(attribute, default, filter)</code></pre>
 <dl class="fields"><dt><code>attribute</code> <i>string</i></dt><dd>field to read</dd><dt><code>default</code> <i>value</i></dt><dd>value for missing fields</dd><dt><code>filter</code> <i>string</i></dt><dd>a filter to apply to each item</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ users|map(attribute="name")|join(", ") }}</pre><span class="demo-label">data</span><pre class="code demo-data">{"users":[{"name":"Ada"},{"name":"Grace"}]}</pre><span class="demo-label">output</span><div class="demo-out">Ada, Grace</div></div>
-</article><article id="filter-max"><h3><span class="kind">filter</span> max</h3>
+</article><article id="filter-max"><h3><span class="kind">filter</span> <a class="self" href="#filter-max">max</a></h3>
 <p>The largest item, or the largest by a field.</p>
 <pre class="sig"><code>value|max(attribute, case_sensitive)</code></pre>
 <dl class="fields"><dt><code>attribute</code> <i>string</i></dt><dd>field to compare</dd><dt><code>case_sensitive</code> <i>bool</i></dt><dd>compare letters as written</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ [3,1,2]|max }}</pre><span class="demo-label">output</span><div class="demo-out">3</div></div>
-</article><article id="filter-min"><h3><span class="kind">filter</span> min</h3>
+</article><article id="filter-min"><h3><span class="kind">filter</span> <a class="self" href="#filter-min">min</a></h3>
 <p>The smallest item, or the smallest by a field.</p>
 <pre class="sig"><code>value|min(attribute, case_sensitive)</code></pre>
 <dl class="fields"><dt><code>attribute</code> <i>string</i></dt><dd>field to compare</dd><dt><code>case_sensitive</code> <i>bool</i></dt><dd>compare letters as written</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ [3,1,2]|min }}</pre><span class="demo-label">output</span><div class="demo-out">1</div></div>
-</article><article id="filter-pprint"><h3><span class="kind">filter</span> pprint</h3>
+</article><article id="filter-pprint"><h3><span class="kind">filter</span> <a class="self" href="#filter-pprint">pprint</a></h3>
 <p>A readable, Python-style print of a value.</p>
 <pre class="sig"><code>value|pprint</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ {"a":[1,2],"b":3}|pprint }}</pre><span class="demo-label">output</span><div class="demo-out">{&amp;#39;a&amp;#39;: [1, 2], &amp;#39;b&amp;#39;: 3}</div></div>
-</article><article id="filter-random"><h3><span class="kind">filter</span> random</h3>
+</article><article id="filter-random"><h3><span class="kind">filter</span> <a class="self" href="#filter-random">random</a></h3>
 <p>One item, chosen so the same page renders the same way twice.</p>
 <pre class="sig"><code>value|random</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ [1,2,3]|random }}</pre><span class="demo-label">output</span><div class="demo-out">2</div></div>
-</article><article id="filter-reject"><h3><span class="kind">filter</span> reject</h3>
+</article><article id="filter-reject"><h3><span class="kind">filter</span> <a class="self" href="#filter-reject">reject</a></h3>
 <p>Drop items that pass a test; with no test, drop the untruthy.</p>
 <pre class="sig"><code>value|reject(test, args)</code></pre>
 <dl class="fields"><dt><code>test</code> <i>string</i></dt><dd>a test name</dd><dt><code>args</code> <i>values</i></dt><dd>the test's arguments</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ [1,2,3,4]|reject("odd")|list }}</pre><span class="demo-label">output</span><div class="demo-out">[2, 4]</div></div>
-</article><article id="filter-rejectattr"><h3><span class="kind">filter</span> rejectattr</h3>
+</article><article id="filter-rejectattr"><h3><span class="kind">filter</span> <a class="self" href="#filter-rejectattr">rejectattr</a></h3>
 <p>Drop items whose field fails a test.</p>
 <pre class="sig"><code>value|rejectattr(attribute, test, args)</code></pre>
 <dl class="fields"><dt><code>attribute</code> <i>string</i></dt><dd>field to test</dd><dt><code>test</code> <i>string</i></dt><dd>a test name</dd><dt><code>args</code> <i>values</i></dt><dd>the test's arguments</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ items|rejectattr("shown")|list }}</pre><span class="demo-label">data</span><pre class="code demo-data">{"items":[{"shown":true},{"shown":false}]}</pre><span class="demo-label">output</span><div class="demo-out">[{&amp;#39;shown&amp;#39;: False}]</div></div>
-</article><article id="filter-reverse"><h3><span class="kind">filter</span> reverse</h3>
+</article><article id="filter-reverse"><h3><span class="kind">filter</span> <a class="self" href="#filter-reverse">reverse</a></h3>
 <p>Reverse a list, or the characters of a string.</p>
 <pre class="sig"><code>value|reverse</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ [1,2,3]|reverse|list }}</pre><span class="demo-label">output</span><div class="demo-out">[3, 2, 1]</div></div>
-</article><article id="filter-select"><h3><span class="kind">filter</span> select</h3>
+</article><article id="filter-select"><h3><span class="kind">filter</span> <a class="self" href="#filter-select">select</a></h3>
 <p>Keep items that pass a test; with no test, keep the truthy.</p>
 <pre class="sig"><code>value|select(test, args)</code></pre>
 <dl class="fields"><dt><code>test</code> <i>string</i></dt><dd>a test name</dd><dt><code>args</code> <i>values</i></dt><dd>the test's arguments</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ [1,2,3,4]|select("odd")|list }}</pre><span class="demo-label">output</span><div class="demo-out">[1, 3]</div></div>
-</article><article id="filter-selectattr"><h3><span class="kind">filter</span> selectattr</h3>
+</article><article id="filter-selectattr"><h3><span class="kind">filter</span> <a class="self" href="#filter-selectattr">selectattr</a></h3>
 <p>Keep items whose field passes a test.</p>
 <pre class="sig"><code>value|selectattr(attribute, test, args)</code></pre>
 <dl class="fields"><dt><code>attribute</code> <i>string</i></dt><dd>field to test</dd><dt><code>test</code> <i>string</i></dt><dd>a test name</dd><dt><code>args</code> <i>values</i></dt><dd>the test's arguments</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ items|selectattr("shown")|list }}</pre><span class="demo-label">data</span><pre class="code demo-data">{"items":[{"shown":true},{"shown":false}]}</pre><span class="demo-label">output</span><div class="demo-out">[{&amp;#39;shown&amp;#39;: True}]</div></div>
-</article><article id="filter-slice"><h3><span class="kind">filter</span> slice</h3>
+</article><article id="filter-slice"><h3><span class="kind">filter</span> <a class="self" href="#filter-slice">slice</a></h3>
 <p>Split into a number of slices, padding the last with fill_with.</p>
 <pre class="sig"><code>value|slice(slices, fill_with)</code></pre>
 <dl class="fields"><dt><code>slices</code> <i>int</i></dt><dd>how many slices</dd><dt><code>fill_with</code> <i>value</i></dt><dd>padding for the last slice</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ [1,2,3,4,5]|slice(2)|list }}</pre><span class="demo-label">output</span><div class="demo-out">[[1, 2, 3], [4, 5]]</div></div>
-</article><article id="filter-sort"><h3><span class="kind">filter</span> sort</h3>
+</article><article id="filter-sort"><h3><span class="kind">filter</span> <a class="self" href="#filter-sort">sort</a></h3>
 <p>Sort items, by a field, with a case-sensitive or reversed order.</p>
 <pre class="sig"><code>value|sort(reverse, case_sensitive, attribute)</code></pre>
 <dl class="fields"><dt><code>reverse</code> <i>bool</i></dt><dd>reverse the order</dd><dt><code>case_sensitive</code> <i>bool</i></dt><dd>compare letters as written</dd><dt><code>attribute</code> <i>string</i></dt><dd>field to sort by</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ ["b","a","c"]|sort|list }}</pre><span class="demo-label">output</span><div class="demo-out">[&amp;#39;a&amp;#39;, &amp;#39;b&amp;#39;, &amp;#39;c&amp;#39;]</div></div>
-</article><article id="filter-unique"><h3><span class="kind">filter</span> unique</h3>
+</article><article id="filter-unique"><h3><span class="kind">filter</span> <a class="self" href="#filter-unique">unique</a></h3>
 <p>Drop repeated items, by value or by a field.</p>
 <pre class="sig"><code>value|unique(case_sensitive, attribute)</code></pre>
 <dl class="fields"><dt><code>case_sensitive</code> <i>bool</i></dt><dd>compare letters as written</dd><dt><code>attribute</code> <i>string</i></dt><dd>field to compare</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ [1,2,2,3]|unique|list }}</pre><span class="demo-label">output</span><div class="demo-out">[1, 2, 3]</div></div>
-</article><article id="filter-attr"><h3><span class="kind">filter</span> attr</h3>
+</article><article id="filter-attr"><h3><span class="kind">filter</span> <a class="self" href="#filter-attr">attr</a></h3>
 <p>Read a named attribute of a host object.</p>
 <pre class="sig"><code>value|attr(name)</code></pre>
 <dl class="fields"><dt><code>name</code> <i>string</i></dt><dd>the attribute</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{% set ns = namespace(city="Rome") %}{{ ns|attr("city") }}</pre><span class="demo-label">output</span><div class="demo-out">Rome</div></div>
-</article><h3 id="filters-choose">Choosing a value</h3><article id="filter-default"><h3><span class="kind">filter</span> default</h3>
+</article><h3 id="filters-choose">Choosing a value</h3><article id="filter-default"><h3><span class="kind">filter</span> <a class="self" href="#filter-default">default</a></h3>
 <p>A fallback when the value is undefined, or false under boolean.</p>
 <pre class="sig"><code>value|default(default_value, boolean)</code></pre>
 <dl class="fields"><dt><code>default_value</code> <i>value</i></dt><dd>what to use instead</dd><dt><code>boolean</code> <i>bool</i></dt><dd>also replace a false value</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ missing|default("none") }}</pre><span class="demo-label">output</span><div class="demo-out">none</div></div>
-</article><article id="filter-d"><h3><span class="kind">filter</span> d</h3>
-<p>An alias of default.</p>
+</article><article id="filter-d"><h3><span class="kind">filter</span> <a class="self" href="#filter-d">d</a></h3>
+<p>An alias of <a href="#filter-default"><code>default</code></a>.</p>
 <pre class="sig"><code>value|d(default_value, boolean)</code></pre>
 <dl class="fields"><dt><code>default_value</code> <i>value</i></dt><dd>what to use instead</dd><dt><code>boolean</code> <i>bool</i></dt><dd>also replace a false value</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ missing|d("none") }}</pre><span class="demo-label">output</span><div class="demo-out">none</div></div>
-</article><article id="filter-default_if_none"><h3><span class="kind">filter</span> default_if_none</h3>
+</article><article id="filter-default_if_none"><h3><span class="kind">filter</span> <a class="self" href="#filter-default_if_none">default_if_none</a></h3>
 <p>A fallback used only when the value is null.</p>
 <pre class="sig"><code>value|default_if_none(arg)</code></pre>
 <dl class="fields"><dt><code>arg</code> <i>value</i></dt><dd>what to use instead</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ none|default_if_none("none") }}</pre><span class="demo-label">output</span><div class="demo-out">none</div></div>
-</article><h3 id="filters-web">Markup and URLs</h3><article id="filter-urlencode"><h3><span class="kind">filter</span> urlencode</h3>
+</article><h3 id="filters-web">Markup and URLs</h3><article id="filter-urlencode"><h3><span class="kind">filter</span> <a class="self" href="#filter-urlencode">urlencode</a></h3>
 <p>Percent-encode a string, or a mapping or pairs as a query string.</p>
 <pre class="sig"><code>value|urlencode</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ {"q":"a b"}|urlencode }}</pre><span class="demo-label">output</span><div class="demo-out">q=a+b</div></div>
-</article><article id="filter-urlize"><h3><span class="kind">filter</span> urlize</h3>
+</article><article id="filter-urlize"><h3><span class="kind">filter</span> <a class="self" href="#filter-urlize">urlize</a></h3>
 <p>Turn web addresses and emails into anchor tags.</p>
 <pre class="sig"><code>value|urlize(trim_url_limit, nofollow, target, rel, extra_schemes)</code></pre>
 <dl class="fields"><dt><code>trim_url_limit</code> <i>int</i></dt><dd>shorten shown links</dd><dt><code>nofollow</code> <i>bool</i></dt><dd>add rel=nofollow</dd><dt><code>target</code> <i>string</i></dt><dd>the anchor target</dd><dt><code>rel</code> <i>string</i></dt><dd>extra rel words</dd><dt><code>extra_schemes</code> <i>list</i></dt><dd>more URI schemes to link</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ "visit http://example.com"|urlize }}</pre><span class="demo-label">output</span><div class="demo-out">visit &lt;a href="http://example.com" rel="noopener"&gt;http://example.com&lt;/a&gt;</div></div>
-</article><article id="filter-xmlattr"><h3><span class="kind">filter</span> xmlattr</h3>
+</article><article id="filter-xmlattr"><h3><span class="kind">filter</span> <a class="self" href="#filter-xmlattr">xmlattr</a></h3>
 <p>Build a string of attributes from a mapping, as safe markup.</p>
 <pre class="sig"><code>value|xmlattr(autospace)</code></pre>
 <dl class="fields"><dt><code>autospace</code> <i>bool</i></dt><dd>a leading space, on by default</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ {"class":"x","id":5}|xmlattr }}</pre><span class="demo-label">output</span><div class="demo-out"> class="x" id="5"</div></div>
-</article><article id="filter-tojson"><h3><span class="kind">filter</span> tojson</h3>
+</article><article id="filter-tojson"><h3><span class="kind">filter</span> <a class="self" href="#filter-tojson">tojson</a></h3>
 <p>Serialise a value to JSON safe inside a script tag.</p>
 <pre class="sig"><code>value|tojson(indent)</code></pre>
 <dl class="fields"><dt><code>indent</code> <i>int</i></dt><dd>spaces to indent</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ {"a":1}|tojson }}</pre><span class="demo-label">output</span><div class="demo-out">{"a": 1}</div></div>
-</article><article id="filter-json_script"><h3><span class="kind">filter</span> json_script</h3>
+</article><article id="filter-json_script"><h3><span class="kind">filter</span> <a class="self" href="#filter-json_script">json_script</a></h3>
 <p>Wrap JSON in a script tag, optionally with an id.</p>
 <pre class="sig"><code>value|json_script(element_id)</code></pre>
 <dl class="fields"><dt><code>element_id</code> <i>string</i></dt><dd>the tag's id</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ {"a":1}|json_script("data") }}</pre><span class="demo-label">output</span><div class="demo-out">&lt;script id="data" type="application/json"&gt;{"a": 1}&lt;/script&gt;</div></div>
-</article><article id="filter-truncatewords"><h3><span class="kind">filter</span> truncatewords</h3>
+</article><article id="filter-truncatewords"><h3><span class="kind">filter</span> <a class="self" href="#filter-truncatewords">truncatewords</a></h3>
 <p>Cut to a number of words, ending with an ellipsis.</p>
 <pre class="sig"><code>value|truncatewords(arg)</code></pre>
 <dl class="fields"><dt><code>arg</code> <i>int</i></dt><dd>most words</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ "one two three four"|truncatewords(2) }}</pre><span class="demo-label">output</span><div class="demo-out">one two …</div></div>
-</article><article id="filter-unordered_list"><h3><span class="kind">filter</span> unordered_list</h3>
+</article><article id="filter-unordered_list"><h3><span class="kind">filter</span> <a class="self" href="#filter-unordered_list">unordered_list</a></h3>
 <p>Render a list of items and nested lists as HTML ul elements.</p>
 <pre class="sig"><code>value|unordered_list</code></pre>
 
@@ -397,379 +397,379 @@ five</div></div>
 	&lt;/ul&gt;
 	&lt;/li&gt;
 	&lt;li&gt;last&lt;/li&gt;</div></div>
-</article><article id="filter-ljust"><h3><span class="kind">filter</span> ljust</h3>
+</article><article id="filter-ljust"><h3><span class="kind">filter</span> <a class="self" href="#filter-ljust">ljust</a></h3>
 <p>Left-justify the text in a field of the given width.</p>
 <pre class="sig"><code>value|ljust(arg)</code></pre>
 <dl class="fields"><dt><code>arg</code> <i>int</i></dt><dd>field width</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ "hi"|ljust(5) }}</pre><span class="demo-label">output</span><div class="demo-out">hi   </div></div>
-</article><article id="filter-rjust"><h3><span class="kind">filter</span> rjust</h3>
+</article><article id="filter-rjust"><h3><span class="kind">filter</span> <a class="self" href="#filter-rjust">rjust</a></h3>
 <p>Right-justify the text in a field of the given width.</p>
 <pre class="sig"><code>value|rjust(arg)</code></pre>
 <dl class="fields"><dt><code>arg</code> <i>int</i></dt><dd>field width</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ "hi"|rjust(5) }}</pre><span class="demo-label">output</span><div class="demo-out">   hi</div></div>
-</article><article id="filter-yesno"><h3><span class="kind">filter</span> yesno</h3>
+</article><article id="filter-yesno"><h3><span class="kind">filter</span> <a class="self" href="#filter-yesno">yesno</a></h3>
 <p>Map true, false and null to words, comma-separated.</p>
 <pre class="sig"><code>value|yesno(arg)</code></pre>
 <dl class="fields"><dt><code>arg</code> <i>string</i></dt><dd>yes,no,maybe (maybe optional)</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ ok|yesno }}</pre><span class="demo-label">data</span><pre class="code demo-data">{"ok":true}</pre><span class="demo-label">output</span><div class="demo-out">yes</div></div>
-</article><article id="filter-pluralize"><h3><span class="kind">filter</span> pluralize</h3>
+</article><article id="filter-pluralize"><h3><span class="kind">filter</span> <a class="self" href="#filter-pluralize">pluralize</a></h3>
 <p>Add a suffix (or two, comma-separated) based on a count.</p>
 <pre class="sig"><code>value|pluralize(arg)</code></pre>
 <dl class="fields"><dt><code>arg</code> <i>string</i></dt><dd>suffix, or singular,plural</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ count|pluralize }}</pre><span class="demo-label">data</span><pre class="code demo-data">{"count":3}</pre><span class="demo-label">output</span><div class="demo-out">s</div></div>
-</article><h3 id="filters-dates">Dates and times</h3><article id="filter-date"><h3><span class="kind">filter</span> date</h3>
+</article><h3 id="filters-dates">Dates and times</h3><article id="filter-date"><h3><span class="kind">filter</span> <a class="self" href="#filter-date">date</a></h3>
 <p>Format a date with Django's letters; a time letter is refused.</p>
 <pre class="sig"><code>value|date(arg)</code></pre>
 <dl class="fields"><dt><code>arg</code> <i>string</i></dt><dd>a format or a named format such as DATE_FORMAT</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ d|date("Y-m-d") }}</pre><span class="demo-label">data</span><pre class="code demo-data">{"d":"2026-05-04"}</pre><span class="demo-label">output</span><div class="demo-out">2026-05-04</div></div>
-</article><article id="filter-time"><h3><span class="kind">filter</span> time</h3>
+</article><article id="filter-time"><h3><span class="kind">filter</span> <a class="self" href="#filter-time">time</a></h3>
 <p>Format a time with Django's letters; a date letter is ignored.</p>
 <pre class="sig"><code>value|time(arg)</code></pre>
 <dl class="fields"><dt><code>arg</code> <i>string</i></dt><dd>a format or TIME_FORMAT</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ t|time("H:i") }}</pre><span class="demo-label">data</span><pre class="code demo-data">{"t":"2026-05-04T13:45:00"}</pre><span class="demo-label">output</span><div class="demo-out">13:45</div></div>
-</article><article id="filter-timesince"><h3><span class="kind">filter</span> timesince</h3>
+</article><article id="filter-timesince"><h3><span class="kind">filter</span> <a class="self" href="#filter-timesince">timesince</a></h3>
 <p>Words for the span from a date to now (a date you supply, templates read no clock).</p>
 <pre class="sig"><code>value|timesince(now, depth)</code></pre>
 <dl class="fields"><dt><code>now</code> <i>date</i></dt><dd>the moment to measure to</dd><dt><code>depth</code> <i>int</i></dt><dd>most adjacent units, 2 by default</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ d|timesince(now) }}</pre><span class="demo-label">data</span><pre class="code demo-data">{"d":"2026-01-01","now":"2026-05-04"}</pre><span class="demo-label">output</span><div class="demo-out">4 months</div></div>
-</article><article id="filter-timeuntil"><h3><span class="kind">filter</span> timeuntil</h3>
+</article><article id="filter-timeuntil"><h3><span class="kind">filter</span> <a class="self" href="#filter-timeuntil">timeuntil</a></h3>
 <p>Words for the span from now to a date.</p>
 <pre class="sig"><code>value|timeuntil(now, depth)</code></pre>
 <dl class="fields"><dt><code>now</code> <i>date</i></dt><dd>the moment to measure to</dd><dt><code>depth</code> <i>int</i></dt><dd>most adjacent units, 2 by default</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ d|timeuntil(now) }}</pre><span class="demo-label">data</span><pre class="code demo-data">{"d":"2026-05-04","now":"2026-01-01"}</pre><span class="demo-label">output</span><div class="demo-out">4 months</div></div>
 </article></section>
     <section id="tests"><h2>Tests</h2>
-<p class="lede">Thirty-nine tests, written after a value with <code>is</code>. Many comparison names are aliases of the symbol forms.</p><h3 id="tests-type">Type</h3><article id="test-none"><h3><span class="kind">test</span> none</h3>
+<p class="lede">Thirty-nine tests, written after a value with <code>is</code>. Many comparison names are aliases of the symbol forms.</p><h3 id="tests-type">Type</h3><article id="test-none"><h3><span class="kind">test</span> <a class="self" href="#test-none">none</a></h3>
 <p>True when the value is null.</p>
 <pre class="sig"><code>value is none</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ none is none }}</pre><span class="demo-label">output</span><div class="demo-out">True</div></div>
-</article><article id="test-boolean"><h3><span class="kind">test</span> boolean</h3>
+</article><article id="test-boolean"><h3><span class="kind">test</span> <a class="self" href="#test-boolean">boolean</a></h3>
 <p>True when the value is a boolean.</p>
 <pre class="sig"><code>value is boolean</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ true is boolean }}</pre><span class="demo-label">output</span><div class="demo-out">True</div></div>
-</article><article id="test-true"><h3><span class="kind">test</span> true</h3>
+</article><article id="test-true"><h3><span class="kind">test</span> <a class="self" href="#test-true">true</a></h3>
 <p>True when the value is the boolean true.</p>
 <pre class="sig"><code>value is true</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ true is true }}</pre><span class="demo-label">output</span><div class="demo-out">True</div></div>
-</article><article id="test-false"><h3><span class="kind">test</span> false</h3>
+</article><article id="test-false"><h3><span class="kind">test</span> <a class="self" href="#test-false">false</a></h3>
 <p>True when the value is the boolean false.</p>
 <pre class="sig"><code>value is false</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ false is false }}</pre><span class="demo-label">output</span><div class="demo-out">True</div></div>
-</article><article id="test-integer"><h3><span class="kind">test</span> integer</h3>
+</article><article id="test-integer"><h3><span class="kind">test</span> <a class="self" href="#test-integer">integer</a></h3>
 <p>True when the value is an integer.</p>
 <pre class="sig"><code>value is integer</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ 3 is integer }}</pre><span class="demo-label">output</span><div class="demo-out">True</div></div>
-</article><article id="test-float"><h3><span class="kind">test</span> float</h3>
+</article><article id="test-float"><h3><span class="kind">test</span> <a class="self" href="#test-float">float</a></h3>
 <p>True when the value is a floating point number.</p>
 <pre class="sig"><code>value is float</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ 3.0 is float }}</pre><span class="demo-label">output</span><div class="demo-out">True</div></div>
-</article><article id="test-number"><h3><span class="kind">test</span> number</h3>
+</article><article id="test-number"><h3><span class="kind">test</span> <a class="self" href="#test-number">number</a></h3>
 <p>True when the value is a number (integer, float or boolean).</p>
 <pre class="sig"><code>value is number</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ 3 is number }}</pre><span class="demo-label">output</span><div class="demo-out">True</div></div>
-</article><article id="test-string"><h3><span class="kind">test</span> string</h3>
+</article><article id="test-string"><h3><span class="kind">test</span> <a class="self" href="#test-string">string</a></h3>
 <p>True when the value is text or safe markup.</p>
 <pre class="sig"><code>value is string</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ "x" is string }}</pre><span class="demo-label">output</span><div class="demo-out">True</div></div>
-</article><article id="test-mapping"><h3><span class="kind">test</span> mapping</h3>
+</article><article id="test-mapping"><h3><span class="kind">test</span> <a class="self" href="#test-mapping">mapping</a></h3>
 <p>True when the value is a mapping.</p>
 <pre class="sig"><code>value is mapping</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ {} is mapping }}</pre><span class="demo-label">output</span><div class="demo-out">True</div></div>
-</article><article id="test-sequence"><h3><span class="kind">test</span> sequence</h3>
+</article><article id="test-sequence"><h3><span class="kind">test</span> <a class="self" href="#test-sequence">sequence</a></h3>
 <p>True when the value is a string, list, tuple or mapping.</p>
 <pre class="sig"><code>value is sequence</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ [1,2] is sequence }}</pre><span class="demo-label">output</span><div class="demo-out">True</div></div>
-</article><article id="test-iterable"><h3><span class="kind">test</span> iterable</h3>
+</article><article id="test-iterable"><h3><span class="kind">test</span> <a class="self" href="#test-iterable">iterable</a></h3>
 <p>True when the value can be looped over.</p>
 <pre class="sig"><code>value is iterable</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ "ab" is iterable }}</pre><span class="demo-label">output</span><div class="demo-out">True</div></div>
-</article><article id="test-callable"><h3><span class="kind">test</span> callable</h3>
+</article><article id="test-callable"><h3><span class="kind">test</span> <a class="self" href="#test-callable">callable</a></h3>
 <p>True when the value can be called, like a global function.</p>
 <pre class="sig"><code>value is callable</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ range is callable }}</pre><span class="demo-label">output</span><div class="demo-out">True</div></div>
-</article><article id="test-escaped"><h3><span class="kind">test</span> escaped</h3>
+</article><article id="test-escaped"><h3><span class="kind">test</span> <a class="self" href="#test-escaped">escaped</a></h3>
 <p>True when the value is markup already safe to write.</p>
 <pre class="sig"><code>value is escaped</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ ("&lt;b&gt;"|safe) is escaped }}</pre><span class="demo-label">output</span><div class="demo-out">True</div></div>
-</article><h3 id="tests-compare">Numbers and comparison</h3><article id="test-odd"><h3><span class="kind">test</span> odd</h3>
+</article><h3 id="tests-compare">Numbers and comparison</h3><article id="test-odd"><h3><span class="kind">test</span> <a class="self" href="#test-odd">odd</a></h3>
 <p>True when a number is odd.</p>
 <pre class="sig"><code>value is odd</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ 7 is odd }}</pre><span class="demo-label">output</span><div class="demo-out">True</div></div>
-</article><article id="test-even"><h3><span class="kind">test</span> even</h3>
+</article><article id="test-even"><h3><span class="kind">test</span> <a class="self" href="#test-even">even</a></h3>
 <p>True when a number is even.</p>
 <pre class="sig"><code>value is even</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ 4 is even }}</pre><span class="demo-label">output</span><div class="demo-out">True</div></div>
-</article><article id="test-divisibleby"><h3><span class="kind">test</span> divisibleby</h3>
+</article><article id="test-divisibleby"><h3><span class="kind">test</span> <a class="self" href="#test-divisibleby">divisibleby</a></h3>
 <p>True when a number divides by the argument.</p>
 <pre class="sig"><code>value is divisibleby(n)</code></pre>
 <dl class="fields"><dt><code>n</code> <i>number</i></dt><dd>the divisor</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ 9 is divisibleby(3) }}</pre><span class="demo-label">output</span><div class="demo-out">True</div></div>
-</article><article id="test-=="><h3><span class="kind">test</span> ==</h3>
+</article><article id="test-=="><h3><span class="kind">test</span> <a class="self" href="#test-%3D%3D">==</a></h3>
 <p>True when the value equals the other. Also eq and equalto.</p>
 <pre class="sig"><code>value == other</code></pre>
 <dl class="fields"><dt><code>other</code> <i>value</i></dt><dd>what to compare against</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ 3 == 3 }}</pre><span class="demo-label">output</span><div class="demo-out">True</div></div>
-</article><article id="test-eq"><h3><span class="kind">test</span> eq</h3>
-<p>An alias of ==.</p>
+</article><article id="test-eq"><h3><span class="kind">test</span> <a class="self" href="#test-eq">eq</a></h3>
+<p>An alias of <a href="#test-%3D%3D"><code>==</code></a>.</p>
 <pre class="sig"><code>value is eq other</code></pre>
 <dl class="fields"><dt><code>other</code> <i>value</i></dt><dd>what to compare against</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ 3 is eq 3 }}</pre><span class="demo-label">output</span><div class="demo-out">True</div></div>
-</article><article id="test-equalto"><h3><span class="kind">test</span> equalto</h3>
-<p>An alias of ==.</p>
+</article><article id="test-equalto"><h3><span class="kind">test</span> <a class="self" href="#test-equalto">equalto</a></h3>
+<p>An alias of <a href="#test-%3D%3D"><code>==</code></a>.</p>
 <pre class="sig"><code>value is equalto other</code></pre>
 <dl class="fields"><dt><code>other</code> <i>value</i></dt><dd>what to compare against</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ 3 is equalto 3 }}</pre><span class="demo-label">output</span><div class="demo-out">True</div></div>
-</article><article id="test-!="><h3><span class="kind">test</span> !=</h3>
+</article><article id="test-!="><h3><span class="kind">test</span> <a class="self" href="#test-!%3D">!=</a></h3>
 <p>True when the value differs from the other. Also ne.</p>
 <pre class="sig"><code>value != other</code></pre>
 <dl class="fields"><dt><code>other</code> <i>value</i></dt><dd>what to compare against</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ 3 != 4 }}</pre><span class="demo-label">output</span><div class="demo-out">True</div></div>
-</article><article id="test-ne"><h3><span class="kind">test</span> ne</h3>
-<p>An alias of !=.</p>
+</article><article id="test-ne"><h3><span class="kind">test</span> <a class="self" href="#test-ne">ne</a></h3>
+<p>An alias of <a href="#test-!%3D"><code>!=</code></a>.</p>
 <pre class="sig"><code>value is ne other</code></pre>
 <dl class="fields"><dt><code>other</code> <i>value</i></dt><dd>what to compare against</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ 3 is ne 4 }}</pre><span class="demo-label">output</span><div class="demo-out">True</div></div>
-</article><article id="test-<"><h3><span class="kind">test</span> &lt;</h3>
+</article><article id="test-<"><h3><span class="kind">test</span> <a class="self" href="#test-%3C">&lt;</a></h3>
 <p>True when the value is less than the other. Also lt and lessthan.</p>
 <pre class="sig"><code>value &lt; other</code></pre>
 <dl class="fields"><dt><code>other</code> <i>value</i></dt><dd>what to compare against</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ 3 &lt; 4 }}</pre><span class="demo-label">output</span><div class="demo-out">True</div></div>
-</article><article id="test-lt"><h3><span class="kind">test</span> lt</h3>
-<p>An alias of &lt;.</p>
+</article><article id="test-lt"><h3><span class="kind">test</span> <a class="self" href="#test-lt">lt</a></h3>
+<p>An alias of <a href="#test-%3C"><code>&lt;</code></a>.</p>
 <pre class="sig"><code>value is lt other</code></pre>
 <dl class="fields"><dt><code>other</code> <i>value</i></dt><dd>what to compare against</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ 3 is lt 4 }}</pre><span class="demo-label">output</span><div class="demo-out">True</div></div>
-</article><article id="test-lessthan"><h3><span class="kind">test</span> lessthan</h3>
-<p>An alias of &lt;.</p>
+</article><article id="test-lessthan"><h3><span class="kind">test</span> <a class="self" href="#test-lessthan">lessthan</a></h3>
+<p>An alias of <a href="#test-%3C"><code>&lt;</code></a>.</p>
 <pre class="sig"><code>value is lessthan other</code></pre>
 <dl class="fields"><dt><code>other</code> <i>value</i></dt><dd>what to compare against</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ 3 is lessthan 4 }}</pre><span class="demo-label">output</span><div class="demo-out">True</div></div>
-</article><article id="test->"><h3><span class="kind">test</span> &gt;</h3>
+</article><article id="test->"><h3><span class="kind">test</span> <a class="self" href="#test-%3E">&gt;</a></h3>
 <p>True when the value is greater than the other. Also gt and greaterthan.</p>
 <pre class="sig"><code>value &gt; other</code></pre>
 <dl class="fields"><dt><code>other</code> <i>value</i></dt><dd>what to compare against</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ 3 &gt; 2 }}</pre><span class="demo-label">output</span><div class="demo-out">True</div></div>
-</article><article id="test-gt"><h3><span class="kind">test</span> gt</h3>
-<p>An alias of &gt;.</p>
+</article><article id="test-gt"><h3><span class="kind">test</span> <a class="self" href="#test-gt">gt</a></h3>
+<p>An alias of <a href="#test-%3E"><code>&gt;</code></a>.</p>
 <pre class="sig"><code>value is gt other</code></pre>
 <dl class="fields"><dt><code>other</code> <i>value</i></dt><dd>what to compare against</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ 3 is gt 2 }}</pre><span class="demo-label">output</span><div class="demo-out">True</div></div>
-</article><article id="test-greaterthan"><h3><span class="kind">test</span> greaterthan</h3>
-<p>An alias of &gt;.</p>
+</article><article id="test-greaterthan"><h3><span class="kind">test</span> <a class="self" href="#test-greaterthan">greaterthan</a></h3>
+<p>An alias of <a href="#test-%3E"><code>&gt;</code></a>.</p>
 <pre class="sig"><code>value is greaterthan other</code></pre>
 <dl class="fields"><dt><code>other</code> <i>value</i></dt><dd>what to compare against</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ 3 is greaterthan 2 }}</pre><span class="demo-label">output</span><div class="demo-out">True</div></div>
-</article><article id="test-<="><h3><span class="kind">test</span> &lt;=</h3>
+</article><article id="test-<="><h3><span class="kind">test</span> <a class="self" href="#test-%3C%3D">&lt;=</a></h3>
 <p>True when the value is at most the other. Also le.</p>
 <pre class="sig"><code>value &lt;= other</code></pre>
 <dl class="fields"><dt><code>other</code> <i>value</i></dt><dd>what to compare against</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ 3 &lt;= 3 }}</pre><span class="demo-label">output</span><div class="demo-out">True</div></div>
-</article><article id="test-le"><h3><span class="kind">test</span> le</h3>
-<p>An alias of &lt;=.</p>
+</article><article id="test-le"><h3><span class="kind">test</span> <a class="self" href="#test-le">le</a></h3>
+<p>An alias of <a href="#test-%3C%3D"><code>&lt;=</code></a>.</p>
 <pre class="sig"><code>value is le other</code></pre>
 <dl class="fields"><dt><code>other</code> <i>value</i></dt><dd>what to compare against</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ 3 is le 3 }}</pre><span class="demo-label">output</span><div class="demo-out">True</div></div>
-</article><article id="test->="><h3><span class="kind">test</span> &gt;=</h3>
+</article><article id="test->="><h3><span class="kind">test</span> <a class="self" href="#test-%3E%3D">&gt;=</a></h3>
 <p>True when the value is at least the other. Also ge.</p>
 <pre class="sig"><code>value &gt;= other</code></pre>
 <dl class="fields"><dt><code>other</code> <i>value</i></dt><dd>what to compare against</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ 3 &gt;= 3 }}</pre><span class="demo-label">output</span><div class="demo-out">True</div></div>
-</article><article id="test-ge"><h3><span class="kind">test</span> ge</h3>
-<p>An alias of &gt;=.</p>
+</article><article id="test-ge"><h3><span class="kind">test</span> <a class="self" href="#test-ge">ge</a></h3>
+<p>An alias of <a href="#test-%3E%3D"><code>&gt;=</code></a>.</p>
 <pre class="sig"><code>value is ge other</code></pre>
 <dl class="fields"><dt><code>other</code> <i>value</i></dt><dd>what to compare against</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ 3 is ge 3 }}</pre><span class="demo-label">output</span><div class="demo-out">True</div></div>
-</article><h3 id="tests-string">Strings</h3><article id="test-lower"><h3><span class="kind">test</span> lower</h3>
+</article><h3 id="tests-string">Strings</h3><article id="test-lower"><h3><span class="kind">test</span> <a class="self" href="#test-lower">lower</a></h3>
 <p>True when text is all lowercase.</p>
 <pre class="sig"><code>value is lower</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ "abc" is lower }}</pre><span class="demo-label">output</span><div class="demo-out">True</div></div>
-</article><article id="test-upper"><h3><span class="kind">test</span> upper</h3>
+</article><article id="test-upper"><h3><span class="kind">test</span> <a class="self" href="#test-upper">upper</a></h3>
 <p>True when text is all uppercase.</p>
 <pre class="sig"><code>value is upper</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ "ABC" is upper }}</pre><span class="demo-label">output</span><div class="demo-out">True</div></div>
-</article><h3 id="tests-identity">Identity and membership</h3><article id="test-sameas"><h3><span class="kind">test</span> sameas</h3>
+</article><h3 id="tests-identity">Identity and membership</h3><article id="test-sameas"><h3><span class="kind">test</span> <a class="self" href="#test-sameas">sameas</a></h3>
 <p>True when the two values are the same object or equal value.</p>
 <pre class="sig"><code>value is sameas other</code></pre>
 <dl class="fields"><dt><code>other</code> <i>value</i></dt><dd>the other value</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{% set a = [1] %}{{ a is sameas a }}</pre><span class="demo-label">output</span><div class="demo-out">True</div></div>
-</article><article id="test-in"><h3><span class="kind">test</span> in</h3>
+</article><article id="test-in"><h3><span class="kind">test</span> <a class="self" href="#test-in">in</a></h3>
 <p>True when the value is a member of the container.</p>
 <pre class="sig"><code>value is in container</code></pre>
 <dl class="fields"><dt><code>container</code> <i>value</i></dt><dd>where to look</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ "a" in ["a","b"] }}</pre><span class="demo-label">output</span><div class="demo-out">True</div></div>
-</article><h3 id="tests-existence">Existence</h3><article id="test-defined"><h3><span class="kind">test</span> defined</h3>
+</article><h3 id="tests-existence">Existence</h3><article id="test-defined"><h3><span class="kind">test</span> <a class="self" href="#test-defined">defined</a></h3>
 <p>True when the name resolved to a value.</p>
 <pre class="sig"><code>value is defined</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{% set present = 1 %}{{ present is defined }}</pre><span class="demo-label">output</span><div class="demo-out">True</div></div>
-</article><article id="test-undefined"><h3><span class="kind">test</span> undefined</h3>
+</article><article id="test-undefined"><h3><span class="kind">test</span> <a class="self" href="#test-undefined">undefined</a></h3>
 <p>True when the name resolved to nothing.</p>
 <pre class="sig"><code>value is undefined</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ missing is undefined }}</pre><span class="demo-label">output</span><div class="demo-out">True</div></div>
-</article><article id="test-filter"><h3><span class="kind">test</span> filter</h3>
+</article><article id="test-filter"><h3><span class="kind">test</span> <a class="self" href="#test-filter">filter</a></h3>
 <p>True when a filter of the given name is registered.</p>
 <pre class="sig"><code>value is filter</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ "upper" is filter }}</pre><span class="demo-label">output</span><div class="demo-out">True</div></div>
-</article><article id="test-test"><h3><span class="kind">test</span> test</h3>
+</article><article id="test-test"><h3><span class="kind">test</span> <a class="self" href="#test-test">test</a></h3>
 <p>True when a test of the given name is registered.</p>
 <pre class="sig"><code>value is test</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ "odd" is test }}</pre><span class="demo-label">output</span><div class="demo-out">True</div></div>
 </article></section>
     <section id="globals"><h2>Globals</h2>
-<p class="lede">Eleven names every template sees without being passed in. <code>_</code> is an alias of <code>gettext</code>.</p><article id="global-range"><h3><span class="kind">global</span> range</h3>
+<p class="lede">Eleven names every template sees without being passed in. <code>_</code> is an alias of <code>gettext</code>.</p><article id="global-range"><h3><span class="kind">global</span> <a class="self" href="#global-range">range</a></h3>
 <p>Build a list of integers, Python's range.</p>
 <pre class="sig"><code>range(stop) · range(start, stop) · range(start, stop, step)</code></pre>
 <dl class="fields"><dt><code>start</code> <i>int</i></dt><dd>first value, 0 by default</dd><dt><code>stop</code> <i>int</i></dt><dd>one past the last</dd><dt><code>step</code> <i>int</i></dt><dd>the step, 1 by default</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ range(1, 4)|list }}{{ range(0, 10, 2)|list }}</pre><span class="demo-label">output</span><div class="demo-out">[1, 2, 3][0, 2, 4, 6, 8]</div></div>
-</article><article id="global-dict"><h3><span class="kind">global</span> dict</h3>
+</article><article id="global-dict"><h3><span class="kind">global</span> <a class="self" href="#global-dict">dict</a></h3>
 <p>Build a mapping from pairs, a mapping or named arguments.</p>
 <pre class="sig"><code>dict(pairs) · dict(a=1, b=2)</code></pre>
 <dl class="fields"><dt><code>pairs</code> <i>sequence</i></dt><dd>a list of [key, value]</dd><dt><code>named</code> <i>values</i></dt><dd>keys and values</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ dict(a=1, b=2)|items|list }}</pre><span class="demo-label">output</span><div class="demo-out">[(&amp;#39;a&amp;#39;, 1), (&amp;#39;b&amp;#39;, 2)]</div></div>
-</article><article id="global-lipsum"><h3><span class="kind">global</span> lipsum</h3>
+</article><article id="global-lipsum"><h3><span class="kind">global</span> <a class="self" href="#global-lipsum">lipsum</a></h3>
 <p>Generate pseudo-Latin filler text, the same page twice, as safe HTML or plain text.</p>
 <pre class="sig"><code>lipsum(n, html, min, max)</code></pre>
 <dl class="fields"><dt><code>n</code> <i>int</i></dt><dd>paragraphs, 5 by default</dd><dt><code>html</code> <i>bool</i></dt><dd>wrap in &lt;p&gt;, true by default</dd><dt><code>min</code> <i>int</i></dt><dd>shortest word count</dd><dt><code>max</code> <i>int</i></dt><dd>longest word count</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ lipsum(n=1, min=5, max=8) }}</pre><span class="demo-label">output</span><div class="demo-out">&lt;p&gt;Aptent leo luctus nonummy taciti vitae.&lt;/p&gt;</div></div>
-</article><article id="global-cycler"><h3><span class="kind">global</span> cycler</h3>
+</article><article id="global-cycler"><h3><span class="kind">global</span> <a class="self" href="#global-cycler">cycler</a></h3>
 <p>Cycle through items: current names the present item, next advances.</p>
 <pre class="sig"><code>cycler(*items)</code></pre>
 <dl class="fields"><dt><code>items</code> <i>values</i></dt><dd>the values to cycle</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{% set c = cycler("odd","even") %}{{ c.next() }}{{ c.next() }}{{ c.next() }}</pre><span class="demo-label">output</span><div class="demo-out">oddevenodd</div></div>
-</article><article id="global-joiner"><h3><span class="kind">global</span> joiner</h3>
+</article><article id="global-joiner"><h3><span class="kind">global</span> <a class="self" href="#global-joiner">joiner</a></h3>
 <p>A separator that prints nothing the first time and the separator after.</p>
 <pre class="sig"><code>joiner(sep)</code></pre>
 <dl class="fields"><dt><code>sep</code> <i>string</i></dt><dd>the separator, ", " by default</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{% set j = joiner(", ") %}{% for x in ["a","b","c"] %}{{ j() }}{{ x }}{% endfor %}</pre><span class="demo-label">output</span><div class="demo-out">a, b, c</div></div>
-</article><article id="global-namespace"><h3><span class="kind">global</span> namespace</h3>
+</article><article id="global-namespace"><h3><span class="kind">global</span> <a class="self" href="#global-namespace">namespace</a></h3>
 <p>A mapping whose fields a template may assign from inside a loop or block.</p>
 <pre class="sig"><code>namespace(**fields)</code></pre>
 <dl class="fields"><dt><code>fields</code> <i>values</i></dt><dd>initial fields</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{% set ns = namespace(n=0) %}{% for i in [1,2,3] %}{% set ns.n = ns.n + i %}{% endfor %}{{ ns.n }}</pre><span class="demo-label">output</span><div class="demo-out">6</div></div>
-</article><article id="global-gettext"><h3><span class="kind">global</span> gettext</h3>
+</article><article id="global-gettext"><h3><span class="kind">global</span> <a class="self" href="#global-gettext">gettext</a></h3>
 <p>Translate a message through the translation seam; with no seam the text stands.</p>
 <pre class="sig"><code>gettext(message) · _(message)</code></pre>
 <dl class="fields"><dt><code>message</code> <i>string</i></dt><dd>the message to translate</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ gettext("Hello") }} {{ _("World") }}</pre><span class="demo-label">output</span><div class="demo-out">Hello World</div></div>
-</article><article id="global-_"><h3><span class="kind">global</span> _</h3>
-<p>An alias of gettext.</p>
+</article><article id="global-_"><h3><span class="kind">global</span> <a class="self" href="#global-_">_</a></h3>
+<p>An alias of <a href="#global-gettext"><code>gettext</code></a>.</p>
 <pre class="sig"><code>_(message)</code></pre>
 <dl class="fields"><dt><code>message</code> <i>string</i></dt><dd>the message to translate</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ _("Hello") }}</pre><span class="demo-label">output</span><div class="demo-out">Hello</div></div>
-</article><article id="global-ngettext"><h3><span class="kind">global</span> ngettext</h3>
+</article><article id="global-ngettext"><h3><span class="kind">global</span> <a class="self" href="#global-ngettext">ngettext</a></h3>
 <p>Translate a singular or plural message by a count.</p>
 <pre class="sig"><code>ngettext(singular, plural, count)</code></pre>
 <dl class="fields"><dt><code>singular</code> <i>string</i></dt><dd>one form</dd><dt><code>plural</code> <i>string</i></dt><dd>many form</dd><dt><code>count</code> <i>number</i></dt><dd>the count</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ ngettext("%(num)d apple", "%(num)d apples", n) }}</pre><span class="demo-label">data</span><pre class="code demo-data">{"n":2}</pre><span class="demo-label">output</span><div class="demo-out">2 apples</div></div>
-</article><article id="global-pgettext"><h3><span class="kind">global</span> pgettext</h3>
+</article><article id="global-pgettext"><h3><span class="kind">global</span> <a class="self" href="#global-pgettext">pgettext</a></h3>
 <p>Translate a message within a context.</p>
 <pre class="sig"><code>pgettext(context, message)</code></pre>
 <dl class="fields"><dt><code>context</code> <i>string</i></dt><dd>the message context</dd><dt><code>message</code> <i>string</i></dt><dd>the message to translate</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ pgettext("menu", "Open") }}</pre><span class="demo-label">output</span><div class="demo-out">Open</div></div>
-</article><article id="global-npgettext"><h3><span class="kind">global</span> npgettext</h3>
+</article><article id="global-npgettext"><h3><span class="kind">global</span> <a class="self" href="#global-npgettext">npgettext</a></h3>
 <p>Translate a singular or plural message within a context.</p>
 <pre class="sig"><code>npgettext(context, singular, plural, count)</code></pre>
 <dl class="fields"><dt><code>context</code> <i>string</i></dt><dd>the message context</dd><dt><code>singular</code> <i>string</i></dt><dd>one form</dd><dt><code>plural</code> <i>string</i></dt><dd>many form</dd><dt><code>count</code> <i>number</i></dt><dd>the count</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{{ npgettext("file", "%(num)d file", "%(num)d files", n) }}</pre><span class="demo-label">data</span><pre class="code demo-data">{"n":2}</pre><span class="demo-label">output</span><div class="demo-out">2 files</div></div>
 </article></section>
     <section id="statements"><h2>Statements</h2>
-<p class="lede">The tags that shape a template. Most run live below through the same engine this site ships; a few that need a loader or a host object are shown with their syntax.</p><h3 id="statements-flow">Flow control</h3><article id="stmt-if"><h3><span class="kind">statement</span> if</h3>
+<p class="lede">The tags that shape a template. Most run live below through the same engine this site ships; a few that need a loader or a host object are shown with their syntax.</p><h3 id="statements-flow">Flow control</h3><article id="stmt-if"><h3><span class="kind">statement</span> <a class="self" href="#stmt-if">if</a></h3>
 <p>Branch on a condition; elif adds a clause, else the fallback.</p>
 <pre class="sig"><code>{% if cond %}…{% elif cond %}…{% else %}…{% endif %}</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{% if n &gt; 2 %}big{% elif n == 2 %}two{% else %}small{% endif %}</pre><span class="demo-label">data</span><pre class="code demo-data">{"n":2}</pre><span class="demo-label">output</span><div class="demo-out">two</div></div>
-</article><article id="stmt-for"><h3><span class="kind">statement</span> for</h3>
+</article><article id="stmt-for"><h3><span class="kind">statement</span> <a class="self" href="#stmt-for">for</a></h3>
 <p>Loop over items. The else runs when there were none; break and continue work inside. The loop variable holds index, index0, revindex, first, last, length, depth, previtem, nextitem, cycle(…) and changed(…); a recursive loop calls loop(children).</p>
 <pre class="sig"><code>{% for x in items %}…{% else %}…{% endfor %}</code></pre>
 <dl class="fields"><dt><code>items</code> <i>sequence</i></dt><dd>what to iterate</dd><dt><code>if</code> <i>condition</i></dt><dd>loop only matching items</dd><dt><code>recursive</code> <i>flag</i></dt><dd>descend into nested items</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{% for x in items %}{{ loop.index }}:{{ x }}{% if not loop.last %}, {% endif %}{% else %}none{% endfor %}</pre><span class="demo-label">data</span><pre class="code demo-data">{"items":["a","b","c"]}</pre><span class="demo-label">output</span><div class="demo-out">1:a, 2:b, 3:c</div></div>
-</article><article id="stmt-set"><h3><span class="kind">statement</span> set</h3>
+</article><article id="stmt-set"><h3><span class="kind">statement</span> <a class="self" href="#stmt-set">set</a></h3>
 <p>Bind a name to a value, or to a block of markup with endset.</p>
 <pre class="sig"><code>{% set name = expr %} · {% set name %}…{% endset %}</code></pre>
 <dl class="fields"><dt><code>name</code> <i>name</i></dt><dd>the variable</dd><dt><code>expr</code> <i>value</i></dt><dd>a value or filter chain</dd><dt><code>block</code> <i>flag</i></dt><dd>a block form with endset</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{% set greeting %}Hello {{ name }}{% endset %}{{ greeting }}</pre><span class="demo-label">data</span><pre class="code demo-data">{"name":"Ada"}</pre><span class="demo-label">output</span><div class="demo-out">Hello Ada</div></div>
-</article><article id="stmt-with"><h3><span class="kind">statement</span> with</h3>
+</article><article id="stmt-with"><h3><span class="kind">statement</span> <a class="self" href="#stmt-with">with</a></h3>
 <p>Give names local values for the enclosed block.</p>
 <pre class="sig"><code>{% with a = 1, b = 2 %}…{% endwith %}</code></pre>
 <dl class="fields"><dt><code>names</code> <i>assignments</i></dt><dd>names and their values</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{% with total = 3 %}{{ total }}{% endwith %}</pre><span class="demo-label">output</span><div class="demo-out">3</div></div>
-</article><h3 id="statements-reuse">Templates and reuse</h3><article id="stmt-macro"><h3><span class="kind">statement</span> macro</h3>
+</article><h3 id="statements-reuse">Templates and reuse</h3><article id="stmt-macro"><h3><span class="kind">statement</span> <a class="self" href="#stmt-macro">macro</a></h3>
 <p>Define a reusable block with parameters; call it by name, or with a caller block via endcall.</p>
 <pre class="sig"><code>{% macro name(args) %}…{% endmacro %} · {% call name(args) %}…{% endcall %}</code></pre>
 <dl class="fields"><dt><code>args</code> <i>parameters</i></dt><dd>names, defaults, a rest parameter</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{% macro field(n, v="") %}&lt;input name="{{ n }}" value="{{ v }}"&gt;{% endmacro %}{{ field("q") }}</pre><span class="demo-label">output</span><div class="demo-out">&lt;input name="q" value=""&gt;</div></div>
-</article><article id="stmt-filter"><h3><span class="kind">statement</span> filter</h3>
+</article><article id="stmt-filter"><h3><span class="kind">statement</span> <a class="self" href="#stmt-filter">filter</a></h3>
 <p>Apply a filter to a block of markup.</p>
 <pre class="sig"><code>{% filter upper %}…{% endfilter %}</code></pre>
 <dl class="fields"><dt><code>filter</code> <i>filter</i></dt><dd>the filter and its arguments</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{% filter upper %}hello {{ name }}{% endfilter %}</pre><span class="demo-label">data</span><pre class="code demo-data">{"name":"ada"}</pre><span class="demo-label">output</span><div class="demo-out">HELLO ADA</div></div>
-</article><article id="stmt-block"><h3><span class="kind">statement</span> block</h3>
+</article><article id="stmt-block"><h3><span class="kind">statement</span> <a class="self" href="#stmt-block">block</a></h3>
 <p>Define a named block a parent can fill; super() calls the parent's block, scoped sees the loop around it, required must be filled, append and prepend add to it. The indentation syntax has block append and block prepend too. Needs a loader through Env::new(load=…).</p>
 <pre class="sig"><code>{% extends "base" %} · {% block name %}…{% endblock %}</code></pre>
 
 <div class="demo" data-live="0"><span class="demo-label">template</span><pre class="code demo-src">{% extends "layout.html" %}
 {% block body %}page{% endblock %}</pre><p class="note">Inheritance needs a loader, so the example below is shown, not run. The parent is read through load passed to Env::new; the Guide walks a full layout.</p></div>
-</article><article id="stmt-include"><h3><span class="kind">statement</span> include</h3>
+</article><article id="stmt-include"><h3><span class="kind">statement</span> <a class="self" href="#stmt-include">include</a></h3>
 <p>Pull in another template; ignore missing tolerates a missing file, with context shares the names, inline renders in place, raw includes plain text, and a block lands where the included file says yield. Needs a loader.</p>
 <pre class="sig"><code>{% include "partial" %} · {% include "partial" ignore missing with context %}</code></pre>
 <dl class="fields"><dt><code>missing</code> <i>flag</i></dt><dd>ignore a missing file</dd><dt><code>context</code> <i>flag</i></dt><dd>share local names</dd><dt><code>inline</code> <i>flag</i></dt><dd>render in place</dd><dt><code>raw</code> <i>flag</i></dt><dd>include as text</dd></dl>
 <div class="demo" data-live="0"><span class="demo-label">template</span><pre class="code demo-src">{% include "footer.html" ignore missing %}</pre><p class="note">Includes a named template through the loader, so the syntax is shown rather than run here.</p></div>
-</article><article id="stmt-import"><h3><span class="kind">statement</span> import</h3>
+</article><article id="stmt-import"><h3><span class="kind">statement</span> <a class="self" href="#stmt-import">import</a></h3>
 <p>Import names from another template as a module, or bring chosen names in directly; with context shares the names. Needs a loader.</p>
 <pre class="sig"><code>{% import "ui" as ui %} · {% from "ui" import card %}</code></pre>
 <dl class="fields"><dt><code>context</code> <i>flag</i></dt><dd>share local names</dd></dl>
 <div class="demo" data-live="0"><span class="demo-label">template</span><pre class="code demo-src">{% from "ui.html" import card %}{{ card("Title", "Note") }}</pre><p class="note">Reads the module through the loader, so the syntax is shown rather than run here.</p></div>
-</article><h3 id="statements-output">Output and escaping</h3><article id="stmt-raw"><h3><span class="kind">statement</span> raw</h3>
+</article><h3 id="statements-output">Output and escaping</h3><article id="stmt-raw"><h3><span class="kind">statement</span> <a class="self" href="#stmt-raw">raw</a></h3>
 <p>Write text exactly as written, with no substitution.</p>
 <pre class="sig"><code>{% raw %}…{% endraw %}</code></pre>
 
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{% raw %}{{ not_evaluated }}{% endraw %}</pre><span class="demo-label">output</span><div class="demo-out">{{ not_evaluated }}</div></div>
-</article><article id="stmt-autoescape"><h3><span class="kind">statement</span> autoescape</h3>
+</article><article id="stmt-autoescape"><h3><span class="kind">statement</span> <a class="self" href="#stmt-autoescape">autoescape</a></h3>
 <p>Turn escaping on or off for the enclosed block.</p>
 <pre class="sig"><code>{% autoescape false %}…{% endautoescape %}</code></pre>
 <dl class="fields"><dt><code>flag</code> <i>bool</i></dt><dd>escape or not</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{% autoescape false %}{{ html }}{% endautoescape %}</pre><span class="demo-label">data</span><pre class="code demo-data">{"html":"&lt;b&gt;"}</pre><span class="demo-label">output</span><div class="demo-out">&lt;b&gt;</div></div>
-</article><article id="stmt-show"><h3><span class="kind">statement</span> show</h3>
+</article><article id="stmt-show"><h3><span class="kind">statement</span> <a class="self" href="#stmt-show">show</a></h3>
 <p>Write the block either way; when the condition is false it is hidden with an inline style, not removed.</p>
 <pre class="sig"><code>{% show cond %}…{% endshow %}</code></pre>
 <dl class="fields"><dt><code>cond</code> <i>bool</i></dt><dd>whether to show</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{% show ok %}&lt;b&gt;shown&lt;/b&gt;{% endshow %}</pre><span class="demo-label">data</span><pre class="code demo-data">{"ok":true}</pre><span class="demo-label">output</span><div class="demo-out">&lt;b&gt;shown&lt;/b&gt;</div></div>
-</article><article id="stmt-debug"><h3><span class="kind">statement</span> debug</h3>
+</article><article id="stmt-debug"><h3><span class="kind">statement</span> <a class="self" href="#stmt-debug">debug</a></h3>
 <p>Print the current context: every name in scope.</p>
 <pre class="sig"><code>{% debug %}</code></pre>
 
 <div class="demo" data-live="0" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{% debug %}</pre><span class="demo-label">output</span><div class="demo-out">{…all names in scope…}</div></div>
-</article><h3 id="statements-i18n">Internationalisation</h3><article id="stmt-trans"><h3><span class="kind">statement</span> trans</h3>
+</article><h3 id="statements-i18n">Internationalisation</h3><article id="stmt-trans"><h3><span class="kind">statement</span> <a class="self" href="#stmt-trans">trans</a></h3>
 <p>Mark text for translation; pluralize switches on a count. With no translation seam the source text stands.</p>
 <pre class="sig"><code>{% trans %}…{% endtrans %} · {% trans count=n %}…{% pluralize %}…{% endtrans %}</code></pre>
 <dl class="fields"><dt><code>count</code> <i>number</i></dt><dd>the plural count</dd><dt><code>context</code> <i>string</i></dt><dd>a message context</dd></dl>
 <div class="demo" data-live="1" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{% trans count=n %}{{ count }} item{% pluralize %}{{ count }} items{% endtrans %}</pre><span class="demo-label">data</span><pre class="code demo-data">{"n":3}</pre><span class="demo-label">output</span><div class="demo-out">3 items</div></div>
-</article><h3 id="statements-misc">Side effects and caching</h3><article id="stmt-do"><h3><span class="kind">statement</span> do</h3>
+</article><h3 id="statements-misc">Side effects and caching</h3><article id="stmt-do"><h3><span class="kind">statement</span> <a class="self" href="#stmt-do">do</a></h3>
 <p>Evaluate an expression for its side effect, typically calling a method of a host object.</p>
 <pre class="sig"><code>{% do object.method() %}</code></pre>
 <dl class="fields"><dt><code>expr</code> <i>call</i></dt><dd>a callable to run</dd></dl>
 <div class="demo" data-live="0" data-lang="html"><span class="demo-label">template</span><pre class="code demo-src">{% do user.log("visited") %}</pre><span class="demo-label">output</span><div class="demo-out">(no output; runs the callable for its effect)</div></div>
-</article><article id="stmt-once"><h3><span class="kind">statement</span> once</h3>
+</article><article id="stmt-once"><h3><span class="kind">statement</span> <a class="self" href="#stmt-once">once</a></h3>
 <p>Render a block once and, with a cache passed to Env::new, keep it; without one it renders every time.</p>
 <pre class="sig"><code>{% once key %}…{% endonce %}</code></pre>
 <dl class="fields"><dt><code>key</code> <i>value</i></dt><dd>the cache key</dd></dl>

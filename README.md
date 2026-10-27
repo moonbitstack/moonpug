@@ -11,7 +11,7 @@ Compiled once, rendered as often as you like; no file, clock or socket unless yo
   <a href="https://moonbitstack.github.io/moonpug/">Home</a> ·
   <a href="https://moonbitstack.github.io/moonpug/guide.html">Guide</a> ·
   <a href="https://moonbitstack.github.io/moonpug/api.html">API</a> ·
-  <a href="https://moonbitstack.github.io/moonpug/builtins.html">Built-ins</a> ·
+  <a href="https://moonbitstack.github.io/moonpug/builtins.html">BtIns</a> ·
   <a href="https://mooncakes.io/docs/moonbitstack/moonpug">mooncakes.io</a>
 </p>
 
@@ -65,6 +65,7 @@ let out = @moonpug.render("Hello {{ name|title }}!", { "name": "ada" })
 moon add moonbitstack/moonpug
 ```
 
+<!-- nocheck -->
 ```moonbit
 import {
   "moonbitstack/moonpug",
@@ -75,6 +76,7 @@ import {
 
 Data goes in as anything that converts to `Json`: a `derive(ToJson)` struct, a map, a parsed document.
 
+<!-- nocheck -->
 ```moonbit
 struct Book {
   title : String
@@ -150,6 +152,7 @@ env.add_test("short", (call, value, _) => call.text(value).length() <= 3)
 
 A host value joins a template by implementing `Object`. Every method has a default; implement the ones it needs:
 
+<!-- nocheck -->
 ```moonbit
 impl @moonpug.Object for Cart with fn kind(_) { "the cart" }
 impl @moonpug.Object for Cart with fn attr(self, name) { ... }     // cart.total
@@ -163,6 +166,7 @@ env.compile(source).render_values({ "cart": Object(cart) })
 
 ## Templates by name
 
+<!-- nocheck -->
 ```moonbit
 let env = @moonpug.Env::new(load=name => sources.get(name))
 let page = env.template("page.html")   // read, compiled and kept
@@ -175,6 +179,7 @@ page.render(data)
 
 A language is a name, its aliases, how its brace tags treat whitespace, and a reader that turns source into the tree. The built-in three are registered the same way:
 
+<!-- nocheck -->
 ```moonbit
 fn read_csv(source : String, reading : @moonpug.Reading) -> Array[@syntax.Node] raise @moonpug.Refused {
   ...

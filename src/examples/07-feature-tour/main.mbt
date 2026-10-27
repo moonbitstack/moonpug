@@ -14,6 +14,7 @@ let text_src =
   #|<p>{{ "<a href=\"x\">link</a>"|urlize }}</p>
   #|<p>{{ "a<b>"|e }}</p>
 
+///|
 let numbers_src =
   #|<p>{{ 3.14159|round(2) }}</p>
   #|<p>{{ "3.14"|float }}</p>
@@ -26,6 +27,7 @@ let numbers_src =
   #|<p>{{ [1, 2, 3]|random }}</p>
   #|<p>{{ {"b": 2, "a": 1}|dictsort|list }}</p>
 
+///|
 let lists_src =
   #|<p>{{ users|map(attribute="name")|join(", ") }}</p>
   #|<p>{{ items|selectattr("shown")|list }}</p>
@@ -37,6 +39,7 @@ let lists_src =
   #|<p>{{ {"q": "a b"}|urlencode }}</p>
   #|<p>{{ {"class": "x", "id": 5}|xmlattr }}</p>
 
+///|
 let choose_src =
   #|<p>{{ missing|default("none") }}</p>
   #|<p>{% set ns = namespace(total=0) %}{% for i in [1, 2, 3] %}{% set ns.total = ns.total + i %}{% endfor %}{{ ns.total }}</p>
@@ -45,10 +48,12 @@ let choose_src =
   #|<p>{% set j = joiner(", ") %}{% for x in ["a", "b", "c"] %}{{ j() }}{{ x }}{% endfor %}</p>
   #|<p>{{ ok|yesno }} · {{ count|pluralize }}</p>
 
+///|
 let dates_src =
   #|<p>{{ d|date("Y-m-d") }}</p>
   #|<p>{{ d|timesince(now) }}</p>
 
+///|
 let tests_src =
   #|<p>{{ 4 is even }} {{ 9 is divisibleby(3) }} {{ "ab" is iterable }}</p>
   #|<p>{{ [1, 2] is sequence }} {{ range is callable }} {{ ("<b>"|safe) is escaped }}</p>
@@ -57,12 +62,14 @@ let tests_src =
   #|<p>{{ 3 is integer }} {{ 3.0 is float }} {{ none is none }} {{ true is boolean }}</p>
   #|<p>{{ "abc" is lower }} {{ "ABC" is upper }} {{ a is sameas a }}</p>
 
+///|
 let globals_src =
   #|<p>{{ range(1, 4)|list }} {{ range(0, 10, 2)|list }}</p>
   #|<p>{{ dict(a=1, b=2)|items|list }}</p>
   #|<p>{{ gettext("Hello") }} {{ _("World") }}</p>
   #|<p>{{ lipsum(n=1, min=5, max=8) }}</p>
 
+///|
 let statements_src =
   #|<p>{% for b in books|sort(attribute='year') %}{{ loop.index }}. {{ b.title }}{% if not loop.last %}; {% endif %}{% endfor %}</p>
   #|<p>{% macro field(name, value='') %}<input name="{{ name }}" value="{{ value }}">{% endmacro %}{{ field('email') }}</p>
@@ -74,9 +81,7 @@ let statements_src =
 /// Render one section and print it under a heading.
 fn show(title : String, source : String, data : Json) -> Unit {
   println("## " + title)
-  try {
-    println(@moonpug.render(source, data))
-  } catch {
+  println(@moonpug.render(source, data)) catch {
     e => println("refused: \{e}")
   }
   println("")
@@ -94,7 +99,11 @@ fn main {
         "{\"users\":[{\"name\":\"Ada\",\"kind\":\"a\"},{\"name\":\"Grace\",\"kind\":\"b\"},{\"name\":\"Alan\",\"kind\":\"a\"}],\"items\":[{\"shown\":true},{\"shown\":false}]}",
       ),
     )
-    show("Choosing a value", choose_src, @json.parse("{\"ok\":true,\"count\":3}"))
+    show(
+      "Choosing a value",
+      choose_src,
+      @json.parse("{\"ok\":true,\"count\":3}"),
+    )
     show(
       "Dates",
       dates_src,

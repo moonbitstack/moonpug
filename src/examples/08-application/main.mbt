@@ -5,20 +5,14 @@
 /// cached block so the footer is rendered once per key.
 let sources : Map[String, String] = Map([
   (
-    "layout.html",
-    "<!doctype html><html lang=\"zh\"><head><title>{% block title %}站点{% endblock %}</title></head><body>{% block body %}{% endblock %}</body></html>",
+    "layout.html", "<!doctype html><html lang=\"zh\"><head><title>{% block title %}站点{% endblock %}</title></head><body>{% block body %}{% endblock %}</body></html>",
   ),
   (
-    "ui.html",
-    "{% macro nav(items) %}<nav>{% for it in items %}<a href=\"{{ it.url }}\">{{ it.label }}</a>{% endfor %}</nav>{% endmacro %}\n{% macro card(head, body) %}<article class=\"card\"><h2>{{ head }}</h2><p>{{ body }}</p></article>{% endmacro %}",
+    "ui.html", "{% macro nav(items) %}<nav>{% for it in items %}<a href=\"{{ it.url }}\">{{ it.label }}</a>{% endfor %}</nav>{% endmacro %}\n{% macro card(head, body) %}<article class=\"card\"><h2>{{ head }}</h2><p>{{ body }}</p></article>{% endmacro %}",
   ),
+  ("footer.html", "<footer>{% trans %}Made with moonpug{% endtrans %}</footer>"),
   (
-    "footer.html",
-    "<footer>{% trans %}Made with moonpug{% endtrans %}</footer>",
-  ),
-  (
-    "page.html",
-    "{% extends 'layout.html' %}\n{% import 'ui.html' as ui %}\n{% block title %}{{ title }} · {{ _('Site') }}{% endblock %}\n{% block body %}\n{{ ui.nav(site.links) }}\n<main>\n{% for p in site.pages %}{{ ui.card(p.title, p.body) }}{% endfor %}\n</main>\n{% once 'foot' %}{% include 'footer.html' %}{% endonce %}\n{% endblock %}",
+    "page.html", "{% extends 'layout.html' %}\n{% import 'ui.html' as ui %}\n{% block title %}{{ title }} · {{ _('Site') }}{% endblock %}\n{% block body %}\n{{ ui.nav(site.links) }}\n<main>\n{% for p in site.pages %}{{ ui.card(p.title, p.body) }}{% endfor %}\n</main>\n{% once 'foot' %}{% include 'footer.html' %}{% endonce %}\n{% endblock %}",
   ),
 ])
 
@@ -47,14 +41,10 @@ impl @moonpug.Object for Site with fn attr(self, name) {
 ///|
 fn main {
   let link = fn(url : String, label : String) -> @moonpug.Value {
-    @moonpug.Value::Dict(
-      Map([("url", Text(url)), ("label", Text(label))]),
-    )
+    @moonpug.Value::Dict(Map([("url", Text(url)), ("label", Text(label))]))
   }
   let page = fn(title : String, body : String) -> @moonpug.Value {
-    @moonpug.Value::Dict(
-      Map([("title", Text(title)), ("body", Text(body))]),
-    )
+    @moonpug.Value::Dict(Map([("title", Text(title)), ("body", Text(body))]))
   }
   let site = Site::{
     links: [link("/", "首页"), link("/about", "关于")],
@@ -89,9 +79,7 @@ fn main {
   try {
     let out = env
       .template("page.html")
-      .render_values(
-        Map([("title", Text("首页")), ("site", Object(site))]),
-      )
+      .render_values(Map([("title", Text("首页")), ("site", Object(site))]))
     println(out)
   } catch {
     e => println("refused: \{e}")

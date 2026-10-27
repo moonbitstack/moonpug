@@ -1,4 +1,4 @@
-// Re-renders every live example on the Built-ins page through the engine the
+// Re-renders every live example on the BtIns page through the engine the
 // site ships, so the output shown is the one the engine produces now.
 const root = document.documentElement;
 try {
