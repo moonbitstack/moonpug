@@ -34,6 +34,17 @@ jobs:
           mkdir -p docs/engine
           cp _build/js/release/build/examples/playground/playground.js docs/engine/moonpug.js
 
+      - name: set up node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: generate the built-ins reference page
+        run: node scripts/gen_builtins.mjs
+
+      - name: generate the API reference page
+        run: python scripts/gen_api.py
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: docs

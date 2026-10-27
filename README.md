@@ -11,6 +11,7 @@ Compiled once, rendered as often as you like; no file, clock or socket unless yo
   <a href="https://moonbitstack.github.io/moonpug/">Home</a> ·
   <a href="https://moonbitstack.github.io/moonpug/guide.html">Guide</a> ·
   <a href="https://moonbitstack.github.io/moonpug/api.html">API</a> ·
+  <a href="https://moonbitstack.github.io/moonpug/builtins.html">Built-ins</a> ·
   <a href="https://mooncakes.io/docs/moonbitstack/moonpug">mooncakes.io</a>
 </p>
 
@@ -221,12 +222,29 @@ page.html:3: price is undefined
 
 ## Examples
 
+Each program in `src/examples` runs on its own with `moon run`. They begin with
+the smallest render and end with a small application, so they double as a tour:
+
+| Program | Shows |
+|:--|:--|
+| `01-first-page` | the smallest render: one template, one value |
+| `02-three-languages` | the same page in html, pug and md, and a language block inside html |
+| `03-template-set` | a layout, a page that extends it, a macro library and an include |
+| `04-own-language` | a reader for a language of your own (a small csv renderer) |
+| `05-host-objects` | a value the template can read, loop over and change, plus a filter and a global |
+| `06-minimal-site` | a minimal but complete generator: compile once, render many pages |
+| `07-feature-tour` | a breadth tour of the built-in filters, tests, statements and globals |
+| `08-application` | a small application: layout, components, a host object, translation and caching |
+
 ```bash
 moon run src/examples/01-first-page
 moon run src/examples/02-three-languages
 moon run src/examples/03-template-set
 moon run src/examples/04-own-language
 moon run src/examples/05-host-objects
+moon run src/examples/06-minimal-site
+moon run src/examples/07-feature-tour
+moon run src/examples/08-application
 ```
 
 ## Licence

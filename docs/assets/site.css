@@ -366,3 +366,67 @@ code, pre, textarea { font-variant-ligatures: none; }
 .hero { max-width: 64rem; }
 .duo { row-gap: 1.6rem; }
 .duo h4 { margin-bottom: .5rem; }
+
+/* ---- Built-ins demo blocks ---- */
+.demo {
+  margin: 1rem 0 1.5rem;
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--sheet);
+  box-shadow: 0 1px 0 #fff8 inset;
+}
+.demo > .demo-label {
+  display: block;
+  padding: .34rem .9rem;
+  font: 600 .64rem "Inter", system-ui, sans-serif;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: var(--paper-2);
+  border-bottom: 1px solid var(--rule);
+}
+.demo pre.code {
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  border-bottom: 1px solid var(--rule);
+  background: var(--code-bg);
+}
+.demo .demo-data {
+  color: var(--code-dim);
+  font-size: .78rem;
+}
+.demo .demo-out {
+  display: block;
+  padding: .8rem 1.1rem;
+  font: .86rem/1.65 "JetBrains Mono", monospace;
+  color: var(--ink);
+  background: color-mix(in srgb, var(--accent-soft) 32%, transparent);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  min-height: 1.1rem;
+}
+.demo .demo-out.refused { color: var(--accent); }
+
+p.note {
+  margin: 0;
+  padding: .7rem .95rem;
+  border-top: 1px solid var(--rule);
+  border-left: 3px solid var(--accent-2);
+  background: color-mix(in srgb, var(--accent-soft) 24%, transparent);
+  color: var(--ink-2);
+  font-size: .92rem;
+  line-height: 1.6;
+}
+
+.reference .alias {
+  font: 500 .82rem "Inter", system-ui, sans-serif;
+  color: var(--muted);
+  margin-left: .4rem;
+}
+.reference article > p { margin-left: 0; }
+
+@media (width <= 980px) {
+  .demo { margin: 1rem 0 1.3rem; }
+}
