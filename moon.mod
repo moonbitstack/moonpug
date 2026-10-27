@@ -10,7 +10,7 @@ license = "Apache-2.0"
 
 keywords = [ "template", "html", "pug", "markdown", "render", "moonbit" ]
 
-description = "Templates for MoonBit: text with braces, indented markup or Markdown over one expression language; compiled once, rendered many times."
+description = "A template engine for MoonBit."
 
 source = "src"
 
