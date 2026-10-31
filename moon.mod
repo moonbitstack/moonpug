@@ -1,6 +1,6 @@
 name = "moonbitstack/moonpug"
 
-version = "0.1.1"
+version = "0.1.2"
 
 readme = "README.md"
 
@@ -16,7 +16,7 @@ source = "src"
 
 import {
   "moonbitstack/moondate@0.1.0",
-  "moonbitstack/moonucd@0.1.1",
+  "moonbitstack/moonucd@0.1.2",
 }
 
 preferred_target = "wasm-gc"
