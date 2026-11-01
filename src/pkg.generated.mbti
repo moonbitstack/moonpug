@@ -7,9 +7,13 @@ import {
 }
 
 // Values
+pub let delimiters : @syntax.Delimiters
+
 pub fn escape(String) -> String
 
 pub fn format_of(String) -> Format
+
+pub let host : @spec.Host
 
 pub let html : Format
 
@@ -21,7 +25,7 @@ pub let markdown : Format
 
 pub let pug : Format
 
-pub fn[C : ToJson] render(StringView, C, settings? : Settings, format? : Format, force? : Bool, load? : (String) -> String?, translate? : (String, String?, Int32?) -> String?, cache? : (String, () -> String raise @spec.Refused) -> String raise @spec.Refused) -> String raise @spec.Refused
+pub fn[C : ToJson] render(StringView, C, settings? : Settings, format? : Format, force? : Bool, delimiters? : @syntax.Delimiters, shortcuts? : Map[String, String], host? : @spec.Host, load? : (String) -> String?, translate? : (String, String?, Int32?) -> String?, cache? : (String, () -> String raise @spec.Refused) -> String raise @spec.Refused) -> String raise @spec.Refused
 
 pub let settings : Settings
 
@@ -37,6 +41,7 @@ pub struct Env {
 }
 pub fn Env::add_filter(Self, String, (@spec.Call, @spec.Value, Array[@spec.Value], Map[String, @spec.Value]) -> @spec.Value raise @spec.Refused) -> Unit
 pub fn Env::add_global(Self, String, @spec.Value) -> Unit
+pub fn Env::add_host(Self, host? : @spec.Host) -> Unit
 pub fn Env::add_lang(Self, @syntax.Lang) -> Unit
 pub fn Env::add_test(Self, String, (@spec.Call, @spec.Value, Array[@spec.Value]) -> Bool raise @spec.Refused) -> Unit
 pub fn Env::compile(Self, StringView, name? : String, format? : Format) -> Template raise @spec.Refused
@@ -54,6 +59,7 @@ pub(all) struct Format {
 pub(all) struct Limits {
   depth : Int32
   range : Int32
+  write : Int32
 }
 
 pub(all) struct Settings {
@@ -63,6 +69,8 @@ pub(all) struct Settings {
   undefined : @spec.Undefined
   line_statement : String?
   line_comment : String?
+  delimiters : @syntax.Delimiters
+  shortcuts : Map[String, String]
   limits : Limits
 }
 
@@ -76,9 +84,13 @@ pub fn Template::render_values(Self, Map[String, @spec.Value]) -> String raise @
 // Type aliases
 pub using @spec {type Call}
 
+pub using @syntax {type Delimiters}
+
 pub type Filter = (@spec.Call, @spec.Value, Array[@spec.Value], Map[String, @spec.Value]) -> @spec.Value raise @spec.Refused
 
 pub type Func = (@spec.Call, Array[@spec.Value], Map[String, @spec.Value]) -> @spec.Value raise @spec.Refused
+
+pub using @spec {type Host}
 
 pub using @syntax {type Lang}
 

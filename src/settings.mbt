@@ -62,12 +62,18 @@ pub(all) struct Limits {
   depth : Int32
   /// The longest sequence `range` builds.
   range : Int32
+  /// Characters one buffer may take: the page being written, or a block
+  /// captured for a macro, a filter or `set`. Each buffer counts on its own
+  /// and the text carried between them is counted where it lands, so the
+  /// number is the length of the longest stretch written at once.
+  write : Int32
 }
 
 ///|
 /// A thousand levels, as Python allows; a hundred thousand items, Jinja's
-/// sandbox bound on `range`.
-pub let limits : Limits = { depth: 1000, range: 100000, }
+/// sandbox bound on `range`; eight mebibytes of output, past which a
+/// template is looping rather than rendering a page.
+pub let limits : Limits = { depth: 1000, range: 100000, write: 8388608, }
 
 ///|
 /// Everything an environment is configured with.
@@ -85,12 +91,19 @@ pub(all) struct Settings {
   line_statement : String?
   /// A prefix that makes the rest of a line a comment.
   line_comment : String?
+  /// The strings that open and close a tag.
+  delimiters : Delimiters
+  /// The indentation syntax's shorthand prefixes and the attribute each
+  /// one names: `.` writes a class, `#` an id, and a prefix of your own
+  /// writes whatever attribute you give it.
+  shortcuts : Map[String, String]
   limits : Limits
 }
 
 ///|
 /// HTML for an unnamed source, the format by extension for a named one,
-/// every language read, undefined names refused, no line prefixes.
+/// every language read, undefined names refused, no line prefixes, `{{ }}`
+/// for tags, `.` for a class and `#` for an id.
 pub let settings : Settings = {
   format: html,
   formats: format_of,
@@ -98,5 +111,7 @@ pub let settings : Settings = {
   undefined: Strict,
   line_statement: None,
   line_comment: None,
+  delimiters,
+  shortcuts: Map([(".", "class"), ("#", "id")]),
   limits,
 }

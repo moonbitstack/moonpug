@@ -24,7 +24,7 @@ fn Run::run_nodes(
 fn Run::run_node(self : Run, node : @syntax.Node) -> Unit raise @spec.Refused {
   match node {
     Line(n) => self.line = n
-    Text(t) => if !self.extended { self.out.write_string(t) }
+    Text(t) => if !self.extended { self.write(t) }
     Out(e) => {
       let v = self.eval(e)
       if !self.extended {
@@ -34,7 +34,7 @@ fn Run::run_node(self : Run, node : @syntax.Node) -> Unit raise @spec.Refused {
     Raw(e) => {
       let v = self.eval(e)
       if !self.extended {
-        self.out.write_string(
+        self.write(
           match v {
             Markup(s) => s
             other => self.call.text(other)
@@ -173,11 +173,11 @@ fn Run::run_node(self : Run, node : @syntax.Node) -> Unit raise @spec.Refused {
     Show(e, body) => {
       let captured = self.capture(() => self.run_nodes(body))
       if self.call.truthy(self.eval(e)) {
-        self.out.write_string(captured)
+        self.write(captured)
       } else {
-        self.out.write_string("<div style=\"display: none\">")
-        self.out.write_string(captured)
-        self.out.write_string("</div>")
+        self.write("<div style=\"display: none\">")
+        self.write(captured)
+        self.write("</div>")
       }
     }
     Once(key, body) => {
@@ -186,7 +186,7 @@ fn Run::run_node(self : Run, node : @syntax.Node) -> Unit raise @spec.Refused {
         None => "\{self.template}:\{self.line}"
       }
       match self.once.get(slot) {
-        Some(text) => self.out.write_string(text)
+        Some(text) => self.write(text)
         None => {
           let render = () => {
             let text = self.capture(() => self.run_nodes(body))
@@ -198,7 +198,7 @@ fn Run::run_node(self : Run, node : @syntax.Node) -> Unit raise @spec.Refused {
             None => render()
           }
           self.once[slot] = text
-          self.out.write_string(text)
+          self.write(text)
         }
       }
     }
@@ -211,12 +211,12 @@ fn Run::run_node(self : Run, node : @syntax.Node) -> Unit raise @spec.Refused {
       let lower = text.to_lower()
       self.terse = lower == "<!doctype html>"
       self.xml = lower.has_prefix("<?xml")
-      self.out.write_string(text)
+      self.write(text)
     }
     Comment(body) => {
-      self.out.write_string("<!--")
+      self.write("<!--")
       self.run_nodes(body)
-      self.out.write_string("-->")
+      self.write("-->")
     }
     Case(subject, arms, otherwise) => {
       let value = self.eval(subject)

@@ -12,6 +12,8 @@ pub fn filters() -> Map[String, (@spec.Call, @spec.Value, Array[@spec.Value], Ma
 
 pub fn globals() -> Map[String, @spec.Value]
 
+pub fn host_globals(@spec.Host) -> Map[String, @spec.Value]
+
 pub fn percent(@spec.Call, String, @spec.Value, escape? : Bool) -> String raise @spec.Refused
 
 pub fn tests() -> Map[String, (@spec.Call, @spec.Value, Array[@spec.Value]) -> Bool raise @spec.Refused]

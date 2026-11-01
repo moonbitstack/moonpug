@@ -6,6 +6,8 @@ import {
 }
 
 // Values
+pub let delimiters : Delimiters
+
 pub let html : Lang
 
 pub fn lex_expression(String, String, line? : Int32, column? : Int32) -> Array[Token] raise @spec.Refused
@@ -48,6 +50,15 @@ pub(all) struct Block {
   scoped : Bool
   required : Bool
   placement : Placement
+}
+
+pub(all) struct Delimiters {
+  variable_start : String
+  variable_end : String
+  block_start : String
+  block_end : String
+  comment_start : String
+  comment_end : String
 }
 
 pub(all) struct Element {
@@ -167,6 +178,7 @@ pub(all) struct Options {
   keep_trailing_newline : Bool
   line_statement : String?
   line_comment : String?
+  delimiters : Delimiters
 }
 
 pub(all) struct Param {
@@ -206,6 +218,7 @@ pub(all) struct Reading {
   template : String
   line : Int32
   options : Options
+  shortcuts : Map[String, String]
   langs : (String) -> Lang?
 }
 pub fn Reading::allows(Self, Lang) -> Bool

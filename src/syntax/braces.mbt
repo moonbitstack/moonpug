@@ -1,4 +1,6 @@
 ///|
+/// What a tag at the cursor opens: an output, a statement, a comment, a
+/// block whose body is taken as it stands, a language block, or a line.
 priv enum Opening {
   Var
   Block
@@ -65,13 +67,15 @@ pub fn lex_template(
         match opening {
           Var => {
             out.push({ tok: VarBegin, line: tag_line, column: tag_column, })
-            let (line, column) = lx.tag(out, l => l.close_var())
+            let (line, column) = lx.tag(out, l => {
+              l.close_var(options.delimiters)
+            })
             out.push({ tok: VarEnd, line, column, })
           }
           Block => {
             out.push({ tok: BlockBegin, line: tag_line, column: tag_column, })
             let (line, column) = lx.tag(out, l => {
-              l.close_block(options.trim_blocks)
+              l.close_block(options.delimiters, options.trim_blocks)
             })
             out.push({ tok: BlockEnd, line, column, })
           }
@@ -80,7 +84,7 @@ pub fn lex_template(
             let (line, column) = lx.tag(out, l => l.close_line())
             out.push({ tok: BlockEnd, line, column, })
           }
-          Comment => lx.close_comment(options.trim_blocks)
+          Comment => lx.close_comment(options.delimiters, options.trim_blocks)
           LineComment => {
             let mut i = lx.pos
             while i < src.length() && src.code_unit_at(i) != '\n' {
@@ -120,6 +124,7 @@ pub fn lex_template(
             let body_line = lx.line
             let body_column = lx.column()
             let (body, end_sign, end_at, after) = lx.verbatim(
+              options.delimiters,
               "end" + word,
               options.trim_blocks,
             )
@@ -164,6 +169,7 @@ fn find_opening(
 ) -> (Int32, Opening, Char?, Int32)? raise @spec.Refused {
   let src = lx.src
   let n = src.length()
+  let delimiters = options.delimiters
   for i in lx.pos..<n {
     let line_start = i == 0 || src.code_unit_at(i - 1) == '\n'
     if options.line_statement is Some(prefix) && line_start {
@@ -185,27 +191,31 @@ fn find_opening(
         return Some((i, LineComment, None, j + prefix.length()))
       }
     }
-    if src.code_unit_at(i) != '{' || i + 1 >= n {
+    let width = delimiters.opening(src, i)
+    if width == 0 {
       continue
     }
-    let opening : Opening = match src.code_unit_at(i + 1) {
-      '{' => Var
-      '%' => Block
-      '#' => Comment
-      _ => continue
+    let opening : Opening = if starts_at(src, delimiters.block_start, i) &&
+      delimiters.block_start.length() == width {
+      Block
+    } else if starts_at(src, delimiters.variable_start, i) &&
+      delimiters.variable_start.length() == width {
+      Var
+    } else {
+      Comment
     }
-    let sign = if i + 2 < n && src.code_unit_at(i + 2) is ('-' | '+') {
-      src.code_unit_at(i + 2).to_int().to_char()
+    let sign = if i + width < n && src.code_unit_at(i + width) is ('-' | '+') {
+      src.code_unit_at(i + width).to_int().to_char()
     } else {
       None
     }
-    let inner = i + 2 + (if sign is Some(_) { 1 } else { 0 })
+    let inner = i + width + (if sign is Some(_) { 1 } else { 0 })
     if opening is Block {
-      match lang_block(src, inner, lx.template, first_line) {
+      match lang_block(src, inner, lx.template, first_line, delimiters) {
         Some(block) => return Some((i, Lang(block), sign, inner))
         None => ()
       }
-      match verbatim_head(src, inner) {
+      match verbatim_head(src, inner, delimiters) {
         Some((word, after)) => return Some((i, Verbatim(word), sign, after))
         None => ()
       }
@@ -218,7 +228,11 @@ fn find_opening(
 ///|
 /// Whether the block tag whose contents begin at `at` is `raw` or
 /// `comment`, and where its body begins.
-fn verbatim_head(src : String, at : Int32) -> (String, Int32)? {
+fn verbatim_head(
+  src : String,
+  at : Int32,
+  delimiters : Delimiters,
+) -> (String, Int32)? {
   let n = src.length()
   let mut i = at
   while i < n && is_space(src.code_unit_at(i).to_int()) {
@@ -235,15 +249,15 @@ fn verbatim_head(src : String, at : Int32) -> (String, Int32)? {
     while j < n && is_space(src.code_unit_at(j).to_int()) {
       j += 1
     }
-    if starts_at(src, "-%}", j) {
-      j += 3
+    if starts_at(src, "-" + delimiters.block_end, j) {
+      j += 1 + delimiters.block_end.length()
       while j < n && is_space(src.code_unit_at(j).to_int()) {
         j += 1
       }
       return Some((word, j))
     }
-    if starts_at(src, "%}", j) {
-      return Some((word, j + 2))
+    if starts_at(src, delimiters.block_end, j) {
+      return Some((word, j + delimiters.block_end.length()))
     }
   }
   None
@@ -281,13 +295,13 @@ fn strip_before(
 
 ///|
 /// `-}}` with the whitespace after it, or `}}`.
-fn Lexer::close_var(self : Lexer) -> Bool {
-  if self.starts("-}}") {
-    self.advance(self.pos + 3)
+fn Lexer::close_var(self : Lexer, delimiters : Delimiters) -> Bool {
+  if self.starts("-" + delimiters.variable_end) {
+    self.advance(self.pos + 1 + delimiters.variable_end.length())
     self.skip_space()
     true
-  } else if self.starts("}}") {
-    self.advance(self.pos + 2)
+  } else if self.starts(delimiters.variable_end) {
+    self.advance(self.pos + delimiters.variable_end.length())
     true
   } else {
     false
@@ -297,16 +311,21 @@ fn Lexer::close_var(self : Lexer) -> Bool {
 ///|
 /// `+%}`, `-%}` with the whitespace after it, or `%}` with one newline when
 /// `trim_blocks` is on.
-fn Lexer::close_block(self : Lexer, trim_blocks : Bool) -> Bool {
-  if self.starts("+%}") {
-    self.advance(self.pos + 3)
+fn Lexer::close_block(
+  self : Lexer,
+  delimiters : Delimiters,
+  trim_blocks : Bool,
+) -> Bool {
+  let end = delimiters.block_end
+  if self.starts("+" + end) {
+    self.advance(self.pos + 1 + end.length())
     true
-  } else if self.starts("-%}") {
-    self.advance(self.pos + 3)
+  } else if self.starts("-" + end) {
+    self.advance(self.pos + 1 + end.length())
     self.skip_space()
     true
-  } else if self.starts("%}") {
-    self.advance(self.pos + 2)
+  } else if self.starts(end) {
+    self.advance(self.pos + end.length())
     if trim_blocks && self.starts("\n") {
       self.advance(self.pos + 1)
     }
@@ -343,26 +362,23 @@ fn Lexer::close_line(self : Lexer) -> Bool {
 ///|
 fn Lexer::close_comment(
   self : Lexer,
+  delimiters : Delimiters,
   trim_blocks : Bool,
 ) -> Unit raise @spec.Refused {
   let src = self.src
   for i in self.pos..<src.length() {
-    if starts_at(src, "+#}", i) {
-      self.advance(i + 3)
-      return
+    guard delimiters.close_comment_at(src, i) is Some((after, sign)) else {
+      continue
     }
-    if starts_at(src, "-#}", i) {
-      self.advance(i + 3)
+    self.advance(after)
+    if sign == Some('-') {
       self.skip_space()
       return
     }
-    if starts_at(src, "#}", i) {
-      self.advance(i + 2)
-      if trim_blocks && self.starts("\n") {
-        self.advance(self.pos + 1)
-      }
-      return
+    if sign is None && trim_blocks && self.starts("\n") {
+      self.advance(self.pos + 1)
     }
+    return
   }
   raise self.fail("missing end of comment tag")
 }
@@ -372,16 +388,17 @@ fn Lexer::close_comment(
 /// end tag's sign, where the end tag starts, and where reading continues.
 fn Lexer::verbatim(
   self : Lexer,
+  delimiters : Delimiters,
   word : String,
   trim_blocks : Bool,
 ) -> (String, Char?, Int32, Int32) raise @spec.Refused {
   let src = self.src
   let n = src.length()
   for i in self.pos..<n {
-    if !starts_at(src, "{%", i) {
+    if !starts_at(src, delimiters.block_start, i) {
       continue
     }
-    let mut j = i + 2
+    let mut j = i + delimiters.block_start.length()
     let sign = if j < n && src.code_unit_at(j) is ('-' | '+') {
       j += 1
       src.code_unit_at(j - 1).to_int().to_char()
@@ -398,19 +415,20 @@ fn Lexer::verbatim(
     while j < n && is_space(src.code_unit_at(j).to_int()) {
       j += 1
     }
-    let after = if starts_at(src, "+%}", j) {
-      j + 3
-    } else if starts_at(src, "-%}", j) {
-      let mut k = j + 3
+    let after = if starts_at(src, "+" + delimiters.block_end, j) {
+      j + 1 + delimiters.block_end.length()
+    } else if starts_at(src, "-" + delimiters.block_end, j) {
+      let mut k = j + 1 + delimiters.block_end.length()
       while k < n && is_space(src.code_unit_at(k).to_int()) {
         k += 1
       }
       k
-    } else if starts_at(src, "%}", j) {
-      if trim_blocks && starts_at(src, "\n", j + 2) {
-        j + 3
+    } else if starts_at(src, delimiters.block_end, j) {
+      let end = j + delimiters.block_end.length()
+      if trim_blocks && starts_at(src, "\n", end) {
+        end + 1
       } else {
-        j + 2
+        end
       }
     } else {
       continue

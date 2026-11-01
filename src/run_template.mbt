@@ -224,7 +224,7 @@ fn Run::include_template(
   if raw {
     let name = self.call.text(value)
     match self.env.source(name) {
-      Some(text) => self.out.write_string(text)
+      Some(text) => self.write(text)
       None => if !missing { raise @spec.unknown("template", name) }
     }
     return

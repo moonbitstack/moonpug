@@ -28,13 +28,15 @@ pub(all) struct Token {
 }
 
 ///|
-/// How the brace syntax reads whitespace and line-oriented tags.
+/// How the brace syntax reads whitespace, line-oriented tags and the
+/// strings that make a tag.
 pub(all) struct Options {
   trim_blocks : Bool
   lstrip_blocks : Bool
   keep_trailing_newline : Bool
   line_statement : String?
   line_comment : String?
+  delimiters : Delimiters
 }
 
 ///|

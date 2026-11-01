@@ -46,6 +46,17 @@ pub fn Env::new(
 }
 
 ///|
+/// Register what a template asks of the program around it: an address by
+/// name, where its files sit, the token a form carries, and the clock. Each
+/// seam that is given becomes a global of the same name; one that is not
+/// stays undefined.
+pub fn Env::add_host(self : Env, host~ : Host = host) -> Unit {
+  for name, value in @defaults.host_globals(host) {
+    self.globals[name] = value
+  }
+}
+
+///|
 /// Register a language under its name and aliases, replacing any that
 /// answer to the same; `Format.lang` and `{% block lang=… %}` find it.
 pub fn Env::add_lang(self : Env, lang : Lang) -> Unit {
@@ -109,7 +120,9 @@ pub fn Env::compile(
       keep_trailing_newline: chosen.keep_trailing_newline,
       line_statement: settings.line_statement,
       line_comment: settings.line_comment,
+      delimiters: settings.delimiters,
     },
+    shortcuts: settings.shortcuts,
     langs: n => self.langs.get(n),
   }
   let nodes = @syntax.read(source.to_owned(), reading)

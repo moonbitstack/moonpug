@@ -13,13 +13,15 @@ pub(all) struct Lang {
 ///|
 /// Where a reader stands: the language and whether it is forced, the
 /// template and the line the source starts on, the brace options in effect,
-/// and the languages a block may name.
+/// the indentation syntax's shorthand prefixes, and the languages a block
+/// may name.
 pub(all) struct Reading {
   lang : Lang
   force : Bool
   template : String
   line : Int32
   options : Options
+  shortcuts : Map[String, String]
   langs : (String) -> Lang?
 }
 
@@ -51,6 +53,7 @@ pub fn Reading::inside(
       ..lang.options,
       line_statement: self.options.line_statement,
       line_comment: self.options.line_comment,
+      delimiters: self.options.delimiters,
     }
   }
   { ..self, lang, force: force.unwrap_or(self.force), line, options, }
@@ -89,6 +92,7 @@ pub let options : Options = {
   keep_trailing_newline: false,
   line_statement: None,
   line_comment: None,
+  delimiters,
 }
 
 ///|
@@ -173,18 +177,14 @@ fn word_at(src : String, at : Int32) -> (String, Int32) {
 }
 
 ///|
-/// Where the tag whose contents end at `at` closes: past `%}`, `-%}` or
-/// `+%}`, with the sign.
-fn tag_close(src : String, at : Int32) -> (Int32, Char?)? {
-  if starts_at(src, "-%}", at) {
-    Some((at + 3, Some('-')))
-  } else if starts_at(src, "+%}", at) {
-    Some((at + 3, Some('+')))
-  } else if starts_at(src, "%}", at) {
-    Some((at + 2, None))
-  } else {
-    None
-  }
+/// Where the tag whose contents end at `at` closes: past the block
+/// delimiter, with the sign before it.
+fn tag_close(
+  src : String,
+  at : Int32,
+  delimiters : Delimiters,
+) -> (Int32, Char?)? {
+  delimiters.close_block_at(src, at)
 }
 
 ///|
@@ -196,6 +196,7 @@ fn lang_block(
   at : Int32,
   template : String,
   first_line : Int32,
+  delimiters : Delimiters,
 ) -> LangBlock? raise @spec.Refused {
   let (word, i) = word_at(src, skip_blanks(src, at))
   if word != "block" {
@@ -227,19 +228,23 @@ fn lang_block(
     }
     i = skip_blanks(src, j)
   }
-  guard tag_close(src, i) is Some((body_at, open_sign)) else {
+  guard tag_close(src, i, delimiters) is Some((body_at, open_sign)) else {
     raise lang_syntax(
-      src, i, template, first_line, "expected %} after the language block's head",
+      src,
+      i,
+      template,
+      first_line,
+      "expected \{delimiters.block_end} after the language block's head",
     )
   }
   let mut depth = 1
   let mut k = body_at
   while k < src.length() {
-    if !starts_at(src, "{%", k) {
+    if !starts_at(src, delimiters.block_start, k) {
       k += 1
       continue
     }
-    let mut j = k + 2
+    let mut j = k + delimiters.block_start.length()
     let sign = if j < src.length() && src.code_unit_at(j) is ('-' | '+') {
       j += 1
       src.code_unit_at(j - 1).to_int().to_char()
@@ -253,10 +258,12 @@ fn lang_block(
         depth -= 1
         if depth == 0 {
           let mut end = skip_blanks(src, j)
-          while end < src.length() && tag_close(src, end) is None {
+          while end < src.length() && tag_close(src, end, delimiters) is None {
             end += 1
           }
-          guard tag_close(src, end) is Some((after, close_sign)) else { break }
+          guard tag_close(src, end, delimiters) is Some((after, close_sign)) else {
+            break
+          }
           let mut body = src[body_at:k].to_owned()
           if open_sign == Some('-') {
             body = body.trim_start(chars=" \t\n\r\u{0B}\u{0C}").to_owned()

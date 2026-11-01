@@ -10,6 +10,8 @@ pub fn code_point_compare(String, String) -> Int32
 
 pub fn escape(String) -> String
 
+pub let host : Host
+
 pub fn invalid(String) -> Refused
 
 pub fn python_float(Double) -> String
@@ -53,6 +55,15 @@ pub fn Call::refuses(Self, String) -> Bool
 pub fn Call::text(Self, Value) -> String raise Refused
 pub fn Call::translate(Self, String, context? : String, count? : Int32) -> String?
 pub fn Call::truthy(Self, Value) -> Bool raise Refused
+
+pub(all) struct Host {
+  url : ((String, Array[Value], Map[String, Value]) -> String raise Refused)?
+  asset : ((String) -> String)?
+  asset_prefix : (() -> String)?
+  media_prefix : (() -> String)?
+  csrf_token : (() -> String)?
+  now : (() -> String)?
+}
 
 pub(all) enum Undefined {
   Lenient

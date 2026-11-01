@@ -12,6 +12,7 @@ priv struct Run {
   env : Env
   mut call : @spec.Call
   mut out : StringBuilder
+  mut written : Int32
   mut scopes : Array[Map[String, @spec.Value]]
   mut template : String
   mut line : Int32
@@ -37,6 +38,7 @@ fn Run::new(
     env,
     call: env.call(autoescape),
     out: StringBuilder(),
+    written: 0,
     scopes: [context],
     template,
     line: 1,
@@ -119,16 +121,21 @@ fn Run::visible(self : Run) -> Map[String, @spec.Value] {
 
 ///|
 /// Run `body` with output going to a fresh buffer, and return what it wrote.
+/// Each buffer counts what is written into it on its own, so text carried
+/// from one buffer to another is counted where it lands, not twice.
 fn Run::capture(
   self : Run,
   body : () -> Unit raise @spec.Refused,
 ) -> String raise @spec.Refused {
   let outer = self.out
+  let written = self.written
   let extended = self.extended
   self.out = StringBuilder()
+  self.written = 0
   self.extended = false
   defer {
     self.out = outer
+    self.written = written
     self.extended = extended
   }
   body()
@@ -153,20 +160,31 @@ fn Run::leave(self : Run) -> Unit {
 }
 
 ///|
+/// Write output, refused past what one render may write. The count is of
+/// code units, which is a character for everything in the basic plane.
+fn Run::write(self : Run, text : String) -> Unit raise @spec.Refused {
+  self.written += text.length()
+  let limit = self.env.settings.limits.write
+  if self.written > limit {
+    raise Exceeded(
+      template=self.template,
+      line=self.line,
+      limit~,
+      got=self.written,
+    )
+  }
+  self.out.write_string(text)
+}
+
+///|
 /// Write a value as output: escaped when escaping is on and it is not
 /// already safe.
 fn Run::emit(self : Run, value : @spec.Value) -> Unit raise @spec.Refused {
   match value {
-    Markup(s) => self.out.write_string(s)
+    Markup(s) => self.write(s)
     _ => {
       let text = self.call.text(value)
-      self.out.write_string(
-        if self.autoescape() {
-          @spec.escape(text)
-        } else {
-          text
-        },
-      )
+      self.write(if self.autoescape() { @spec.escape(text) } else { text })
     }
   }
 }

@@ -1,6 +1,7 @@
 import {
   "moonbitstack/moonpug/spec",
   "moonbitstack/moonucd",
+  "moonbitstack/moonucd/normalize",
   "moonbitstack/moondate",
   "moonbitlang/core/string",
   "moonbitlang/core/double",

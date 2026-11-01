@@ -100,7 +100,7 @@ fn PugParser::expr(self : PugParser) -> Array[Node] raise @spec.Refused {
       self.skip()
       self.tag(self.expression(src))
     }
-    Id(_) | Class(_) => self.tag(Lit(Text("div")))
+    Shortcut(_, _) => self.tag(Lit(Text("div")))
     Mixin(name, args) => {
       self.skip()
       self.mixin_def(name, args)
@@ -297,22 +297,16 @@ fn PugParser::attributes(
   let mut seen_id = false
   for ;; {
     match self.peek().tok {
-      Id(name) => {
-        if seen_id {
-          raise self.fail("a duplicate id attribute is not allowed")
+      Shortcut(attr, name) => {
+        if attr == "id" {
+          if seen_id {
+            raise self.fail("a duplicate id attribute is not allowed")
+          }
+          seen_id = true
         }
-        seen_id = true
         self.skip()
         attrs.push(Attr::{
-          name: "id",
-          value: Some(Lit(Text(name))),
-          escape: false,
-        })
-      }
-      Class(name) => {
-        self.skip()
-        attrs.push(Attr::{
-          name: "class",
+          name: attr,
           value: Some(Lit(Text(name))),
           escape: false,
         })
@@ -727,7 +721,8 @@ fn PugParser::statement(
 ) -> Array[Node] raise @spec.Refused {
   self.skip()
   let head = src.text.trim(chars=" \t")
-  let word = head[2:].trim_start(chars=" -+")
+  let width = self.reading.options.delimiters.block_start.length()
+  let word = head[width:].trim_start(chars=" -+")
   if word.has_prefix("trans") {
     return self.trans(src)
   }
@@ -736,7 +731,7 @@ fn PugParser::statement(
     self.closing("endraw")
     return [Line(src.line), Text(text)]
   }
-  let tokens = lex_line(src, self.template)
+  let tokens = lex_line(src, self.template, self.reading.options.delimiters)
   let parser : Parser = {
     template: self.template,
     tokens,
@@ -749,7 +744,11 @@ fn PugParser::statement(
 }
 
 ///|
-fn lex_line(src : Src, template : String) -> Array[Token] raise @spec.Refused {
+fn lex_line(
+  src : Src,
+  template : String,
+  delimiters : Delimiters,
+) -> Array[Token] raise @spec.Refused {
   let lexer = Lexer::new(
     src.text,
     template,
@@ -758,15 +757,15 @@ fn lex_line(src : Src, template : String) -> Array[Token] raise @spec.Refused {
   )
   let out : Array[Token] = []
   lexer.skip_space()
-  if !lexer.starts("{%") {
-    raise lexer.fail("expected {%")
+  if !lexer.starts(delimiters.block_start) {
+    raise lexer.fail("expected \{delimiters.block_start}")
   }
   out.push(Token::{ tok: BlockBegin, line: lexer.line, column: lexer.column(), })
-  lexer.advance(lexer.pos + 2)
+  lexer.advance(lexer.pos + delimiters.block_start.length())
   if lexer.starts("-") || lexer.starts("+") {
     lexer.advance(lexer.pos + 1)
   }
-  let (line, column) = lexer.tag(out, l => l.close_block(false))
+  let (line, column) = lexer.tag(out, l => l.close_block(delimiters, false))
   out.push(Token::{ tok: BlockEnd, line, column, })
   lexer.skip_space()
   if !lexer.at_end() {
@@ -791,7 +790,11 @@ fn PugParser::statement_body(
   }
   match self.peek().tok {
     Stmt(next) => {
-      let tokens = lex_line(next, self.template)
+      let tokens = lex_line(
+        next,
+        self.template,
+        self.reading.options.delimiters,
+      )
       if tokens.length() > 1 &&
         tokens[1].tok is Name(word) &&
         ends.contains(word) {
@@ -828,7 +831,7 @@ fn PugParser::closing(
     self.skip()
   }
   if self.peek().tok is Stmt(next) {
-    let tokens = lex_line(next, self.template)
+    let tokens = lex_line(next, self.template, self.reading.options.delimiters)
     if tokens.length() > 1 && tokens[1].tok is Name(w) && w == word {
       self.skip()
     }
@@ -862,6 +865,7 @@ fn PugParser::trans(
     keep_trailing_newline: true,
     line_statement: None,
     line_comment: None,
+    delimiters: self.reading.options.delimiters,
   }
   let tokens = lex_template(source.to_string(), options, self.template)
   for i, token in tokens {

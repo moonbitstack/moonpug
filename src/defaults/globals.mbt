@@ -14,6 +14,8 @@ pub fn globals() -> Map[String, @spec.Value] {
     ("ngettext", @spec.Value::func("ngettext", global_ngettext)),
     ("pgettext", @spec.Value::func("pgettext", global_pgettext)),
     ("npgettext", @spec.Value::func("npgettext", global_npgettext)),
+    ("templatetag", @spec.Value::func("templatetag", global_templatetag)),
+    ("query_string", @spec.Value::func("query_string", global_query_string)),
   ])
 }
 

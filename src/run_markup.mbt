@@ -37,7 +37,7 @@ fn Run::trans(self : Run, t : @syntax.Trans) -> Unit raise @spec.Refused {
     )
   }
   if !self.extended {
-    self.out.write_string(text)
+    self.write(text)
   }
 }
 
@@ -104,12 +104,12 @@ fn Run::write_attr(
   name : String,
   value : @spec.Value,
   escape : Bool,
-) -> Unit {
+) -> Unit raise @spec.Refused {
   match value {
     Bool(false) | Null | Undefined(_) => return
     Text("") | Markup("") if name == "class" || name == "style" => return
     Bool(true) =>
-      self.out.write_string(
+      self.write(
         if self.terse {
           " " + name
         } else {
@@ -123,7 +123,7 @@ fn Run::write_attr(
       }
       let string_like = value is (Text(_) | Markup(_))
       if !escape && !string_like && raw.contains("\"") {
-        self.out.write_string(
+        self.write(
           " " + name + "='" + raw.replace_all(old="'", new="&#39;") + "'",
         )
         return
@@ -133,7 +133,7 @@ fn Run::write_attr(
       } else {
         raw
       }
-      self.out.write_string(" " + name + "=\"" + text + "\"")
+      self.write(" " + name + "=\"" + text + "\"")
     }
   }
 }
@@ -144,8 +144,8 @@ fn Run::element(self : Run, el : @syntax.Element) -> Unit raise @spec.Refused {
     return
   }
   let tag = self.call.text(self.eval(el.tag))
-  self.out.write_char('<')
-  self.out.write_string(tag)
+  self.write("<")
+  self.write(tag)
   if el.splats.is_empty() {
     let classes = []
     let others = []
@@ -226,7 +226,7 @@ fn Run::element(self : Run, el : @syntax.Element) -> Unit raise @spec.Refused {
   }
   let empty = !self.xml && void_elements.contains(tag)
   if el.self_close || empty {
-    self.out.write_string(if self.terse && !el.self_close { ">" } else { "/>" })
+    self.write(if self.terse && !el.self_close { ">" } else { "/>" })
     if el.body.iter().any(n => !(n is (Line(_) | Text(_)))) {
       raise @spec.invalid(
         "\{tag} is a self closing element: <\{tag}/> but contains nested content",
@@ -234,7 +234,7 @@ fn Run::element(self : Run, el : @syntax.Element) -> Unit raise @spec.Refused {
     }
     return
   }
-  self.out.write_char('>')
+  self.write(">")
   self.run_nodes(el.body)
-  self.out.write_string("</" + tag + ">")
+  self.write("</" + tag + ">")
 }

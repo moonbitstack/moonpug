@@ -9,8 +9,9 @@ priv enum PugTok {
   Eos
   Tag(String)
   InterpTag(Src)
-  Id(String)
-  Class(String)
+  /// A shorthand attribute: its name, then the value written after the
+  /// prefix.
+  Shortcut(String, String)
   Attrs(Array[PugAttr])
   AttrBlock(Src)
   Dot
@@ -134,6 +135,16 @@ fn PugLexer::starts(self : PugLexer, word : String) -> Bool {
 }
 
 ///|
+/// The tag delimiters this stretch reads; the usual ones when the lexer
+/// has no reading to ask.
+fn PugLexer::delimiters(self : PugLexer) -> Delimiters {
+  match self.reading {
+    Some(r) => r.options.delimiters
+    None => delimiters
+  }
+}
+
+///|
 /// Move on `n` code units, counting lines and columns.
 fn PugLexer::consume(self : PugLexer, n : Int32) -> Unit {
   for i in self.pos..<(self.pos + n) {
@@ -214,9 +225,8 @@ fn PugLexer::advance(self : PugLexer) -> Unit raise @spec.Refused {
     self.tag() ||
     self.filter(false) ||
     self.code() ||
-    self.id() ||
     self.dot() ||
-    self.class_name() ||
+    self.shortcut() ||
     self.attrs() ||
     self.attribute_block() ||
     self.indent() ||
@@ -323,18 +333,21 @@ fn PugLexer::line_rest(self : PugLexer, from : Int32) -> String {
 /// `{% … %}` on a line of its own: a statement of the brace syntax. The
 /// bodies of `trans`, `pluralize` and `raw` are text, read as it stands.
 fn PugLexer::statement(self : PugLexer) -> Bool raise @spec.Refused {
-  if !self.starts("{%") {
+  let delimiters = self.delimiters()
+  if !self.starts(delimiters.block_start) {
     return false
   }
+  let width = delimiters.block_start.length()
   let contents = self.pos +
-    2 +
-    (if self.unit(ahead=2) is ('-' | '+') { 1 } else { 0 })
+    width +
+    (if self.unit(ahead=width) is ('-' | '+') { 1 } else { 0 })
   match
     lang_block(
       self.src,
       contents,
       self.template,
       self.line - line_of(self.src, self.pos) + 1,
+      delimiters,
     ) {
     Some(block) => {
       let line = self.line
@@ -1014,26 +1027,72 @@ fn PugLexer::code(self : PugLexer) -> Bool raise @spec.Refused {
 }
 
 ///|
-fn PugLexer::id(self : PugLexer) -> Bool raise @spec.Refused {
-  if self.unit() != '#' {
+/// The shorthand prefixes this stretch reads; the usual two when the lexer
+/// has no reading to ask.
+fn PugLexer::shortcuts(self : PugLexer) -> Map[String, String] {
+  match self.reading {
+    Some(r) => r.shortcuts
+    None => default_shortcuts
+  }
+}
+
+///|
+/// `.` and `#` unless a setting says otherwise.
+let default_shortcuts : Map[String, String] = Map([(".", "class"), ("#", "id")])
+
+///|
+/// A prefix that names an attribute, and the name written after it: `.card`
+/// writes a class, `#main` an id, and a prefix of your own whatever
+/// attribute the settings give it.
+fn PugLexer::shortcut(self : PugLexer) -> Bool raise @spec.Refused {
+  if self.pos >= self.src.length() {
     return false
   }
-  let mut i = self.pos + 1
-  while i < self.src.length() &&
-        (
-          is_word(self.src.code_unit_at(i).to_int()) ||
-          self.src.code_unit_at(i) == '-'
-        ) {
-    i += 1
+  let prefix = self.src.code_unit_at(self.pos).to_int().unsafe_to_char()
+  let mark = String::from_array([prefix])
+  let attr = match self.shortcuts().get(mark) {
+    Some(attr) => attr
+    None => return false
   }
-  if i == self.pos + 1 {
-    raise self.fail("an id needs a name after #")
+  let mut i = self.pos + 1
+  if attr == "id" {
+    while i < self.src.length() &&
+          (
+            is_word(self.src.code_unit_at(i).to_int()) ||
+            self.src.code_unit_at(i) == '-'
+          ) {
+      i += 1
+    }
+    if i == self.pos + 1 {
+      raise self.fail("an id needs a name after \{mark}")
+    }
+  } else {
+    let mut letter = false
+    while i < self.src.length() {
+      let unit = self.src.code_unit_at(i).to_int()
+      if (unit >= 'a' && unit <= 'z') ||
+        (unit >= 'A' && unit <= 'Z') ||
+        unit == '_' {
+        letter = true
+      } else if !((unit >= '0' && unit <= '9') || unit == '-') {
+        break
+      }
+      i += 1
+    }
+    if i == self.pos + 1 {
+      raise self.fail("a \{attr} needs a name after \{mark}")
+    }
+    if !letter {
+      raise self.fail(
+        "\{attr} names must contain at least one letter or underscore",
+      )
+    }
   }
   let line = self.line
   let column = self.column
   let name = self.src[self.pos + 1:i].to_owned()
   self.consume(i - self.pos)
-  self.push(Id(name), line~, column~)
+  self.push(Shortcut(attr, name), line~, column~)
   true
 }
 
@@ -1058,40 +1117,6 @@ fn PugLexer::dot(self : PugLexer) -> Bool raise @spec.Refused {
 }
 
 ///|
-fn PugLexer::class_name(self : PugLexer) -> Bool raise @spec.Refused {
-  if self.unit() != '.' {
-    return false
-  }
-  let mut i = self.pos + 1
-  let mut letter = false
-  while i < self.src.length() {
-    let unit = self.src.code_unit_at(i).to_int()
-    if (unit >= 'a' && unit <= 'z') ||
-      (unit >= 'A' && unit <= 'Z') ||
-      unit == '_' {
-      letter = true
-    } else if !((unit >= '0' && unit <= '9') || unit == '-') {
-      break
-    }
-    i += 1
-  }
-  if i == self.pos + 1 {
-    raise self.fail("a class needs a name after the dot")
-  }
-  if !letter {
-    raise self.fail(
-      "class names must contain at least one letter or underscore",
-    )
-  }
-  let line = self.line
-  let column = self.column
-  let name = self.src[self.pos + 1:i].to_owned()
-  self.consume(i - self.pos)
-  self.push(Class(name), line~, column~)
-  true
-}
-
-///|
 /// An attribute section: `( … )`, or right after an element `[ … ]` or
 /// `{ … }`, whichever reads best when the section wraps.
 fn PugLexer::attrs(self : PugLexer) -> Bool raise @spec.Refused {
@@ -1100,8 +1125,7 @@ fn PugLexer::attrs(self : PugLexer) -> Bool raise @spec.Refused {
       {
         tok: Tag(_)
         | InterpTag(_)
-        | Id(_)
-        | Class(_)
+        | Shortcut(_, _)
         | Attrs(_)
         | Call(_, _),
         ..
@@ -1542,6 +1566,7 @@ fn PugLexer::add_text(
   start~ : Int32,
 ) -> Unit raise @spec.Refused {
   let buf = StringBuilder()
+  let marks = self.delimiters()
   let mut i = 0
   let n = value.length()
   let flush = fn(at : Int32) {
@@ -1604,17 +1629,18 @@ fn PugLexer::add_text(
       run_start = i
       continue
     }
-    if unit == '{' && i + 1 < n && value.code_unit_at(i + 1) == '{' {
-      match value[i + 2:].find("}}") {
+    if starts_at(value, marks.variable_start, i) {
+      let open = marks.variable_start.length()
+      match value[i + open:].find(marks.variable_end) {
         Some(at) => {
           flush(run_start)
           let src = {
-            text: value[i + 2:i + 2 + at].to_owned(),
+            text: value[i + open:i + open + at].to_owned(),
             line,
-            column: column + i + 2,
+            column: column + i + open,
           }
           self.push(Interp(src, true), line~, column=column + i)
-          i = i + 2 + at + 2
+          i = i + open + at + marks.variable_end.length()
           run_start = i
           continue
         }

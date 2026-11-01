@@ -1,6 +1,8 @@
 ///|
 pub using @spec {
   type Value,
+  type Host,
+  host,
   type Undefined,
   type Refused,
   trait Object,
@@ -14,4 +16,4 @@ pub using @spec {
 }
 
 ///|
-pub using @syntax {type Lang, type Reading}
+pub using @syntax {type Lang, type Reading, type Delimiters, delimiters}

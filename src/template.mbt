@@ -44,15 +44,18 @@ pub fn Template::render_values(
 }
 
 ///|
-/// Compile and render `source` in one call. `format` and `force` override
-/// the settings' own; `load`, `translate` and `cache` are the seams
-/// `Env::new` takes.
+/// Compile and render `source` in one call. `format`, `force`, `delimiters`
+/// and `shortcuts` override the settings' own; `load`, `translate` and
+/// `cache` are the seams `Env::new` takes.
 pub fn[C : ToJson] render(
   source : StringView,
   context : C,
   settings~ : Settings = settings,
   format? : Format,
   force? : Bool,
+  delimiters? : Delimiters,
+  shortcuts? : Map[String, String],
+  host? : Host,
   load? : (String) -> String?,
   translate? : (String, String?, Int32?) -> String?,
   cache? : (String, () -> String raise @spec.Refused) -> String raise @spec.Refused,
@@ -61,7 +64,17 @@ pub fn[C : ToJson] render(
     Some(f) => { ..settings, force: f, }
     None => settings
   }
-  Env::new(settings~, load?, translate?, cache?)
-  .compile(source, format?)
-  .render(context)
+  let settings = match delimiters {
+    Some(d) => { ..settings, delimiters: d, }
+    None => settings
+  }
+  let settings = match shortcuts {
+    Some(s) => { ..settings, shortcuts: s, }
+    None => settings
+  }
+  let env = Env::new(settings~, load?, translate?, cache?)
+  if host is Some(h) {
+    env.add_host(host=h)
+  }
+  env.compile(source, format?).render(context)
 }
