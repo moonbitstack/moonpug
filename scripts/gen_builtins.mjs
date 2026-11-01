@@ -50,6 +50,8 @@ const FILTERS = [
   ["striptags", "text", "Strip tags and decode entities, collapsing whitespace.", "value|striptags", [], ['{{ "<b>hi</b>"|striptags }}']],
   ["title", "text", "Title-case the text: capitalise each word.", "value|title", [], ['{{ "hello world"|title }}']],
   ["trim", "text", "Strip surrounding characters (default whitespace).", "value|trim(chars)", [["chars", "string", "characters to strip"]], ['{{ "  hi  "|trim }}']],
+  ["slugify", "text", "An ASCII slug: accents dropped, letters and digits kept, spaces and dashes to one dash, lowercase.", "value|slugify", [], ['{{ "Un \u00e9l\u00e9phant \u00e0 l\'or\u00e9e!"|slugify }}']],
+  ["truncatechars", "text", "Cut to a number of characters, ending with an ellipsis; combining marks do not count.", "value|truncatechars(arg)", [["arg", "int", "most characters"]], ['{{ "Testing, testing"|truncatechars(8) }}']],
   ["truncate", "text", "Cut to a length, ending with an ellipsis, keeping whole words unless killwords.", "value|truncate(length, killwords, end, leeway)", [["length", "int", "maximum length"], ["killwords", "bool", "cut mid-word"], ["end", "string", "the ending, … by default"], ["leeway", "int", "grace before cutting"]], ['{{ "a long sentence about the weather"|truncate(20) }}']],
   ["upper", "text", "Uppercase the text.", "value|upper", [], ['{{ "héllo"|upper }}']],
   ["wordcount", "text", "Count the words.", "value|wordcount", [], ['{{ "the quick brown"|wordcount }}']],
@@ -68,6 +70,7 @@ const FILTERS = [
   ["get_digit", "numbers", "Return the nth digit of an integer, counting from the right; 1 is the units digit.", "value|get_digit(arg)", [["arg", "int", "which digit"]], ['{{ 12345|get_digit(2) }}']],
   ["int", "numbers", "Parse a number or string as an integer, in a given base.", "value|int(default, base)", [["default", "int", "fallback when not a number"], ["base", "int", "number base, 10 by default"]], ['{{ "42"|int }}']],
   ["round", "numbers", "Round a number: common, ceil or floor, to a number of places.", "value|round(precision, method)", [["precision", "int", "decimal places"], ["method", "string", "common, ceil or floor"]], ['{{ 3.14159|round(2) }}']],
+  ["widthratio", "numbers", "Scale a value to a width: the value over the maximum, times the width, rounded half to even.", "value|widthratio(max_value, max_width)", [["max_value", "number", "the value that fills the width"], ["max_width", "int", "the width, 100 by default"]], ['{{ 175|widthratio(200) }}']],
   ["sum", "numbers", "Add the items, or a named field of each.", "value|sum(attribute, start)", [["attribute", "string", "field to sum"], ["start", "value", "starting value"]], ['{{ items|sum(attribute="n") }}', '{"items":[{"n":1},{"n":2},{"n":3}]}']],
 
   // ---- Lists and tables ----
@@ -108,6 +111,8 @@ const FILTERS = [
   ["tojson", "web", "Serialise a value to JSON safe inside a script tag.", "value|tojson(indent)", [["indent", "int", "spaces to indent"]], ['{{ {"a":1}|tojson }}']],
   ["json_script", "web", "Wrap JSON in a script tag, optionally with an id.", "value|json_script(element_id)", [["element_id", "string", "the tag's id"]], ['{{ {"a":1}|json_script("data") }}']],
   ["truncatewords", "web", "Cut to a number of words, ending with an ellipsis.", "value|truncatewords(arg)", [["arg", "int", "most words"]], ['{{ "one two three four"|truncatewords(2) }}']],
+  ["truncatechars_html", "web", "Cut marked-up text to a number of characters, closing the elements the cut leaves open; the result is markup when the input is trusted.", "value|truncatechars_html(arg)", [["arg", "int", "most characters, tags aside"]], ['{{ ("<p>one <b>two</b> three</p>"|safe)|truncatechars_html(8) }}']],
+  ["truncatewords_html", "web", "Cut marked-up text to a number of words, closing the elements the cut leaves open; the result is markup when the input is trusted.", "value|truncatewords_html(arg)", [["arg", "int", "most words"]], ['{{ ("<p>one <b>two</b> three</p>"|safe)|truncatewords_html(2) }}']],
   ["unordered_list", "web", "Render a list of items and nested lists as HTML ul elements.", "value|unordered_list", [], ['{{ tree|unordered_list }}', '{"tree":["first",["child one","child two"],"last"]}']],
   ["ljust", "web", "Left-justify the text in a field of the given width.", "value|ljust(arg)", [["arg", "int", "field width"]], ['{{ "hi"|ljust(5) }}']],
   ["rjust", "web", "Right-justify the text in a field of the given width.", "value|rjust(arg)", [["arg", "int", "field width"]], ['{{ "hi"|rjust(5) }}']],
@@ -194,6 +199,14 @@ const GLOBALS = [
   ["ngettext", "Translate a singular or plural message by a count.", "ngettext(singular, plural, count)", [["singular", "string", "one form"], ["plural", "string", "many form"], ["count", "number", "the count"]], ['{{ ngettext("%(num)d apple", "%(num)d apples", n) }}', '{"n":2}']],
   ["pgettext", "Translate a message within a context.", "pgettext(context, message)", [["context", "string", "the message context"], ["message", "string", "the message to translate"]], ['{{ pgettext("menu", "Open") }}']],
   ["npgettext", "Translate a singular or plural message within a context.", "npgettext(context, singular, plural, count)", [["context", "string", "the message context"], ["singular", "string", "one form"], ["plural", "string", "many form"], ["count", "number", "the count"]], ['{{ npgettext("file", "%(num)d file", "%(num)d files", n) }}', '{"n":2}']],
+  ["templatetag", "Write the characters of a tag as text, by Django's name for each.", "templatetag(tag)", [["tag", "string", "openblock, closeblock, openvariable, closevariable, openbrace, closebrace, opencomment or closecomment"]], ['{{ templatetag("openblock") }} if x {{ templatetag("closeblock") }}']],
+  ["query_string", "Build a query string from mappings and named values; null drops a key, a list repeats it.", "query_string(*mappings, **values)", [["mappings", "mapping", "the parameters to start from"], ["values", "values", "the parameters to set"]], ['{{ query_string(page=2, q="a b") }}']],
+  ["url", "The address a program gives a route. Registered by the program through Env::add_host, so it is shown here rather than run.", "url(name, *args, **kwargs)", [["name", "string", "the route's name"], ["args", "values", "what fills the route"]], { static: true, note: "Needs the program's routes: register url through Env::add_host(host=…). The Guide shows a whole host.", src: '{{ url("post", 42) }}' }],
+  ["static", "Where a static file is served from. Registered by the program through Env::add_host.", "static(path)", [["path", "string", "the file under the static root"]], { static: true, note: "Needs the program's static prefix: register asset through Env::add_host(host=…).", src: '{{ static("css/site.css") }}' }],
+  ["static_prefix", "The prefix static files sit under, on its own. Registered by the program.", "static_prefix()", [], { static: true, note: "Needs the program's static prefix: register asset_prefix through Env::add_host(host=…).", src: '{{ static_prefix() }}' }],
+  ["media_prefix", "The prefix uploaded files sit under. Registered by the program.", "media_prefix()", [], { static: true, note: "Needs the program's media prefix: register media_prefix through Env::add_host(host=…).", src: '{{ media_prefix() }}' }],
+  ["csrf_token", "The token a form carries, as markup. Registered by the program.", "csrf_token()", [], { static: true, note: "Needs the program's token: register csrf_token through Env::add_host(host=…).", src: '{{ csrf_token() }}' }],
+  ["now", "The moment to render, written with Django's date letters. Registered by the program: templates read no clock.", "now(format)", [["format", "string", "a format, or a named one such as DATE_FORMAT"]], { static: true, note: "Needs the program's clock: register now through Env::add_host(host=…).", src: '{{ now("Y-m-d H:i") }}' }],
 ];
 
 const STATEMENT_CATS = [

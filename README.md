@@ -137,7 +137,7 @@ Statements: `if`/`elif`/`else`, `for`/`else` with `loop`, `break`, `continue`, `
 
 Expressions: literals, lists, tuples and maps, attributes and subscripts, slices, arithmetic with `//`, `%` and `**`, comparisons that chain, `in`, `and`/`or`/`not`, `~` to join as text, inline `if`/`else`, filters with `|` and tests with `is`. Strings, lists and maps carry their methods: `'a,b'.split(',')`, `'{:>8.2f}'.format(x)`, `'%s=%d' % (k, v)`, `d.items()`.
 
-Built in: 79 filters (among them `date`, `timesince`, `floatformat`, `pluralize`, `urlize`, `wordwrap`, `tojson`, `json_script`, `groupby`, `dictsort`, `xmlattr`), 39 tests, and the globals `range`, `dict`, `lipsum`, `cycler`, `joiner`, `namespace` and the `gettext` family.
+Built in: 84 filters (among them `date`, `timesince`, `floatformat`, `pluralize`, `urlize`, `wordwrap`, `tojson`, `json_script`, `groupby`, `dictsort`, `xmlattr`, `slugify`, `truncatechars_html`, `widthratio`), 39 tests, and the globals `range`, `dict`, `lipsum`, `cycler`, `joiner`, `namespace`, `templatetag`, `query_string` and the `gettext` family.
 
 In the indentation syntax: tags with `#id` and `.class`, attributes in `( )`, or `[ ]` and `{ }` when a long list wraps, `&attributes`, `#{}` and `!{}` interpolation, `#[tag]` inline, `|` and `.` text, `if`/`unless`/`each`/`case`, mixins with blocks and attributes, `include` with a block that lands at `yield`, `extends` with `block append` and `prepend`, `doctype`, comments, and `:name` content filters.
 
@@ -175,6 +175,33 @@ page.render(data)
 
 `load` serves `extends`, `include`, `import` and `Env::template`. `translate` answers `{% trans %}` and `gettext`: given a message, its context and the plural count, the translation or `None`. `cache` stores what `{% once key %}` renders. All three are functions you pass in.
 
+## What the program answers
+
+Addresses, static files, form tokens and the clock belong to the program. Register them once and templates can name them; what is not registered is undefined:
+
+<!-- nocheck -->
+```moonbit
+let host : @moonpug.Host = {
+  url: Some((name, args, named) => routes.url(name, args, named)),
+  asset: Some(path => "/static/" + path),
+  asset_prefix: Some(() => "/static/"),
+  media_prefix: Some(() => "/media/"),
+  csrf_token: Some(() => forms.token()),
+  now: Some(() => clock.now_iso()),
+}
+@moonpug.Env::new().add_host(host~)
+```
+
+| Global | Answers |
+|:--|:--|
+| `url(name, …)` | the address of a route, the rest of the arguments filling it |
+| `static(path)`, `static_prefix()` | where static files are served from |
+| `media_prefix()` | where uploaded files are served from |
+| `csrf_token()` | the token a form carries, as markup |
+| `now(format)` | the moment, in the date-format letters |
+
+`now` takes the time as ISO 8601 text and applies the format letters here, so the program only says what time it is. Anything else a template needs goes through `add_global`, which takes any `Value::func`.
+
 ## Your own language
 
 A language is a name, its aliases, how its brace tags treat whitespace, and a reader that turns source into the tree. The built-in three are registered the same way:
@@ -197,8 +224,10 @@ Then `{% block lang=csv %}` and `Format.lang = "csv"` both work. `moonbitstack/m
 | Record | Fields | Preset |
 |:--|:--|:--|
 | `Format` | `lang`, `autoescape`, `trim_blocks`, `lstrip_blocks`, `keep_trailing_newline` | `html`, `pug`, `markdown`, `text` |
-| `Settings` | `format`, `formats`, `force`, `undefined`, `line_statement`, `line_comment`, `limits` | `settings` |
-| `Limits` | `depth` (1000), `range` (100 000) | `limits` |
+| `Settings` | `format`, `formats`, `force`, `undefined`, `line_statement`, `line_comment`, `delimiters`, `shortcuts`, `limits` | `settings` |
+| `Delimiters` | `variable_start`, `variable_end`, `block_start`, `block_end`, `comment_start`, `comment_end` | `delimiters` |
+| `Limits` | `depth` (1000), `range` (100 000), `write` (8 MiB) | `limits` |
+| `Host` | `url`, `asset`, `asset_prefix`, `media_prefix`, `csrf_token`, `now` | `host` (all `None`) |
 
 `undefined` is `Strict` by default: a missing name is refused, except where a template asks `is defined` or gives a `default`. `Lenient` prints it as nothing; `Chainable` also lets its attributes be missing.
 
@@ -208,7 +237,35 @@ Then `{% block lang=csv %}` and `Format.lang = "csv"` both work. `moonbitstack/m
 library preset  <  the record you pass  <  the same name passed to this call
 ```
 
-`render(source, data, settings=s, format=f, force=b)`: `format` and `force` override the ones in `s`, and `s` overrides the preset `settings`.
+`render(source, data, settings=s, format=f, force=b, delimiters=d, shortcuts=c, host=h)`: each named argument overrides the field of the same name in `s`, and `s` overrides the preset `settings`.
+
+### Delimiters and shorthands
+
+The strings that make a tag are settings, so a template can stay out of another language's way:
+
+```moonbit
+let square = { ..@moonpug.delimiters, variable_start: "[[", variable_end: "]]" }
+@moonpug.render("Hi [[ name ]]! {{ stays }}", { "name": "Ada" }, delimiters=square)
+// Hi Ada! {{ stays }}
+```
+
+Statement and comment pairs work the same way, and `-%}`, `+%}`, `raw` and language blocks follow whatever pair is in force. The indentation syntax reads the same settings, both for its `{{ }}` interpolation and for statement lines.
+
+The indentation syntax also takes its shorthand prefixes from the settings: `.` writes a class and `#` an id unless you say otherwise, and a prefix of your own writes the attribute you name.
+
+<!-- nocheck -->
+```moonbit
+let settings = {
+  ..@moonpug.settings,
+  shortcuts: Map([(".", "class"), ("#", "id"), ("@", "data-role")]),
+}
+```
+
+`div@main.a` then writes `<div class="a" data-role="main"></div>`.
+
+### Bounded output
+
+`Limits.write` caps the characters one render may write — code units, so text outside the basic plane counts two each — and it counts what a capture block writes as well, so a macro or a `filter` block cannot grow past the bound either. Crossing it is `Exceeded`, like the depth and `range` bounds.
 
 ## Errors
 

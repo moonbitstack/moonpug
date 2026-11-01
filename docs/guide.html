@@ -37,6 +37,7 @@
       <a href="#expressions">Expressions</a>
       <a href="#filters">Filters and tests</a>
       <a href="#whitespace">Whitespace</a>
+      <a href="#delimiters">Delimiters and shorthands</a>
       <a href="#pug">Indentation syntax</a>
       <a href="#blocks">Language blocks</a>
     </div>
@@ -44,6 +45,7 @@
       <a href="#sets">Template sets</a>
       <a href="#extending">Functions and filters</a>
       <a href="#objects">Host objects</a>
+      <a href="#program">What the program answers</a>
       <a href="#own">Your own language</a>
       <a href="#i18n">Translation</a>
       <a href="#once">Caching and showing</a>
@@ -151,6 +153,28 @@ greet.render({ <span class="s">"name"</span>: <span class="s">"Grace"</span> })<
 @moonpug.render(source, data, format=tidy)</pre>
     </section>
 
+    <section id="delimiters">
+      <h2>Delimiters and shorthands</h2>
+      <p>The strings that make a tag are settings, so a template can step out of the way of another language's punctuation:</p>
+      <pre class="code"><span class="k">let</span> square = {
+  ..@moonpug.delimiters,
+  variable_start: <span class="s">"[["</span>,
+  variable_end: <span class="s">"]]"</span>,
+}
+
+@moonpug.render(<span class="s">"Hi [[ name ]]! {{ stays }}"</span>, data, delimiters=square)
+<span class="c">// Hi Ada! {{ stays }}</span></pre>
+      <p>Statement and comment pairs work the same way; <code>-%}</code>, <code>+%}</code>, <code>raw</code> and language blocks follow whatever pair is in force. The indentation syntax reads the same settings, both for its <code>{{ }}</code> interpolation and for statement lines.</p>
+      <p>The indentation syntax also takes the shorthand prefixes from the settings. By default <code>.</code> writes a class and <code>#</code> an id; a prefix of your own writes whatever attribute you name:</p>
+      <pre class="code"><span class="k">let</span> settings = {
+  ..@moonpug.settings,
+  shortcuts: Map([(<span class="s">"."</span>, <span class="s">"class"</span>), (<span class="s">"#"</span>, <span class="s">"id"</span>), (<span class="s">"@"</span>, <span class="s">"data-role"</span>)]),
+}
+
+@moonpug.render(<span class="s">"div@main.a#top"</span>, data, format=@moonpug.pug, shortcuts=settings.shortcuts)
+<span class="c">// &lt;div class="a" data-role="main" id="top"&gt;&lt;/div&gt;</span></pre>
+    </section>
+
     <section id="pug">
       <h2>The indentation syntax</h2>
       <div class="duo">
@@ -240,6 +264,33 @@ env.compile(source).render_values({ <span class="s">"cart"</span>: Object(cart) 
       </table>
     </section>
 
+    <section id="program">
+      <h2>What the program answers</h2>
+      <p>Addresses, static files, form tokens and the clock belong to the program, not the template. Each is a global a program registers once; what is not registered is simply undefined.</p>
+      <pre class="code"><span class="k">let</span> host : @moonpug.Host = {
+  url: Some(<span class="k">fn</span>(name, args, named) { routes.url(name, args, named) }),
+  asset: Some(<span class="k">fn</span>(path) { <span class="s">"/static/"</span> + path }),
+  asset_prefix: Some(<span class="k">fn</span> { <span class="s">"/static/"</span> }),
+  media_prefix: Some(<span class="k">fn</span> { <span class="s">"/media/"</span> }),
+  csrf_token: Some(<span class="k">fn</span> { forms.token() }),
+  now: Some(<span class="k">fn</span> { clock.now_iso() }),
+}
+
+<span class="k">let</span> env = @moonpug.Env::new()
+env.add_host(host~)</pre>
+      <table>
+        <tr><th>Global</th><th>Answers</th></tr>
+        <tr><td><code>url(name, …)</code></td><td>the address of a route, the rest of the arguments filling it</td></tr>
+        <tr><td><code>static(path)</code>, <code>static_prefix()</code></td><td>where static files are served from</td></tr>
+        <tr><td><code>media_prefix()</code></td><td>where uploaded files are served from</td></tr>
+        <tr><td><code>csrf_token()</code></td><td>the token a form carries, written as markup</td></tr>
+        <tr><td><code>now(format)</code></td><td>the moment, in the date-format letters; the letters are applied here, so the program only says what time it is</td></tr>
+      </table>
+      <p>Everything else a template needs of the world goes through <code>Env::add_global</code>, which takes any <code>Value::func</code>; <code>add_host</code> is only a named set of the six a page usually wants. The same seams at a glance:</p>
+      <pre class="code"><span class="c">// the seams Env::new takes, each a function rather than a record field</span>
+@moonpug.Env::new(load=name =&gt; files.get(name), translate=translate, cache=store)</pre>
+    </section>
+
     <section id="own">
       <h2>Your own language</h2>
       <pre class="code"><span class="k">fn</span> read_csv(source : String, reading : @moonpug.Reading) -&gt; Array[@syntax.Node] <span class="k">raise</span> @moonpug.Refused {
@@ -292,12 +343,15 @@ env.add_lang({ name: <span class="s">"csv"</span>, aliases: [<span class="s">"ta
         <tr><td><code>force</code></td><td>false</td><td>read only the template's own language</td></tr>
         <tr><td><code>undefined</code></td><td><code>Strict</code></td><td>what using a missing name does</td></tr>
         <tr><td><code>line_statement</code>, <code>line_comment</code></td><td>none</td><td>line prefixes</td></tr>
+        <tr><td><code>delimiters</code></td><td><code>{{ }} {% %} {# #}</code></td><td>the strings that make a tag</td></tr>
+        <tr><td><code>shortcuts</code></td><td><code>.</code> class, <code>#</code> id</td><td>the indentation syntax's shorthand prefixes</td></tr>
+        <tr><td><code>limits.write</code></td><td>8 MiB</td><td>code units one render may write, into a capture as well</td></tr>
         <tr><td><code>limits.depth</code></td><td>1000</td><td>nested macro calls, includes, extends and recursive loops</td></tr>
         <tr><td><code>limits.range</code></td><td>100 000</td><td>the longest list <code>range</code> builds</td></tr>
       </table>
       <h3>Configuration precedence</h3>
       <pre class="code">library preset  &lt;  the record you pass  &lt;  the same name passed to this call</pre>
-      <p>In <code>render(source, data, settings=s, format=f, force=b)</code>, <code>format</code> and <code>force</code> override <code>s</code>, and <code>s</code> overrides the preset. <code>Strict</code> refuses a missing name unless the template asks <code>is defined</code> or gives a <code>default</code>; <code>Lenient</code> prints it as nothing; <code>Chainable</code> also lets its attributes be missing. The implicit <code>else</code> of an inline <code>if</code> is never refused.</p>
+      <p>In <code>render(source, data, settings=s, format=f, force=b, delimiters=d, shortcuts=c, host=h)</code>, each named argument overrides the field of the same name in <code>s</code>, and <code>s</code> overrides the preset. <code>Strict</code> refuses a missing name unless the template asks <code>is defined</code> or gives a <code>default</code>; <code>Lenient</code> prints it as nothing; <code>Chainable</code> also lets its attributes be missing. The implicit <code>else</code> of an inline <code>if</code> is never refused.</p>
     </section>
 
     <section id="errors">

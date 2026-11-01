@@ -40,6 +40,7 @@
 <div class="group"><b>moonpug/spec</b>
 <a href="#spec-refused">Refused</a>
 <a href="#spec-call">Call</a>
+<a href="#spec-host">Host</a>
 <a href="#spec-undefined">Undefined</a>
 <a href="#spec-value">Value</a>
 <a href="#spec-filter">Filter</a>
@@ -47,11 +48,13 @@
 <a href="#spec-test">Test</a>
 <a href="#spec-object">Object</a>
 <a href="#spec-functions">Functions</a>
+<a href="#spec-values">Values</a>
 </div>
 <div class="group"><b>moonpug/syntax</b>
 <a href="#syntax-arg">Arg</a>
 <a href="#syntax-attr">Attr</a>
 <a href="#syntax-block">Block</a>
+<a href="#syntax-delimiters">Delimiters</a>
 <a href="#syntax-element">Element</a>
 <a href="#syntax-expr">Expr</a>
 <a href="#syntax-lang">Lang</a>
@@ -80,6 +83,8 @@
 <h3>Re-exported</h3>
 <p>Reachable from this package as well; each is documented in the package it comes from.</p>
 <pre class="sig"><code>pub using @spec {type Call}
+pub using @syntax {type Delimiters}
+pub using @spec {type Host}
 pub using @syntax {type Lang}
 pub using @syntax {type Reading}
 pub using @spec {type Refused}
@@ -93,6 +98,7 @@ pub using @spec {trait Object}</code></pre>
 }</code></pre>
 <div class="member" id="moonpug-env-add_filter"><pre class="sig"><code>pub fn Env::add_filter(Self, String, (@spec.Call, @spec.Value, Array[@spec.Value], Map[String, @spec.Value]) -&gt; @spec.Value raise @spec.Refused) -&gt; Unit</code></pre><p>Register a filter, replacing any of the same name.</p></div>
 <div class="member" id="moonpug-env-add_global"><pre class="sig"><code>pub fn Env::add_global(Self, String, @spec.Value) -&gt; Unit</code></pre><p>Make a value visible to every template, replacing any of the same name; a function is <code>Value::func(name, …)</code>.</p></div>
+<div class="member" id="moonpug-env-add_host"><pre class="sig"><code>pub fn Env::add_host(Self, host? : @spec.Host) -&gt; Unit</code></pre><p>Register what a template asks of the program around it: an address by name, where its files sit, the token a form carries, and the clock. Each seam that is given becomes a global of the same name; one that is not stays undefined.</p></div>
 <div class="member" id="moonpug-env-add_lang"><pre class="sig"><code>pub fn Env::add_lang(Self, @syntax.Lang) -&gt; Unit</code></pre><p>Register a language under its name and aliases, replacing any that answer to the same; <code>Format.lang</code> and <code>{% block lang=… %}</code> find it.</p></div>
 <div class="member" id="moonpug-env-add_test"><pre class="sig"><code>pub fn Env::add_test(Self, String, (@spec.Call, @spec.Value, Array[@spec.Value]) -&gt; Bool raise @spec.Refused) -&gt; Unit</code></pre><p>Register a test, replacing any of the same name.</p></div>
 <div class="member" id="moonpug-env-compile"><pre class="sig"><code>pub fn Env::compile(Self, StringView, name? : String, format? : Format) -&gt; Template raise @spec.Refused</code></pre><p>Read a source into a template. A <code>name</code> picks the format by its extension and appears in errors; <code>format</code> overrides either.</p></div>
@@ -114,8 +120,9 @@ pub using @spec {trait Object}</code></pre>
 <pre class="sig"><code>pub(all) struct Limits {
   depth : Int32
   range : Int32
+  write : Int32
 }</code></pre>
-<dl class="fields"><dt><code>depth</code></dt><dd><p>Nested macro calls, includes, extends and recursive loops.</p></dd><dt><code>range</code></dt><dd><p>The longest sequence <code>range</code> builds.</p></dd></dl>
+<dl class="fields"><dt><code>depth</code></dt><dd><p>Nested macro calls, includes, extends and recursive loops.</p></dd><dt><code>range</code></dt><dd><p>The longest sequence <code>range</code> builds.</p></dd><dt><code>write</code></dt><dd><p>Characters one buffer may take: the page being written, or a block captured for a macro, a filter or <code>set</code>. Each buffer counts on its own and the text carried between them is counted where it lands, so the number is the length of the longest stretch written at once.</p></dd></dl>
 </article>
 <article id="moonpug-settings"><h3><span class="kind">struct</span> Settings</h3>
 <p>Everything an environment is configured with.</p>
@@ -126,9 +133,11 @@ pub using @spec {trait Object}</code></pre>
   undefined : @spec.Undefined
   line_statement : String?
   line_comment : String?
+  delimiters : @syntax.Delimiters
+  shortcuts : Map[String, String]
   limits : Limits
 }</code></pre>
-<dl class="fields"><dt><code>format</code></dt><dd><p>The format of a source compiled without a name.</p></dd><dt><code>formats</code></dt><dd><p>The format of a template from its name.</p></dd><dt><code>force</code></dt><dd><p>Whether a template reads only its own language, leaving blocks in another as text.</p></dd><dt><code>undefined</code></dt><dd><p>What using an undefined name does.</p></dd><dt><code>line_statement</code></dt><dd><p>A prefix that makes a whole line a statement, as <code># for x in y</code>.</p></dd><dt><code>line_comment</code></dt><dd><p>A prefix that makes the rest of a line a comment.</p></dd></dl>
+<dl class="fields"><dt><code>format</code></dt><dd><p>The format of a source compiled without a name.</p></dd><dt><code>formats</code></dt><dd><p>The format of a template from its name.</p></dd><dt><code>force</code></dt><dd><p>Whether a template reads only its own language, leaving blocks in another as text.</p></dd><dt><code>undefined</code></dt><dd><p>What using an undefined name does.</p></dd><dt><code>line_statement</code></dt><dd><p>A prefix that makes a whole line a statement, as <code># for x in y</code>.</p></dd><dt><code>line_comment</code></dt><dd><p>A prefix that makes the rest of a line a comment.</p></dd><dt><code>delimiters</code></dt><dd><p>The strings that open and close a tag.</p></dd><dt><code>shortcuts</code></dt><dd><p>The indentation syntax&#x27;s shorthand prefixes and the attribute each one names: <code>.</code> writes a class, <code>#</code> an id, and a prefix of your own writes whatever attribute you give it.</p></dd></dl>
 </article>
 <article id="moonpug-template"><h3><span class="kind">struct</span> Template</h3>
 <p>A compiled template, ready to render any number of times.</p>
@@ -155,14 +164,16 @@ pub using @spec {trait Object}</code></pre>
 <div class="member" id="moonpug-escape"><pre class="sig"><code>pub fn escape(String) -&gt; String</code></pre></div>
 <div class="member" id="moonpug-format_of"><pre class="sig"><code>pub fn format_of(String) -&gt; Format</code></pre><p>The format a template&#x27;s name implies: <code>.pug</code> and <code>.pg</code> are Pug, <code>.html</code>, <code>.htm</code>, <code>.xml</code>, <code>.svg</code> and <code>.xhtml</code> are escaped HTML, <code>.md</code> and <code>.markdown</code> are Markdown, anything else is text.</p></div>
 <div class="member" id="moonpug-invalid"><pre class="sig"><code>pub fn invalid(String) -&gt; @spec.Refused</code></pre></div>
-<div class="member" id="moonpug-render"><pre class="sig"><code>pub fn[C : ToJson] render(StringView, C, settings? : Settings, format? : Format, force? : Bool, load? : (String) -&gt; String?, translate? : (String, String?, Int32?) -&gt; String?, cache? : (String, () -&gt; String raise @spec.Refused) -&gt; String raise @spec.Refused) -&gt; String raise @spec.Refused</code></pre><p>Compile and render <code>source</code> in one call. <code>format</code> and <code>force</code> override the settings&#x27; own; <code>load</code>, <code>translate</code> and <code>cache</code> are the seams <code>Env::new</code> takes.</p></div>
+<div class="member" id="moonpug-render"><pre class="sig"><code>pub fn[C : ToJson] render(StringView, C, settings? : Settings, format? : Format, force? : Bool, delimiters? : @syntax.Delimiters, shortcuts? : Map[String, String], host? : @spec.Host, load? : (String) -&gt; String?, translate? : (String, String?, Int32?) -&gt; String?, cache? : (String, () -&gt; String raise @spec.Refused) -&gt; String raise @spec.Refused) -&gt; String raise @spec.Refused</code></pre><p>Compile and render <code>source</code> in one call. <code>format</code>, <code>force</code>, <code>delimiters</code> and <code>shortcuts</code> override the settings&#x27; own; <code>load</code>, <code>translate</code> and <code>cache</code> are the seams <code>Env::new</code> takes.</p></div>
 <div class="member" id="moonpug-unknown"><pre class="sig"><code>pub fn unknown(String, String) -&gt; @spec.Refused</code></pre></div>
 <h3 id="moonpug-values">Values</h3>
+<div class="member" id="moonpug-delimiters"><pre class="sig"><code>pub let delimiters : @syntax.Delimiters</code></pre></div>
+<div class="member" id="moonpug-host"><pre class="sig"><code>pub let host : @spec.Host</code></pre></div>
 <div class="member" id="moonpug-html"><pre class="sig"><code>pub let html : Format</code></pre><p>HTML in the brace syntax, escaped.</p></div>
-<div class="member" id="moonpug-limits"><pre class="sig"><code>pub let limits : Limits</code></pre><p>A thousand levels, as Python allows; a hundred thousand items, Jinja&#x27;s sandbox bound on <code>range</code>.</p></div>
+<div class="member" id="moonpug-limits"><pre class="sig"><code>pub let limits : Limits</code></pre><p>A thousand levels, as Python allows; a hundred thousand items, Jinja&#x27;s sandbox bound on <code>range</code>; eight mebibytes of output, past which a template is looping rather than rendering a page.</p></div>
 <div class="member" id="moonpug-markdown"><pre class="sig"><code>pub let markdown : Format</code></pre><p>Markdown in the brace syntax: nothing escaped, and a tag on a line of its own leaves no blank line behind.</p></div>
 <div class="member" id="moonpug-pug"><pre class="sig"><code>pub let pug : Format</code></pre><p>Pug, escaped.</p></div>
-<div class="member" id="moonpug-settings"><pre class="sig"><code>pub let settings : Settings</code></pre><p>HTML for an unnamed source, the format by extension for a named one, every language read, undefined names refused, no line prefixes.</p></div>
+<div class="member" id="moonpug-settings"><pre class="sig"><code>pub let settings : Settings</code></pre><p>HTML for an unnamed source, the format by extension for a named one, every language read, undefined names refused, no line prefixes, <code>{{ }}</code> for tags, <code>.</code> for a class and <code>#</code> for an id.</p></div>
 <div class="member" id="moonpug-text"><pre class="sig"><code>pub let text : Format</code></pre><p>Plain text in the brace syntax: nothing escaped.</p></div>
 </section>
 <section id="spec-top"><h2>moonpug/spec</h2><p>Values and the contract extensions build on: objects, filters, tests, refusals. The engine re-exports what a caller needs.</p>
@@ -199,6 +210,18 @@ pub using @spec {trait Object}</code></pre>
 <div class="member" id="spec-call-text"><pre class="sig"><code>pub fn Call::text(Self, Value) -&gt; String raise Refused</code></pre><p>A value as text, Python&#x27;s <code>str</code>: an undefined value is empty, or refused under the strict policy.</p></div>
 <div class="member" id="spec-call-translate"><pre class="sig"><code>pub fn Call::translate(Self, String, context? : String, count? : Int32) -&gt; String?</code></pre><p>Ask the translation seam for <code>msgid</code> in <code>context</code>, plural form for <code>count</code>. <code>None</code> when there is no seam or it has no translation.</p></div>
 <div class="member" id="spec-call-truthy"><pre class="sig"><code>pub fn Call::truthy(Self, Value) -&gt; Bool raise Refused</code></pre><p>Whether the value counts as true; an undefined value is false, or refused under the strict policy.</p></div>
+</article>
+<article id="spec-host"><h3><span class="kind">struct</span> Host</h3>
+<p>What a template asks of the program around it: an address by name, the prefix its static and media files sit under, a token to sign a form with, and the clock. Each is a global function a template calls, and each is optional: what is not given is not defined in templates.</p>
+<pre class="sig"><code>pub(all) struct Host {
+  url : ((String, Array[Value], Map[String, Value]) -&gt; String raise Refused)?
+  asset : ((String) -&gt; String)?
+  asset_prefix : (() -&gt; String)?
+  media_prefix : (() -&gt; String)?
+  csrf_token : (() -&gt; String)?
+  now : (() -&gt; String)?
+}</code></pre>
+<dl class="fields"><dt><code>url</code></dt><dd><p><code>url(name, …)</code>: the address the program gives a route, the rest of the arguments filling it.</p></dd><dt><code>asset</code></dt><dd><p><code>static(path)</code>: where a static file is served from.</p></dd><dt><code>asset_prefix</code></dt><dd><p><code>static_prefix()</code>: the prefix on its own.</p></dd><dt><code>media_prefix</code></dt><dd><p><code>media_prefix()</code>: the prefix uploaded files sit under.</p></dd><dt><code>csrf_token</code></dt><dd><p><code>csrf_token()</code>: the token a form carries, as markup.</p></dd><dt><code>now</code></dt><dd><p><code>now()</code>: the moment to render, as ISO 8601 text. The format letters are applied to it here, so the program only says what time it is.</p></dd></dl>
 </article>
 <article id="spec-undefined"><h3><span class="kind">enum</span> Undefined</h3>
 <p>What happens when an undefined value is used, Jinja&#x27;s three answers: <code>Lenient</code> prints nothing and iterates as empty but refuses attribute access; <code>Chainable</code> also lets attributes of it be undefined in turn; <code>Strict</code> refuses every use except asking whether it is defined.</p>
@@ -270,6 +293,8 @@ pub using @spec {trait Object}</code></pre>
 <div class="member" id="spec-python_float"><pre class="sig"><code>pub fn python_float(Double) -&gt; String</code></pre><p>A float the way Python writes it: the shortest digits that read back the same, fixed between <code>1e-4</code> and <code>1e16</code>, scientific outside.</p></div>
 <div class="member" id="spec-repr_text"><pre class="sig"><code>pub fn repr_text(String) -&gt; String</code></pre><p>Python&#x27;s <code>repr</code> of a string: single quotes unless the text holds one and no double quote, with the escapes Python writes.</p></div>
 <div class="member" id="spec-unknown"><pre class="sig"><code>pub fn unknown(String, String) -&gt; Refused</code></pre><p>A name that resolves to nothing, raised from an extension.</p></div>
+<h3 id="spec-values">Values</h3>
+<div class="member" id="spec-host"><pre class="sig"><code>pub let host : Host</code></pre><p>No seam at all: templates see none of these names.</p></div>
 </section>
 <section id="syntax-top"><h2>moonpug/syntax</h2><p>The tree and the readers, for a language of your own.</p>
 <article id="syntax-arg"><h3><span class="kind">enum</span> Arg</h3>
@@ -297,6 +322,17 @@ pub using @spec {trait Object}</code></pre>
   scoped : Bool
   required : Bool
   placement : Placement
+}</code></pre>
+</article>
+<article id="syntax-delimiters"><h3><span class="kind">struct</span> Delimiters</h3>
+<p>The strings that open and close a tag of the brace syntax: an output, a statement and a comment each have their own pair.</p>
+<pre class="sig"><code>pub(all) struct Delimiters {
+  variable_start : String
+  variable_end : String
+  block_start : String
+  block_end : String
+  comment_start : String
+  comment_end : String
 }</code></pre>
 </article>
 <article id="syntax-element"><h3><span class="kind">struct</span> Element</h3>
@@ -425,13 +461,14 @@ pub using @spec {trait Object}</code></pre>
 } derive(Eq)</code></pre>
 </article>
 <article id="syntax-options"><h3><span class="kind">struct</span> Options</h3>
-<p>How the brace syntax reads whitespace and line-oriented tags.</p>
+<p>How the brace syntax reads whitespace, line-oriented tags and the strings that make a tag.</p>
 <pre class="sig"><code>pub(all) struct Options {
   trim_blocks : Bool
   lstrip_blocks : Bool
   keep_trailing_newline : Bool
   line_statement : String?
   line_comment : String?
+  delimiters : Delimiters
 }</code></pre>
 </article>
 <article id="syntax-param"><h3><span class="kind">struct</span> Param</h3>
@@ -471,13 +508,14 @@ pub using @spec {trait Object}</code></pre>
 } derive(Eq)</code></pre>
 </article>
 <article id="syntax-reading"><h3><span class="kind">struct</span> Reading</h3>
-<p>Where a reader stands: the language and whether it is forced, the template and the line the source starts on, the brace options in effect, and the languages a block may name.</p>
+<p>Where a reader stands: the language and whether it is forced, the template and the line the source starts on, the brace options in effect, the indentation syntax&#x27;s shorthand prefixes, and the languages a block may name.</p>
 <pre class="sig"><code>pub(all) struct Reading {
   lang : Lang
   force : Bool
   template : String
   line : Int32
   options : Options
+  shortcuts : Map[String, String]
   langs : (String) -&gt; Lang?
 }</code></pre>
 <div class="member" id="syntax-reading-allows"><pre class="sig"><code>pub fn Reading::allows(Self, Lang) -&gt; Bool</code></pre><p>Whether a block in <code>inner</code> is read inside this stretch. A forced stretch reads its own language and, outside HTML, HTML; any other block stays text, markers and all.</p></div>
@@ -536,6 +574,7 @@ pub using @spec {trait Object}</code></pre>
 <div class="member" id="syntax-read_indent"><pre class="sig"><code>pub fn read_indent(String, Reading) -&gt; Array[Node] raise @spec.Refused</code></pre><p>A source in the indentation syntax, read into the tree: the reader of <code>pug</code>.</p></div>
 <div class="member" id="syntax-resolve"><pre class="sig"><code>pub fn resolve(String, String, line? : Int32) -&gt; String raise @spec.Refused</code></pre><p>A path the indentation syntax names, relative to the template naming it unless it starts with <code>/</code>; <code>.pug</code> is added when there is no extension.</p></div>
 <h3 id="syntax-values">Values</h3>
+<div class="member" id="syntax-delimiters"><pre class="sig"><code>pub let delimiters : Delimiters</code></pre><p><code>{{ }}</code>, <code>{% %}</code> and <code>{# #}</code>.</p></div>
 <div class="member" id="syntax-html"><pre class="sig"><code>pub let html : Lang</code></pre><p>HTML: text with <code>{{ }}</code>, <code>{% %}</code> and <code>{# #}</code>.</p></div>
 <div class="member" id="syntax-markdown"><pre class="sig"><code>pub let markdown : Lang</code></pre><p>Markdown: the brace syntax, with a tag on a line of its own leaving no blank line behind.</p></div>
 <div class="member" id="syntax-options"><pre class="sig"><code>pub let options : Options</code></pre><p>Brace options with nothing trimmed and no line prefixes.</p></div>

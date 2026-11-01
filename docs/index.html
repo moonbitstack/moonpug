@@ -79,6 +79,9 @@
     <div class="feature" data-n="iv"><h3>Host objects</h3><p>Implement <code>Object</code> and a value of yours has attributes, calls, loops and assignments in a template.</p></div>
     <div class="feature" data-n="v"><h3>Your own language</h3><p>Register a reader with a name and aliases; the three built in go through the same door.</p></div>
     <div class="feature" data-n="vi"><h3>Refusals with a place</h3><p>Every error names the template and line, and the column when the source is malformed. Deep recursion is refused, not overflowed.</p></div>
+    <div class="feature" data-n="vii"><h3>Delimiters of your own</h3><p>The strings that make a tag are settings: <code>[[ ]]</code> beside a template that writes <code>{</code> already. Shorthand prefixes too.</p></div>
+    <div class="feature" data-n="viii"><h3>Bounded output</h3><p><code>Limits</code> caps nesting, <code>range</code> and what one render may write, capture blocks included, so an untrusted template stays finite.</p></div>
+    <div class="feature" data-n="ix"><h3>One tree, three readers</h3><p>Every syntax reads into the same tree; nothing after reading knows whether a line came from braces, indentation or Markdown.</p></div>
   </div>
 
   <h2 class="lead-in">One page, three spellings</h2>
