@@ -66,3 +66,61 @@ test "the refusal says what crossed which bound" {
   }
   assert_eq(got, "5 9 1")
 }
+
+///|
+test "what one render writes is bounded" {
+  let tight = { ..@moonpug.settings, limits: { ..@moonpug.limits, write: 5, }, }
+  assert_eq(r("abcde", settings=tight), "abcde")
+  assert_eq(
+    r("abcdef", settings=tight),
+    "refused: <template>:1: 6 exceeds the limit of 5",
+  )
+  assert_eq(
+    r("a{{ 1 }}b{{ 2 }}c{{ 3 }}", settings=tight),
+    "refused: <template>:1: 6 exceeds the limit of 5",
+  )
+  assert_eq(
+    r("{% for n in range(4) %}xx{% endfor %}", settings=tight),
+    "refused: <template>:1: 6 exceeds the limit of 5",
+  )
+  // A block captured for a filter is written all the same.
+  assert_eq(
+    r("{% filter upper %}abcdef{% endfilter %}", settings=tight),
+    "refused: <template>:1: 6 exceeds the limit of 5",
+  )
+  assert_eq(
+    r("{% set x %}abcdef{% endset %}{{ x }}", settings=tight),
+    "refused: <template>:1: 6 exceeds the limit of 5",
+  )
+}
+
+///|
+test "a page that fits its bound is written whole" {
+  let roomy = {
+    ..@moonpug.settings,
+    limits: { ..@moonpug.limits, write: 12, },
+  }
+  assert_eq(
+    r("{% for n in range(4) %}xxx{% endfor %}", settings=roomy),
+    "xxxxxxxxxxxx",
+  )
+}
+
+///|
+test "a block written inside another counts once" {
+  let tight = { ..@moonpug.settings, limits: { ..@moonpug.limits, write: 6, }, }
+  assert_eq(
+    r(
+      "{% macro m() %}ab{% endmacro %}{{ m() }}{{ m() }}{{ m() }}",
+      settings=tight,
+    ),
+    "ababab",
+  )
+  assert_eq(
+    r(
+      "{% macro m() %}ab{% endmacro %}{{ m() }}{{ m() }}{{ m() }}{{ m() }}",
+      settings=tight,
+    ),
+    "refused: <template>:1: 8 exceeds the limit of 6",
+  )
+}
