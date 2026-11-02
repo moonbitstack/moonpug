@@ -69,7 +69,7 @@ fn filter_capfirst(
   let out = match text.iter().head() {
     Some(first) =>
       @moonucd.upper(first.to_string()) +
-      text.view(start_offset=first.utf16_len()).to_owned()
+      text.exact_view(start=first.utf16_len()).to_owned()
     None => text
   }
   if value is Markup(_) {
