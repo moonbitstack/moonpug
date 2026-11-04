@@ -74,9 +74,11 @@ greet.render({ <span class="s">"name"</span>: <span class="s">"Grace"</span> })<
 
     <section id="data">
       <h2>Data in</h2>
-      <p>A context is anything that converts to <code>Json</code>: a <code>derive(ToJson)</code> struct, a map literal, a parsed document. Objects become mappings, arrays become lists, and whole numbers become integers.</p>
-      <pre class="code"><span class="k">struct</span> Book { title : String; year : Int; tags : Array[String] } derive(ToJson)
-<span class="k">struct</span> Shelf { shelf : String; books : Array[Book] } derive(ToJson)
+      <p>A context is anything that converts to <code>Json</code>: a <code>#derive(ToJson)</code> struct, a map literal, a parsed document. Objects become mappings, arrays become lists, and whole numbers become integers.</p>
+      <pre class="code">#derive(ToJson)
+<span class="k">struct</span> Book { title : String; year : Int; tags : Array[String] }
+#derive(ToJson)
+<span class="k">struct</span> Shelf { shelf : String; books : Array[Book] }
 
 @moonpug.render(page, Shelf::{ shelf: <span class="s">"Reading"</span>, books })</pre>
       <p>Values that are more than data, such as functions and your own objects, go in through <code>render_values</code> with a <code>Map[String, Value]</code>; see <a href="#objects">host objects</a>.</p>

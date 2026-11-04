@@ -74,20 +74,22 @@ import {
 
 ## A first page
 
-Data goes in as anything that converts to `Json`: a `derive(ToJson)` struct, a map, a parsed document.
+Data goes in as anything that converts to `Json`: a `#derive(ToJson)` struct, a map, a parsed document.
 
 <!-- nocheck -->
 ```moonbit
+#derive(ToJson)
 struct Book {
   title : String
   year : Int
   tags : Array[String]
-} derive(ToJson)
+}
 
+#derive(ToJson)
 struct Shelf {
   shelf : String
   books : Array[Book]
-} derive(ToJson)
+}
 
 let page =
   #|<h1>{{ shelf }}</h1>
