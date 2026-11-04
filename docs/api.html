@@ -145,7 +145,7 @@ pub using @spec {trait Object}</code></pre>
   // private fields
 }</code></pre>
 <div class="member" id="moonpug-template-name"><pre class="sig"><code>pub fn Template::name(Self) -&gt; String</code></pre><p>The name the template was compiled under.</p></div>
-<div class="member" id="moonpug-template-render"><pre class="sig"><code>pub fn[C : ToJson] Template::render(Self, C) -&gt; String raise @spec.Refused</code></pre><p>Render with a context of data: a <code>Json</code> object, or any value whose <code>to_json</code> gives one.</p></div>
+<div class="member" id="moonpug-template-render"><pre class="sig"><code>pub fn[C : @json.ToJson] Template::render(Self, C) -&gt; String raise @spec.Refused</code></pre><p>Render with a context of data: a <code>Json</code> object, or any value whose <code>to_json</code> gives one.</p></div>
 <div class="member" id="moonpug-template-render_values"><pre class="sig"><code>pub fn Template::render_values(Self, Map[String, @spec.Value]) -&gt; String raise @spec.Refused</code></pre><p>Render with values that may hold functions and objects as well as data.</p></div>
 </article>
 <article id="moonpug-filter"><h3><span class="kind">type</span> Filter</h3>
@@ -164,7 +164,7 @@ pub using @spec {trait Object}</code></pre>
 <div class="member" id="moonpug-escape"><pre class="sig"><code>pub fn escape(String) -&gt; String</code></pre></div>
 <div class="member" id="moonpug-format_of"><pre class="sig"><code>pub fn format_of(String) -&gt; Format</code></pre><p>The format a template&#x27;s name implies: <code>.pug</code> and <code>.pg</code> are Pug, <code>.html</code>, <code>.htm</code>, <code>.xml</code>, <code>.svg</code> and <code>.xhtml</code> are escaped HTML, <code>.md</code> and <code>.markdown</code> are Markdown, anything else is text.</p></div>
 <div class="member" id="moonpug-invalid"><pre class="sig"><code>pub fn invalid(String) -&gt; @spec.Refused</code></pre></div>
-<div class="member" id="moonpug-render"><pre class="sig"><code>pub fn[C : ToJson] render(StringView, C, settings? : Settings, format? : Format, force? : Bool, delimiters? : @syntax.Delimiters, shortcuts? : Map[String, String], host? : @spec.Host, load? : (String) -&gt; String?, translate? : (String, String?, Int32?) -&gt; String?, cache? : (String, () -&gt; String raise @spec.Refused) -&gt; String raise @spec.Refused) -&gt; String raise @spec.Refused</code></pre><p>Compile and render <code>source</code> in one call. <code>format</code>, <code>force</code>, <code>delimiters</code> and <code>shortcuts</code> override the settings&#x27; own; <code>load</code>, <code>translate</code> and <code>cache</code> are the seams <code>Env::new</code> takes.</p></div>
+<div class="member" id="moonpug-render"><pre class="sig"><code>pub fn[C : @json.ToJson] render(StringView, C, settings? : Settings, format? : Format, force? : Bool, delimiters? : @syntax.Delimiters, shortcuts? : Map[String, String], host? : @spec.Host, load? : (String) -&gt; String?, translate? : (String, String?, Int32?) -&gt; String?, cache? : (String, () -&gt; String raise @spec.Refused) -&gt; String raise @spec.Refused) -&gt; String raise @spec.Refused</code></pre><p>Compile and render <code>source</code> in one call. <code>format</code>, <code>force</code>, <code>delimiters</code> and <code>shortcuts</code> override the settings&#x27; own; <code>load</code>, <code>translate</code> and <code>cache</code> are the seams <code>Env::new</code> takes.</p></div>
 <div class="member" id="moonpug-unknown"><pre class="sig"><code>pub fn unknown(String, String) -&gt; @spec.Refused</code></pre></div>
 <h3 id="moonpug-values">Values</h3>
 <div class="member" id="moonpug-delimiters"><pre class="sig"><code>pub let delimiters : @syntax.Delimiters</code></pre></div>
@@ -184,7 +184,7 @@ pub using @spec {trait Object}</code></pre>
   Unknown(template~ : String, line~ : Int32, kind~ : String, name~ : String)
   Invalid(template~ : String, line~ : Int32, reason~ : String)
   Exceeded(template~ : String, line~ : Int32, limit~ : Int32, got~ : Int32)
-} derive(Eq, @debug.Debug)</code></pre>
+}</code></pre>
 <dl class="fields"><dt><code>Syntax</code></dt><dd><p>The source is not well formed.</p></dd><dt><code>Unknown</code></dt><dd><p>A name that resolves to nothing: a variable under the strict policy, a filter, a test, a template, an attribute. <code>kind</code> says which.</p></dd><dt><code>Invalid</code></dt><dd><p>The source is well formed and the values do not fit: wrong arguments, a type an operation does not take.</p></dd><dt><code>Exceeded</code></dt><dd><p>A bound in <code>Limits</code> was crossed.</p></dd></dl>
 <div class="member" id="spec-refused-at"><pre class="sig"><code>pub fn Refused::at(Self, String, Int32) -&gt; Self</code></pre><p>The same fault, placed at <code>template</code> and <code>line</code> if it has no place yet.</p></div>
 <div class="member" id="spec-refused-place"><pre class="sig"><code>pub fn Refused::place(Self) -&gt; (String, Int32)</code></pre><p>The template and line a fault names.</p></div>
@@ -229,7 +229,7 @@ pub using @spec {trait Object}</code></pre>
   Lenient
   Chainable
   Strict
-} derive(Eq)</code></pre>
+}</code></pre>
 </article>
 <article id="spec-value"><h3><span class="kind">enum</span> Value</h3>
 <p>A value in a template. The context arrives as data; functions and host objects enter as <code>Object</code>. <code>Markup</code> is text already safe to write as it stands. <code>Undefined</code> is a name that resolved to nothing, carrying the name for the message a later use may need.</p>
@@ -255,10 +255,10 @@ pub using @spec {trait Object}</code></pre>
 <div class="member" id="spec-value-kind"><pre class="sig"><code>pub fn Value::kind(Self) -&gt; String</code></pre><p>The word a message uses for a value&#x27;s type.</p></div>
 <div class="member" id="spec-value-markup"><pre class="sig"><code>pub fn Value::markup(Self) -&gt; String</code></pre><p>A value as markup: safe text as it stands, anything else printed and escaped.</p></div>
 <div class="member" id="spec-value-number"><pre class="sig"><code>pub fn Value::number(Self) -&gt; Double?</code></pre><p>A number as Python sees one: <code>Bool</code> counts, being an <code>int</code>.</p></div>
-<div class="member" id="spec-value-of_json"><pre class="sig"><code>pub fn Value::of_json(Json) -&gt; Self</code></pre><p>Data read from JSON. A number written without a fraction or exponent is an <code>Int</code> when it fits, as Python reads it.</p></div>
+<div class="member" id="spec-value-of_json"><pre class="sig"><code>pub fn Value::of_json(@json.Json) -&gt; Self</code></pre><p>Data read from JSON. A number written without a fraction or exponent is an <code>Int</code> when it fits, as Python reads it.</p></div>
 <div class="member" id="spec-value-path"><pre class="sig"><code>pub fn Value::path(Self, String) -&gt; Self?</code></pre><p>A dotted path such as <code>user.address.0</code>, each step a lookup by item; a step written in digits indexes a list.</p></div>
 <div class="member" id="spec-value-repr"><pre class="sig"><code>pub fn Value::repr(Self) -&gt; String</code></pre><p>Python&#x27;s <code>repr</code>: text quoted, lists and mappings with their elements in <code>repr</code> form. <code>pprint</code> and the printing of containers use it.</p></div>
-<div class="member" id="spec-value-to_json"><pre class="sig"><code>pub fn Value::to_json(Self) -&gt; Json</code></pre></div>
+<div class="member" id="spec-value-to_json"><pre class="sig"><code>pub fn Value::to_json(Self) -&gt; @json.Json</code></pre></div>
 <div class="member" id="spec-value-truthy"><pre class="sig"><code>pub fn Value::truthy(Self) -&gt; Bool</code></pre><p>What a condition sees: empty, zero, <code>None</code> and undefined are false.</p></div>
 </article>
 <article id="spec-filter"><h3><span class="kind">type</span> Filter</h3>
@@ -458,7 +458,7 @@ pub using @spec {trait Object}</code></pre>
   Ge
   In
   NotIn
-} derive(Eq)</code></pre>
+}</code></pre>
 </article>
 <article id="syntax-options"><h3><span class="kind">struct</span> Options</h3>
 <p>How the brace syntax reads whitespace, line-oriented tags and the strings that make a tag.</p>
@@ -505,7 +505,7 @@ pub using @spec {trait Object}</code></pre>
   Replace
   Append
   Prepend
-} derive(Eq)</code></pre>
+}</code></pre>
 </article>
 <article id="syntax-reading"><h3><span class="kind">struct</span> Reading</h3>
 <p>Where a reader stands: the language and whether it is forced, the template and the line the source starts on, the brace options in effect, the indentation syntax&#x27;s shorthand prefixes, and the languages a block may name.</p>
@@ -545,7 +545,7 @@ pub using @spec {trait Object}</code></pre>
   Op(String)
   Lang(String, Bool?, String)
   Eof
-} derive(Eq)</code></pre>
+}</code></pre>
 <dl class="fields"><dt><code>Lang</code></dt><dd><p>A language block&#x27;s language, its force if given, and its body.</p></dd></dl>
 </article>
 <article id="syntax-token"><h3><span class="kind">struct</span> Token</h3>
