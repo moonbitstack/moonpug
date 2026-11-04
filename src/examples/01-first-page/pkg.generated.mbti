@@ -1,14 +1,20 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "moonbitstack/moonpug/examples/01-first-page"
 
+import {
+  "moonbitlang/core/json",
+}
+
 // Values
 
 // Errors
 
 // Types and methods
-type Book derive(ToJson)
+#derive(@json.ToJson)
+type Book
 
-type Shelf derive(ToJson)
+#derive(@json.ToJson)
+type Shelf
 
 // Type aliases
 

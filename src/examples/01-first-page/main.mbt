@@ -1,16 +1,18 @@
 ///|
+#derive(ToJson)
 struct Book {
   title : String
   author : String
   year : Int32
   tags : Array[String]
-} derive(ToJson)
+}
 
 ///|
+#derive(ToJson)
 struct Shelf {
   shelf : String
   books : Array[Book]
-} derive(ToJson)
+}
 
 ///|
 fn main {

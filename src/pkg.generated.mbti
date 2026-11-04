@@ -2,6 +2,7 @@
 package "moonbitstack/moonpug"
 
 import {
+  "moonbitlang/core/json",
   "moonbitstack/moonpug/spec",
   "moonbitstack/moonpug/syntax",
 }
@@ -25,7 +26,7 @@ pub let markdown : Format
 
 pub let pug : Format
 
-pub fn[C : ToJson] render(StringView, C, settings? : Settings, format? : Format, force? : Bool, delimiters? : @syntax.Delimiters, shortcuts? : Map[String, String], host? : @spec.Host, load? : (String) -> String?, translate? : (String, String?, Int32?) -> String?, cache? : (String, () -> String raise @spec.Refused) -> String raise @spec.Refused) -> String raise @spec.Refused
+pub fn[C : @json.ToJson] render(StringView, C, settings? : Settings, format? : Format, force? : Bool, delimiters? : @syntax.Delimiters, shortcuts? : Map[String, String], host? : @spec.Host, load? : (String) -> String?, translate? : (String, String?, Int32?) -> String?, cache? : (String, () -> String raise @spec.Refused) -> String raise @spec.Refused) -> String raise @spec.Refused
 
 pub let settings : Settings
 
@@ -78,7 +79,7 @@ pub struct Template {
   // private fields
 }
 pub fn Template::name(Self) -> String
-pub fn[C : ToJson] Template::render(Self, C) -> String raise @spec.Refused
+pub fn[C : @json.ToJson] Template::render(Self, C) -> String raise @spec.Refused
 pub fn Template::render_values(Self, Map[String, @spec.Value]) -> String raise @spec.Refused
 
 // Type aliases

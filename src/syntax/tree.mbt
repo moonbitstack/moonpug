@@ -27,6 +27,7 @@ pub(all) enum Expr {
 }
 
 ///|
+#derive(Eq)
 pub(all) enum Op {
   Add
   Sub
@@ -45,7 +46,7 @@ pub(all) enum Op {
   Ge
   In
   NotIn
-} derive(Eq)
+}
 
 ///|
 pub extend Op with Eq::{equal, not_equal}
@@ -88,11 +89,12 @@ pub(all) struct Macro {
 }
 
 ///|
+#derive(Eq)
 pub(all) enum Placement {
   Replace
   Append
   Prepend
-} derive(Eq)
+}
 
 ///|
 pub extend Placement with Eq::{equal, not_equal}

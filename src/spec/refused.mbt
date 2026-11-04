@@ -3,6 +3,7 @@
 /// template and the one-based line it stopped at; a fault raised by an
 /// extension carries an empty name and line `0` until the engine fills in
 /// where it was called from.
+#derive(Eq, Debug)
 pub(all) suberror Refused {
   /// The source is not well formed.
   Syntax(template~ : String, line~ : Int32, column~ : Int32, reason~ : String)
@@ -14,7 +15,7 @@ pub(all) suberror Refused {
   Invalid(template~ : String, line~ : Int32, reason~ : String)
   /// A bound in `Limits` was crossed.
   Exceeded(template~ : String, line~ : Int32, limit~ : Int32, got~ : Int32)
-} derive(Eq, Debug)
+}
 
 ///|
 pub extend Refused with Eq::{equal, not_equal}

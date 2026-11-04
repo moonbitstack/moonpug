@@ -3,6 +3,7 @@ package "moonbitstack/moonpug/spec"
 
 import {
   "moonbitlang/core/debug",
+  "moonbitlang/core/json",
 }
 
 // Values
@@ -21,12 +22,13 @@ pub fn repr_text(String) -> String
 pub fn unknown(String, String) -> Refused
 
 // Errors
+#derive(Eq, @debug.Debug)
 pub(all) suberror Refused {
   Syntax(template~ : String, line~ : Int32, column~ : Int32, reason~ : String)
   Unknown(template~ : String, line~ : Int32, kind~ : String, name~ : String)
   Invalid(template~ : String, line~ : Int32, reason~ : String)
   Exceeded(template~ : String, line~ : Int32, limit~ : Int32, got~ : Int32)
-} derive(Eq, @debug.Debug)
+}
 pub fn Refused::at(Self, String, Int32) -> Self
 pub fn Refused::equal(Self, Self) -> Bool
 pub fn Refused::not_equal(Self, Self) -> Bool
@@ -65,11 +67,12 @@ pub(all) struct Host {
   now : (() -> String)?
 }
 
+#derive(Eq)
 pub(all) enum Undefined {
   Lenient
   Chainable
   Strict
-} derive(Eq)
+}
 pub fn Undefined::equal(Self, Self) -> Bool
 pub fn Undefined::not_equal(Self, Self) -> Bool
 
@@ -98,16 +101,16 @@ pub fn Value::kind(Self) -> String
 pub fn Value::markup(Self) -> String
 pub fn Value::not_equal(Self, Self) -> Bool
 pub fn Value::number(Self) -> Double?
-pub fn Value::of_json(Json) -> Self
+pub fn Value::of_json(@json.Json) -> Self
 pub fn Value::output(Self, &Logger) -> Unit
 pub fn Value::path(Self, String) -> Self?
 pub fn Value::repr(Self) -> String
-pub fn Value::to_json(Self) -> Json
+pub fn Value::to_json(Self) -> @json.Json
 pub fn Value::to_string(Self) -> String
 pub fn Value::truthy(Self) -> Bool
 pub impl Eq for Value
 pub impl Show for Value
-pub impl ToJson for Value
+pub impl @json.ToJson for Value
 
 // Type aliases
 pub type Filter = (Call, Value, Array[Value], Map[String, Value]) -> Value raise Refused

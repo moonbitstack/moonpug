@@ -11,11 +11,12 @@ pub type Test = (Call, Value, Array[Value]) -> Bool raise Refused
 /// `Lenient` prints nothing and iterates as empty but refuses attribute
 /// access; `Chainable` also lets attributes of it be undefined in turn;
 /// `Strict` refuses every use except asking whether it is defined.
+#derive(Eq)
 pub(all) enum Undefined {
   Lenient
   Chainable
   Strict
-} derive(Eq)
+}
 
 ///|
 pub extend Undefined with Eq::{equal, not_equal}

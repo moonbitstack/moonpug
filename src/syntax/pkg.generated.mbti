@@ -150,6 +150,7 @@ pub(all) enum Node {
   Case(Expr, Array[(Array[Expr], Array[Node])], Array[Node])
 }
 
+#derive(Eq)
 pub(all) enum Op {
   Add
   Sub
@@ -168,7 +169,7 @@ pub(all) enum Op {
   Ge
   In
   NotIn
-} derive(Eq)
+}
 pub fn Op::equal(Self, Self) -> Bool
 pub fn Op::not_equal(Self, Self) -> Bool
 
@@ -204,11 +205,12 @@ pub fn Parser::parse_statement(Self) -> Array[Node] raise @spec.Refused
 pub fn Parser::parse_tuple(Self, simplified? : Bool, condexpr? : Bool, extra? : Array[String], parenthesised? : Bool) -> Expr raise @spec.Refused
 pub fn Parser::statements(Self, Array[String], drop? : Bool) -> Array[Node] raise @spec.Refused
 
+#derive(Eq)
 pub(all) enum Placement {
   Replace
   Append
   Prepend
-} derive(Eq)
+}
 pub fn Placement::equal(Self, Self) -> Bool
 pub fn Placement::not_equal(Self, Self) -> Bool
 
@@ -231,6 +233,7 @@ pub(all) enum Target {
   Field(String, String)
 }
 
+#derive(Eq)
 pub(all) enum Tok {
   Data(String)
   VarBegin
@@ -244,7 +247,7 @@ pub(all) enum Tok {
   Op(String)
   Lang(String, Bool?, String)
   Eof
-} derive(Eq)
+}
 pub fn Tok::equal(Self, Self) -> Bool
 pub fn Tok::not_equal(Self, Self) -> Bool
 

@@ -170,11 +170,12 @@ test "a function's refusal is placed where it was called" {
 }
 
 ///|
+#derive(ToJson)
 struct Item {
   name : String
   price : Double
   tags : Array[String]
-} derive(ToJson)
+}
 
 ///|
 test "data carries through Json and through values" {

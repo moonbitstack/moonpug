@@ -1,6 +1,7 @@
 ///|
 /// One token. Template text and the delimiters of the brace syntax sit in
 /// the same stream as the tokens inside tags, as in Jinja's lexer.
+#derive(Eq)
 pub(all) enum Tok {
   Data(String)
   VarBegin
@@ -15,7 +16,7 @@ pub(all) enum Tok {
   /// A language block's language, its force if given, and its body.
   Lang(String, Bool?, String)
   Eof
-} derive(Eq)
+}
 
 ///|
 pub extend Tok with Eq::{equal, not_equal}
