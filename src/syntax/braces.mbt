@@ -100,7 +100,7 @@ pub fn lex_template(
             if lang is Some(l) {
               lx.advance(block.body_at)
               out.push({
-                tok: Lang(l.name, block.force, block.body),
+                tok: Lang(l.name, block.force, block.safe, block.body),
                 line: lx.line,
                 column: tag_column,
               })
@@ -497,10 +497,10 @@ fn brace_body(
         nodes.append(parser.parse_statement())
         parser.expect(BlockEnd)
       }
-      Lang(name, force, body) => {
+      Lang(name, force, safe, body) => {
         ignore(parser.next())
         nodes.push(Line(token.line))
-        nodes.append(reading.block(body, name, force, token.line))
+        nodes.push(reading.stretch(body, name, force, safe, token.line))
       }
       Eof => {
         if !ends.is_empty() {

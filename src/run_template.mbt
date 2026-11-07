@@ -42,6 +42,7 @@ fn Run::file_blocks(
   self : Run,
   nodes : Array[@syntax.Node],
   template : String,
+  reading : Reading?,
 ) -> Unit {
   for node in nodes {
     match node {
@@ -49,41 +50,57 @@ fn Run::file_blocks(
         match self.blocks.get(b.name) {
           Some(frames) =>
             if !frames.iter().any(f => f.template == template) {
-              frames.push({ block: b, template, })
+              frames.push({ block: b, template, reading, })
             }
-          None => self.blocks[b.name] = [{ block: b, template, }]
+          None => self.blocks[b.name] = [{ block: b, template, reading, }]
         }
-        self.file_blocks(b.body, template)
+        self.file_blocks(b.body, template, reading)
       }
       For(body~, otherwise~, ..) => {
-        self.file_blocks(body, template)
-        self.file_blocks(otherwise, template)
+        self.file_blocks(body, template, reading)
+        self.file_blocks(otherwise, template, reading)
       }
       If(branches, otherwise) => {
         for b in branches {
-          self.file_blocks(b.1, template)
+          self.file_blocks(b.1, template, reading)
         }
-        self.file_blocks(otherwise, template)
+        self.file_blocks(otherwise, template, reading)
       }
       With(_, body)
       | Autoescape(_, body)
       | FilterBlock(_, body)
       | Show(_, body)
       | Once(_, body)
-      | Comment(body) => self.file_blocks(body, template)
-      Element(el) => self.file_blocks(el.body, template)
-      MacroDef(m) => self.file_blocks(m.body, template)
+      | Comment(body) => self.file_blocks(body, template, reading)
+      Element(el) => self.file_blocks(el.body, template, reading)
+      Stretch(inner, body) => self.file_blocks(body, template, Some(inner))
+      MacroDef(m) => self.file_blocks(m.body, template, reading)
       SetBlock(_, _, body) | CallBlock(_, _, body) =>
-        self.file_blocks(body, template)
+        self.file_blocks(body, template, reading)
       Case(_, arms, otherwise) => {
         for arm in arms {
-          self.file_blocks(arm.1, template)
+          self.file_blocks(arm.1, template, reading)
         }
-        self.file_blocks(otherwise, template)
+        self.file_blocks(otherwise, template, reading)
       }
       _ => ()
     }
   }
+}
+
+///|
+/// Whether a template extends another, looking inside the stretch a whole
+/// template is read as.
+fn extends_inside(nodes : Array[@syntax.Node]) -> Bool {
+  nodes
+  .iter()
+  .any(nn => {
+    match nn {
+      Extends(_) => true
+      Stretch(_, body) => extends_inside(body)
+      _ => false
+    }
+  })
 }
 
 ///|
@@ -109,13 +126,13 @@ fn Run::render_chain(
   self : Run,
   nodes : Array[@syntax.Node],
 ) -> Unit raise @spec.Refused {
-  self.file_blocks(nodes, self.template)
+  self.file_blocks(nodes, self.template, self.current)
   self.run_nodes(nodes)
   while self.parents.pop() is Some(parent) {
     self.enter()
     self.extended = false
     self.template = parent.name
-    self.file_blocks(parent.nodes, parent.name)
+    self.file_blocks(parent.nodes, parent.name, self.current)
     self.run_nodes(parent.nodes)
     self.leave()
   }
@@ -163,15 +180,30 @@ fn Run::render_block_at(
     )
   }
   match frame.block.placement {
-    Replace => self.run_nodes(frame.block.body)
+    Replace => self.run_block_body(frame)
     Append => {
       self.render_block_at(name, level + 1, scoped)
-      self.run_nodes(frame.block.body)
+      self.run_block_body(frame)
     }
     Prepend => {
-      self.run_nodes(frame.block.body)
+      self.run_block_body(frame)
       self.render_block_at(name, level + 1, scoped)
     }
+  }
+}
+
+///|
+/// A block's body, read as the language it was written in: a block written
+/// in Markdown inside an HTML layout still becomes HTML.
+fn Run::run_block_body(self : Run, frame : Frame) -> Unit raise @spec.Refused {
+  match frame.reading {
+    Some(reading) =>
+      match self.current {
+        Some(current) if current.lang.name == reading.lang.name =>
+          self.run_nodes(frame.block.body)
+        _ => self.run_stretch(reading, frame.block.body)
+      }
+    None => self.run_nodes(frame.block.body)
   }
 }
 
@@ -245,7 +277,7 @@ fn Run::include_template(
   if !inline {
     self.scopes = if context { [self.visible(), Map([])] } else { [Map([])] }
   }
-  if !inline || template.nodes.iter().any(n => n is Extends(_)) {
+  if !inline || extends_inside(template.nodes) {
     self.blocks = Map([])
   }
   self.template = template.name
@@ -303,6 +335,7 @@ fn apply_yield(
         If(branches, otherwise) =>
           out.push(If(branches.map(b => (b.0, swap(b.1))), swap(otherwise)))
         BlockDef(b) => out.push(BlockDef({ ..b, body: swap(b.body), }))
+        Stretch(reading, body) => out.push(Stretch(reading, swap(body)))
         other => out.push(other)
       }
     }
@@ -333,6 +366,10 @@ fn apply_yield(
           return out
         }
         Line(_) | Text(_) => continue
+        Stretch(reading, body) => {
+          out[i] = Stretch(reading, last(body))
+          return out
+        }
         _ => break
       }
     }

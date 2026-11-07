@@ -42,7 +42,7 @@ priv enum PugTok {
   Else
   Each(String, String?, Src)
   Stmt(Src)
-  Lang(String, Bool?, Src)
+  Lang(String, Bool?, Bool?, Src)
   Yield
 }
 
@@ -361,7 +361,7 @@ fn PugLexer::statement(self : PugLexer) -> Bool raise @spec.Refused {
           let start = self.pos
           self.consume(block.body_at - start)
           self.push(
-            Lang(l.name, block.force, self.src_here(block.body)),
+            Lang(l.name, block.force, block.safe, self.src_here(block.body)),
             line~,
             column~,
           )

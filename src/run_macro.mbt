@@ -178,6 +178,7 @@ fn reads(nodes : Array[@syntax.Node], name : String) -> Bool {
           el.splats.each(expr)
           walk(el.body)
         }
+        Stretch(_, b) => walk(b)
         Comment(b) => walk(b)
         Case(s, arms, o) => {
           expr(s)

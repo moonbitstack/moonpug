@@ -25,6 +25,7 @@ fn Run::run_node(self : Run, node : @syntax.Node) -> Unit raise @spec.Refused {
   match node {
     Line(n) => self.line = n
     Text(t) => if !self.extended { self.write(t) }
+    Stretch(reading, body) => self.run_stretch(reading, body)
     Out(e) => {
       let v = self.eval(e)
       if !self.extended {

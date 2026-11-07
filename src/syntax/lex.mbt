@@ -13,8 +13,9 @@ pub(all) enum Tok {
   Int(Int64)
   Float(Double)
   Op(String)
-  /// A language block's language, its force if given, and its body.
-  Lang(String, Bool?, String)
+  /// A language block's language, its force and its safety if given, and
+  /// its body.
+  Lang(String, Bool?, Bool?, String)
   Eof
 }
 

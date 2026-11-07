@@ -122,10 +122,13 @@ pub fn Env::compile(
       line_comment: settings.line_comment,
       delimiters: settings.delimiters,
     },
+    safe: chosen.safe,
     shortcuts: settings.shortcuts,
     langs: n => self.langs.get(n),
   }
-  let nodes = @syntax.read(source.to_owned(), reading)
+  let nodes = [
+    @syntax.Node::Stretch(reading, @syntax.read(source.to_owned(), reading)),
+  ]
   { env: self, name: template, format: chosen, nodes, }
 }
 

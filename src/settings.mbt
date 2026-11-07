@@ -1,9 +1,15 @@
 ///|
 /// What a template writes, and so how it reads: the name of its language,
-/// whether output is escaped, and how whitespace around tags is handled.
+/// whether output is escaped, whether HTML the author wrote is written as
+/// it stands, and how whitespace around tags is handled.
 pub(all) struct Format {
   lang : String
   autoescape : Bool
+  /// Whether HTML the template's author wrote reaches the page as it
+  /// stands. Off, a converter escapes it, the way a Markdown page leaves
+  /// `html: false`; `{% block lang=md safe=false %}` turns it off for one
+  /// stretch.
+  safe : Bool
   trim_blocks : Bool
   lstrip_blocks : Bool
   keep_trailing_newline : Bool
@@ -14,6 +20,7 @@ pub(all) struct Format {
 pub let html : Format = {
   lang: "html",
   autoescape: true,
+  safe: true,
   trim_blocks: false,
   lstrip_blocks: false,
   keep_trailing_newline: false,
@@ -24,11 +31,12 @@ pub let html : Format = {
 pub let pug : Format = { ..html, lang: "pug", }
 
 ///|
-/// Markdown in the brace syntax: nothing escaped, and a tag on a line of its
-/// own leaves no blank line behind.
+/// Markdown: the brace syntax, escaped, then read as Markdown and written as
+/// HTML; a tag on a line of its own leaves no blank line behind.
 pub let markdown : Format = {
   lang: "md",
-  autoescape: false,
+  autoescape: true,
+  safe: true,
   trim_blocks: true,
   lstrip_blocks: true,
   keep_trailing_newline: true,
@@ -41,7 +49,7 @@ pub let text : Format = { ..html, autoescape: false, }
 ///|
 /// The format a template's name implies: `.pug` and `.pg` are Pug, `.html`,
 /// `.htm`, `.xml`, `.svg` and `.xhtml` are escaped HTML, `.md` and
-/// `.markdown` are Markdown, anything else is text.
+/// `.markdown` are Markdown and so write HTML, anything else is text.
 pub fn format_of(name : String) -> Format {
   let ext = match name.rev_find(".") {
     Some(at) => name[at + 1:].to_lower()

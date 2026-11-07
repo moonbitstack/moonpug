@@ -1,26 +1,34 @@
 ///|
 /// A language a template or a `{% block lang=… %}` is read in: its name,
-/// the other names it answers to, how its brace tags treat whitespace, and
-/// the reader that turns its source into the tree. The three built in are
-/// registered the same way a user's own is.
+/// the other names it answers to, how its brace tags treat whitespace, the
+/// reader that turns its source into the tree, and the conversion its
+/// output goes through. The three built in are registered the same way a
+/// user's own is.
 pub(all) struct Lang {
   name : String
   aliases : Array[String]
   options : Options
   read : (String, Reading) -> Array[Node] raise @spec.Refused
+  /// What the text a stretch in this language rendered becomes. `None`
+  /// writes it as it stands; Markdown gives the converter that turns the
+  /// Markdown into HTML.
+  finish : ((String, Reading) -> String raise @spec.Refused)?
 }
 
 ///|
 /// Where a reader stands: the language and whether it is forced, the
 /// template and the line the source starts on, the brace options in effect,
-/// the indentation syntax's shorthand prefixes, and the languages a block
-/// may name.
+/// whether raw HTML is allowed through, the indentation syntax's shorthand
+/// prefixes, and the languages a block may name.
 pub(all) struct Reading {
   lang : Lang
   force : Bool
   template : String
   line : Int32
   options : Options
+  /// Whether HTML written by the template's author is written as it is.
+  /// Off, a converter escapes it, as a Markdown page leaves `html: false`.
+  safe : Bool
   shortcuts : Map[String, String]
   langs : (String) -> Lang?
 }
@@ -37,13 +45,14 @@ pub fn Reading::allows(self : Reading, inner : Lang) -> Bool {
 
 ///|
 /// The reading inside a block starting at `line`: its own language and
-/// options, and its own force when it gives one, else the enclosing
-/// stretch's. A block in the stretch's own language keeps its options; line
-/// prefixes carry through.
+/// options, and its own force and safety when it gives them, else the
+/// enclosing stretch's. A block in the stretch's own language keeps its
+/// options; line prefixes carry through.
 pub fn Reading::inside(
   self : Reading,
   lang : Lang,
   force : Bool?,
+  safe : Bool?,
   line : Int32,
 ) -> Reading {
   let options = if lang.name == self.lang.name {
@@ -56,12 +65,22 @@ pub fn Reading::inside(
       delimiters: self.options.delimiters,
     }
   }
-  { ..self, lang, force: force.unwrap_or(self.force), line, options, }
+  {
+    ..self,
+    lang,
+    force: force.unwrap_or(self.force),
+    safe: safe.unwrap_or(self.safe),
+    line,
+    options,
+  }
 }
 
 ///|
-/// A block in the language named `name`, read into the tree; a reader of a
-/// user's own language calls this for the blocks it finds.
+/// A block in the language named `name`, read into the tree and spliced
+/// where it stands; a reader of a user's own language calls this for the
+/// blocks it finds. Its output goes through the enclosing stretch's
+/// conversion, so a reader that wants the block converted as its own
+/// language wants `Reading::stretch`.
 pub fn Reading::block(
   self : Reading,
   source : String,
@@ -70,7 +89,28 @@ pub fn Reading::block(
   line : Int32,
 ) -> Array[Node] raise @spec.Refused {
   match (self.langs)(name) {
-    Some(lang) => read(source, self.inside(lang, force, line))
+    Some(lang) => read(source, self.inside(lang, force, None, line))
+    None => raise Unknown(template=self.template, line~, kind="language", name~)
+  }
+}
+
+///|
+/// A block in the language named `name`, kept whole as one node: what it
+/// renders is converted by its own language and, inside a stretch that
+/// converts its output too, put back after that conversion.
+pub fn Reading::stretch(
+  self : Reading,
+  source : String,
+  name : String,
+  force : Bool?,
+  safe : Bool?,
+  line : Int32,
+) -> Node raise @spec.Refused {
+  match (self.langs)(name) {
+    Some(lang) => {
+      let inner = self.inside(lang, force, safe, line)
+      Stretch(inner, read(source, inner))
+    }
     None => raise Unknown(template=self.template, line~, kind="language", name~)
   }
 }
@@ -96,12 +136,19 @@ pub let options : Options = {
 }
 
 ///|
-/// HTML: text with `{{ }}`, `{% %}` and `{# #}`.
-pub let html : Lang = { name: "html", aliases: [], options, read: read_braces, }
+/// HTML: text with `{{ }}`, `{% %}` and `{# #}`, written as it stands.
+pub let html : Lang = {
+  name: "html",
+  aliases: [],
+  options,
+  read: read_braces,
+  finish: None,
+}
 
 ///|
 /// Markdown: the brace syntax, with a tag on a line of its own leaving no
-/// blank line behind.
+/// blank line behind; what it renders is then read as Markdown and written
+/// as HTML.
 pub let markdown : Lang = {
   name: "md",
   aliases: ["markdown"],
@@ -112,25 +159,28 @@ pub let markdown : Lang = {
     keep_trailing_newline: true,
   },
   read: read_braces,
+  finish: Some((text, reading) => @moonmd.parse(text).html(safe=reading.safe)),
 }
 
 ///|
 /// Pug: elements by indentation, `<` lines passed through, `{% %}` lines as
-/// statements.
+/// statements; the HTML it writes is already the page.
 pub let pug : Lang = {
   name: "pug",
   aliases: ["pg"],
   options,
   read: read_indent,
+  finish: None,
 }
 
 ///|
-/// A language block found in the source: the name it gives, its force if
-/// any, its body, the line of its head, and the offsets of the body and of
-/// the end of the closing tag.
+/// A language block found in the source: the name it gives, its force and
+/// safety if any, its body, the line of its head, and the offsets of the
+/// body and of the end of the closing tag.
 priv struct LangBlock {
   name : String
   force : Bool?
+  safe : Bool?
   body : String
   line : Int32
   body_at : Int32
@@ -228,6 +278,23 @@ fn lang_block(
     }
     i = skip_blanks(src, j)
   }
+  let mut safe = None
+  if starts_at(src, "safe=", i) {
+    let (value, j) = word_at(src, i + 5)
+    safe = match value {
+      "true" => Some(true)
+      "false" => Some(false)
+      _ =>
+        raise lang_syntax(
+          src,
+          i,
+          template,
+          first_line,
+          "safe takes true or false, not \{value}",
+        )
+    }
+    i = skip_blanks(src, j)
+  }
   guard tag_close(src, i, delimiters) is Some((body_at, open_sign)) else {
     raise lang_syntax(
       src,
@@ -272,7 +339,16 @@ fn lang_block(
             body = body.trim_end(chars=" \t\n\r\u{0B}\u{0C}").to_owned()
           }
           let line = line_of(src, at) + first_line - 1
-          return Some({ name, force, body, line, body_at, after, close_sign, })
+          return Some({
+            name,
+            force,
+            safe,
+            body,
+            line,
+            body_at,
+            after,
+            close_sign,
+          })
         }
       }
       _ => ()

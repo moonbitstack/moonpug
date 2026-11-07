@@ -96,6 +96,7 @@ pub(all) struct Lang {
   aliases : Array[String]
   options : Options
   read : (String, Reading) -> Array[Node] raise @spec.Refused
+  finish : ((String, Reading) -> String raise @spec.Refused)?
 }
 
 pub(all) struct Lexer {
@@ -120,6 +121,7 @@ pub(all) struct Macro {
 pub(all) enum Node {
   Line(Int32)
   Text(String)
+  Stretch(Reading, Array[Node])
   Out(Expr)
   Raw(Expr)
   For(target~ : Target, iter~ : Expr, cond~ : Expr?, recursive~ : Bool, each~ : Bool, body~ : Array[Node], otherwise~ : Array[Node])
@@ -220,12 +222,14 @@ pub(all) struct Reading {
   template : String
   line : Int32
   options : Options
+  safe : Bool
   shortcuts : Map[String, String]
   langs : (String) -> Lang?
 }
 pub fn Reading::allows(Self, Lang) -> Bool
 pub fn Reading::block(Self, String, String, Bool?, Int32) -> Array[Node] raise @spec.Refused
-pub fn Reading::inside(Self, Lang, Bool?, Int32) -> Self
+pub fn Reading::inside(Self, Lang, Bool?, Bool?, Int32) -> Self
+pub fn Reading::stretch(Self, String, String, Bool?, Bool?, Int32) -> Node raise @spec.Refused
 
 pub(all) enum Target {
   Name(String)
@@ -245,7 +249,7 @@ pub(all) enum Tok {
   Int(Int64)
   Float(Double)
   Op(String)
-  Lang(String, Bool?, String)
+  Lang(String, Bool?, Bool?, String)
   Eof
 }
 pub fn Tok::equal(Self, Self) -> Bool

@@ -19,7 +19,7 @@ test "a language block reads its body in that language" {
     r(
       "{% block lang=markdown %}\n{% if true %}\n# T\n{% endif %}\n{% endblock %}",
     ),
-    "\n# T\n",
+    "<h1>T</h1>\n",
   )
 }
 
@@ -111,6 +111,7 @@ test "a user's own language is registered by name and aliases" {
     aliases: ["loud"],
     options: @syntax.options,
     read: (source, reading) => @syntax.read_braces(source.to_upper(), reading),
+    finish: None,
   })
   let ctx = @json.parse("{\"X\": 1}")
   assert_eq(
@@ -136,6 +137,7 @@ test "a user's reader can embed blocks in other languages" {
       let inner = reading.block(source, "pug", None, reading.line)
       [@syntax.Node::Text("["), ..inner, Text("]")]
     },
+    finish: None,
   })
   assert_eq(
     env
@@ -193,7 +195,7 @@ test "the format of a name picks the language" {
   assert_eq(@moonpug.format_of("a.pug").lang, "pug")
   assert_eq(@moonpug.format_of("a.PG").lang, "pug")
   assert_eq(@moonpug.format_of("a.md").lang, "md")
-  assert_eq(@moonpug.format_of("a.markdown").autoescape, false)
+  assert_eq(@moonpug.format_of("a.markdown").autoescape, true)
   assert_eq(@moonpug.format_of("x/y.svg").autoescape, true)
   assert_eq(@moonpug.format_of("notes.txt").autoescape, false)
   assert_eq(@moonpug.format_of("README").lang, "html")

@@ -1,4 +1,5 @@
 import {
   "moonbitstack/moonpug/spec",
+  "moonbitstack/moonmd",
   "moonbitlang/core/string",
 }

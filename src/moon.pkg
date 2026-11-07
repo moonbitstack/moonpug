@@ -8,5 +8,6 @@ import {
 import {
   "moonbitstack/moonpug",
   "moonbitstack/moonpug/syntax",
+  "moonbitstack/moonmd",
   "moonbitlang/core/json",
 } for "test"

@@ -43,6 +43,7 @@ const FILTERS = [
   ["linebreaksbr", "text", "Turn newlines into line breaks, returned as safe HTML.", "value|linebreaksbr", [], ['{{ "a\\nb"|linebreaksbr }}']],
   ["linenumbers", "text", "Prefix every line with its one-based number.", "value|linenumbers", [], ['{{ "a\\nb\\nc"|linenumbers }}']],
   ["lower", "text", "Lowercase the text.", "value|lower", [], ['{{ "HELLO"|lower }}']],
+  ["markdown", "text", "Read the text as Markdown and write it as HTML, the conversion an md template ends with.", "value|markdown(safe)", [["safe", "bool", "escape HTML in the text, true unless you say otherwise"]], ['{{ "## From a string"|markdown }}']],
   ["replace", "text", "Replace occurrences of old with new, at most count times.", "value|replace(old, new, count)", [["old", "string", "text to find"], ["new", "string", "replacement"], ["count", "int", "most replacements, -1 for all"]], ['{{ "a-b-c"|replace("-", " ") }}']],
   ["safe", "text", "Mark the text safe; it passes through without escaping.", "value|safe", [], ['{{ ("<b>"|safe) }}']],
   ["spaceless", "text", "Remove the whitespace between tags.", "value|spaceless", [], ['{{ "<a>  </a>"|spaceless }}']],

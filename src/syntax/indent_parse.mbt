@@ -195,11 +195,11 @@ fn PugParser::expr(self : PugParser) -> Array[Node] raise @spec.Refused {
       self.skip()
       return [Yield]
     }
-    Lang(name, force, src) => {
+    Lang(name, force, safe, src) => {
       self.skip()
       return [
         Line(src.line),
-        ..self.reading.block(src.text, name, force, src.line),
+        self.reading.stretch(src.text, name, force, safe, src.line),
       ]
     }
     Code(_, _) => raise self.fail("an output line needs a tag before =")

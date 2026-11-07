@@ -50,7 +50,7 @@ fn jinja(
   globals? : String,
 ) -> Unit raise {
   let format : @moonpug.Format = {
-    lang: "html",
+    ..@moonpug.html,
     autoescape: autoescape.unwrap_or(false),
     trim_blocks: trim_blocks.unwrap_or(false),
     lstrip_blocks: lstrip_blocks.unwrap_or(false),

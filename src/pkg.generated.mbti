@@ -52,6 +52,7 @@ pub fn Env::template(Self, String) -> Template raise @spec.Refused
 pub(all) struct Format {
   lang : String
   autoescape : Bool
+  safe : Bool
   trim_blocks : Bool
   lstrip_blocks : Bool
   keep_trailing_newline : Bool

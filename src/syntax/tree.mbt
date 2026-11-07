@@ -142,6 +142,10 @@ pub(all) enum Node {
   /// The line in the template where the following node starts.
   Line(Int32)
   Text(String)
+  /// A stretch read in one language and kept whole: what it renders goes
+  /// through that language's conversion, and inside a stretch that converts
+  /// its own output it is put back after the conversion rather than before.
+  Stretch(Reading, Array[Node])
   Out(Expr)
   /// Output never escaped: the indentation syntax's `!=` and `!{…}`.
   Raw(Expr)

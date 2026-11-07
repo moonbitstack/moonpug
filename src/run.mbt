@@ -1,8 +1,11 @@
 ///|
-/// A block definition and the template it came from.
+/// A block definition, the template it came from, and the stretch it was
+/// read in, so that a block written in Markdown is read as Markdown wherever
+/// the layout that renders it was written.
 priv struct Frame {
   block : @syntax.Block
   template : String
+  reading : Reading?
 }
 
 ///|
@@ -25,6 +28,15 @@ priv struct Run {
   mut skipping : Bool
   mut extended : Bool
   mut parents : Array[Template]
+  /// What the stretches being converted hold back until their conversion is
+  /// done, innermost last: a nested stretch's output and the text the
+  /// conversion must not touch.
+  slots : Array[Array[String]]
+  /// Whether the output stands at the start of a line, which is where a
+  /// block of another language may be placed without splitting a paragraph.
+  mut at_line_start : Bool
+  /// The language the output being written is read in.
+  mut current : Reading?
 }
 
 ///|
@@ -51,6 +63,9 @@ fn Run::new(
     skipping: false,
     extended: false,
     parents: [],
+    slots: [],
+    at_line_start: true,
+    current: None,
   }
 }
 
@@ -130,13 +145,16 @@ fn Run::capture(
   let outer = self.out
   let written = self.written
   let extended = self.extended
+  let at_line_start = self.at_line_start
   self.out = StringBuilder()
   self.written = 0
   self.extended = false
+  self.at_line_start = true
   defer {
     self.out = outer
     self.written = written
     self.extended = extended
+    self.at_line_start = at_line_start
   }
   body()
   self.out.to_string()
@@ -174,6 +192,9 @@ fn Run::write(self : Run, text : String) -> Unit raise @spec.Refused {
     )
   }
   self.out.write_string(text)
+  if !text.is_empty() {
+    self.at_line_start = text.code_unit_at(text.length() - 1) == '\n'
+  }
 }
 
 ///|

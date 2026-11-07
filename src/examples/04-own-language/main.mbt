@@ -33,6 +33,7 @@ fn main {
     aliases: ["table"],
     options: @syntax.options,
     read: read_csv,
+    finish: None,
   })
   let source =
     #|<h2>Stock</h2>

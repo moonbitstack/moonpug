@@ -29,6 +29,7 @@ pub fn filters() -> Map[String, @spec.Filter] {
     ("list", filter_list),
     ("lower", filter_lower),
     ("map", filter_map),
+    ("markdown", filter_markdown),
     ("max", (c, v, a, n) => min_or_max(c, "max", v, a, n, true)),
     ("min", (c, v, a, n) => min_or_max(c, "min", v, a, n, false)),
     ("pprint", filter_pprint),

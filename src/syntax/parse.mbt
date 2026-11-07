@@ -120,7 +120,7 @@ fn describe(tok : Tok) -> String {
     Int(n) => n.to_string()
     Float(d) => @spec.python_float(d)
     Op(o) => o
-    Lang(name, _, _) => "a \{name} block"
+    Lang(name, _, _, _) => "a \{name} block"
     Eof => "the end of the template"
   }
 }

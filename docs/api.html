@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@500;600&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="assets/site.css">
 <script type="module" src="assets/scrollbar.js"></script>
 </head>
@@ -21,7 +22,7 @@
     <a href="builtins.html">BtIns</a>
   </nav>
   <a class="github" href="https://github.com/moonbitstack/moonpug" aria-label="moonpug on GitHub"><svg viewBox="0 0 16 16" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38v-1.33c-2.23.48-2.7-1.07-2.7-1.07-.36-.92-.89-1.17-.89-1.17-.73-.5.06-.49.06-.49.8.06 1.23.83 1.23.83.72 1.22 1.88.87 2.34.66.07-.52.28-.87.5-1.07-1.78-.2-3.65-.89-3.65-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48v2.2c0 .21.15.46.55.38A8 8 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></a>
-  <button id="theme" type="button">Light / dark</button>
+  <button id="theme" type="button" aria-label="Light or dark">Light / dark</button>
 </header>
 <main class="doc">
   <aside class="index">
@@ -106,14 +107,16 @@ pub using @spec {trait Object}</code></pre>
 <div class="member" id="moonpug-env-template"><pre class="sig"><code>pub fn Env::template(Self, String) -&gt; Template raise @spec.Refused</code></pre><p>The template the loader finds under <code>name</code>, compiled once and kept.</p></div>
 </article>
 <article id="moonpug-format"><h3><span class="kind">struct</span> Format</h3>
-<p>What a template writes, and so how it reads: the name of its language, whether output is escaped, and how whitespace around tags is handled.</p>
+<p>What a template writes, and so how it reads: the name of its language, whether output is escaped, whether HTML the author wrote is written as it stands, and how whitespace around tags is handled.</p>
 <pre class="sig"><code>pub(all) struct Format {
   lang : String
   autoescape : Bool
+  safe : Bool
   trim_blocks : Bool
   lstrip_blocks : Bool
   keep_trailing_newline : Bool
 }</code></pre>
+<dl class="fields"><dt><code>safe</code></dt><dd><p>Whether HTML the template&#x27;s author wrote reaches the page as it stands. Off, a converter escapes it, the way a Markdown page leaves <code>html: false</code>; <code>{% block lang=md safe=false %}</code> turns it off for one stretch.</p></dd></dl>
 </article>
 <article id="moonpug-limits"><h3><span class="kind">struct</span> Limits</h3>
 <p>Bounds on what one render may do.</p>
@@ -162,7 +165,7 @@ pub using @spec {trait Object}</code></pre>
 </article>
 <h3 id="moonpug-functions">Functions</h3>
 <div class="member" id="moonpug-escape"><pre class="sig"><code>pub fn escape(String) -&gt; String</code></pre></div>
-<div class="member" id="moonpug-format_of"><pre class="sig"><code>pub fn format_of(String) -&gt; Format</code></pre><p>The format a template&#x27;s name implies: <code>.pug</code> and <code>.pg</code> are Pug, <code>.html</code>, <code>.htm</code>, <code>.xml</code>, <code>.svg</code> and <code>.xhtml</code> are escaped HTML, <code>.md</code> and <code>.markdown</code> are Markdown, anything else is text.</p></div>
+<div class="member" id="moonpug-format_of"><pre class="sig"><code>pub fn format_of(String) -&gt; Format</code></pre><p>The format a template&#x27;s name implies: <code>.pug</code> and <code>.pg</code> are Pug, <code>.html</code>, <code>.htm</code>, <code>.xml</code>, <code>.svg</code> and <code>.xhtml</code> are escaped HTML, <code>.md</code> and <code>.markdown</code> are Markdown and so write HTML, anything else is text.</p></div>
 <div class="member" id="moonpug-invalid"><pre class="sig"><code>pub fn invalid(String) -&gt; @spec.Refused</code></pre></div>
 <div class="member" id="moonpug-render"><pre class="sig"><code>pub fn[C : @json.ToJson] render(StringView, C, settings? : Settings, format? : Format, force? : Bool, delimiters? : @syntax.Delimiters, shortcuts? : Map[String, String], host? : @spec.Host, load? : (String) -&gt; String?, translate? : (String, String?, Int32?) -&gt; String?, cache? : (String, () -&gt; String raise @spec.Refused) -&gt; String raise @spec.Refused) -&gt; String raise @spec.Refused</code></pre><p>Compile and render <code>source</code> in one call. <code>format</code>, <code>force</code>, <code>delimiters</code> and <code>shortcuts</code> override the settings&#x27; own; <code>load</code>, <code>translate</code> and <code>cache</code> are the seams <code>Env::new</code> takes.</p></div>
 <div class="member" id="moonpug-unknown"><pre class="sig"><code>pub fn unknown(String, String) -&gt; @spec.Refused</code></pre></div>
@@ -171,7 +174,7 @@ pub using @spec {trait Object}</code></pre>
 <div class="member" id="moonpug-host"><pre class="sig"><code>pub let host : @spec.Host</code></pre></div>
 <div class="member" id="moonpug-html"><pre class="sig"><code>pub let html : Format</code></pre><p>HTML in the brace syntax, escaped.</p></div>
 <div class="member" id="moonpug-limits"><pre class="sig"><code>pub let limits : Limits</code></pre><p>A thousand levels, as Python allows; a hundred thousand items, Jinja&#x27;s sandbox bound on <code>range</code>; eight mebibytes of output, past which a template is looping rather than rendering a page.</p></div>
-<div class="member" id="moonpug-markdown"><pre class="sig"><code>pub let markdown : Format</code></pre><p>Markdown in the brace syntax: nothing escaped, and a tag on a line of its own leaves no blank line behind.</p></div>
+<div class="member" id="moonpug-markdown"><pre class="sig"><code>pub let markdown : Format</code></pre><p>Markdown: the brace syntax, escaped, then read as Markdown and written as HTML; a tag on a line of its own leaves no blank line behind.</p></div>
 <div class="member" id="moonpug-pug"><pre class="sig"><code>pub let pug : Format</code></pre><p>Pug, escaped.</p></div>
 <div class="member" id="moonpug-settings"><pre class="sig"><code>pub let settings : Settings</code></pre><p>HTML for an unnamed source, the format by extension for a named one, every language read, undefined names refused, no line prefixes, <code>{{ }}</code> for tags, <code>.</code> for a class and <code>#</code> for an id.</p></div>
 <div class="member" id="moonpug-text"><pre class="sig"><code>pub let text : Format</code></pre><p>Plain text in the brace syntax: nothing escaped.</p></div>
@@ -371,13 +374,15 @@ pub using @spec {trait Object}</code></pre>
 <dl class="fields"><dt><code>Slice</code></dt><dd><p>A slice as a subscript: <code>a[1:2]</code> is <code>Item(a, Slice(1, 2, None))</code>.</p></dd><dt><code>Attributes</code></dt><dd><p>The attributes of a mixin call, merged the way an element merges its own: classes gather, <code>&amp;attributes</code> splats override.</p></dd></dl>
 </article>
 <article id="syntax-lang"><h3><span class="kind">struct</span> Lang</h3>
-<p>A language a template or a <code>{% block lang=… %}</code> is read in: its name, the other names it answers to, how its brace tags treat whitespace, and the reader that turns its source into the tree. The three built in are registered the same way a user&#x27;s own is.</p>
+<p>A language a template or a <code>{% block lang=… %}</code> is read in: its name, the other names it answers to, how its brace tags treat whitespace, the reader that turns its source into the tree, and the conversion its output goes through. The three built in are registered the same way a user&#x27;s own is.</p>
 <pre class="sig"><code>pub(all) struct Lang {
   name : String
   aliases : Array[String]
   options : Options
   read : (String, Reading) -&gt; Array[Node] raise @spec.Refused
+  finish : ((String, Reading) -&gt; String raise @spec.Refused)?
 }</code></pre>
+<dl class="fields"><dt><code>finish</code></dt><dd><p>What the text a stretch in this language rendered becomes. <code>None</code> writes it as it stands; Markdown gives the converter that turns the Markdown into HTML.</p></dd></dl>
 </article>
 <article id="syntax-lexer"><h3><span class="kind">struct</span> Lexer</h3>
 <p>A cursor over source text that knows its line and column.</p>
@@ -407,6 +412,7 @@ pub using @spec {trait Object}</code></pre>
 <pre class="sig"><code>pub(all) enum Node {
   Line(Int32)
   Text(String)
+  Stretch(Reading, Array[Node])
   Out(Expr)
   Raw(Expr)
   For(target~ : Target, iter~ : Expr, cond~ : Expr?, recursive~ : Bool, each~ : Bool, body~ : Array[Node], otherwise~ : Array[Node])
@@ -436,7 +442,7 @@ pub using @spec {trait Object}</code></pre>
   Comment(Array[Node])
   Case(Expr, Array[(Array[Expr], Array[Node])], Array[Node])
 }</code></pre>
-<dl class="fields"><dt><code>Line</code></dt><dd><p>The line in the template where the following node starts.</p></dd><dt><code>Raw</code></dt><dd><p>Output never escaped: the indentation syntax&#x27;s <code>!=</code> and <code>!{…}</code>.</p></dd><dt><code>For</code></dt><dd><p>A loop. <code>each</code> is the indentation syntax&#x27;s: with two names the value binds first, then the index or key.</p></dd><dt><code>Include</code></dt><dd><p><code>raw</code> includes the text as it stands, as the indentation syntax does for a file that is not a template. <code>inline</code> renders the file in place, as the indentation syntax does: what it defines stays defined and its blocks take part in inheritance. <code>block</code> is the indentation syntax&#x27;s body under an include, rendered where the included file says <code>yield</code>.</p></dd><dt><code>Yield</code></dt><dd><p>Where an include&#x27;s block goes.</p></dd></dl>
+<dl class="fields"><dt><code>Line</code></dt><dd><p>The line in the template where the following node starts.</p></dd><dt><code>Stretch</code></dt><dd><p>A stretch read in one language and kept whole: what it renders goes through that language&#x27;s conversion, and inside a stretch that converts its own output it is put back after the conversion rather than before.</p></dd><dt><code>Raw</code></dt><dd><p>Output never escaped: the indentation syntax&#x27;s <code>!=</code> and <code>!{…}</code>.</p></dd><dt><code>For</code></dt><dd><p>A loop. <code>each</code> is the indentation syntax&#x27;s: with two names the value binds first, then the index or key.</p></dd><dt><code>Include</code></dt><dd><p><code>raw</code> includes the text as it stands, as the indentation syntax does for a file that is not a template. <code>inline</code> renders the file in place, as the indentation syntax does: what it defines stays defined and its blocks take part in inheritance. <code>block</code> is the indentation syntax&#x27;s body under an include, rendered where the included file says <code>yield</code>.</p></dd><dt><code>Yield</code></dt><dd><p>Where an include&#x27;s block goes.</p></dd></dl>
 </article>
 <article id="syntax-op"><h3><span class="kind">enum</span> Op</h3>
 
@@ -508,19 +514,22 @@ pub using @spec {trait Object}</code></pre>
 }</code></pre>
 </article>
 <article id="syntax-reading"><h3><span class="kind">struct</span> Reading</h3>
-<p>Where a reader stands: the language and whether it is forced, the template and the line the source starts on, the brace options in effect, the indentation syntax&#x27;s shorthand prefixes, and the languages a block may name.</p>
+<p>Where a reader stands: the language and whether it is forced, the template and the line the source starts on, the brace options in effect, whether raw HTML is allowed through, the indentation syntax&#x27;s shorthand prefixes, and the languages a block may name.</p>
 <pre class="sig"><code>pub(all) struct Reading {
   lang : Lang
   force : Bool
   template : String
   line : Int32
   options : Options
+  safe : Bool
   shortcuts : Map[String, String]
   langs : (String) -&gt; Lang?
 }</code></pre>
+<dl class="fields"><dt><code>safe</code></dt><dd><p>Whether HTML written by the template&#x27;s author is written as it is. Off, a converter escapes it, as a Markdown page leaves <code>html: false</code>.</p></dd></dl>
 <div class="member" id="syntax-reading-allows"><pre class="sig"><code>pub fn Reading::allows(Self, Lang) -&gt; Bool</code></pre><p>Whether a block in <code>inner</code> is read inside this stretch. A forced stretch reads its own language and, outside HTML, HTML; any other block stays text, markers and all.</p></div>
-<div class="member" id="syntax-reading-block"><pre class="sig"><code>pub fn Reading::block(Self, String, String, Bool?, Int32) -&gt; Array[Node] raise @spec.Refused</code></pre><p>A block in the language named <code>name</code>, read into the tree; a reader of a user&#x27;s own language calls this for the blocks it finds.</p></div>
-<div class="member" id="syntax-reading-inside"><pre class="sig"><code>pub fn Reading::inside(Self, Lang, Bool?, Int32) -&gt; Self</code></pre><p>The reading inside a block starting at <code>line</code>: its own language and options, and its own force when it gives one, else the enclosing stretch&#x27;s. A block in the stretch&#x27;s own language keeps its options; line prefixes carry through.</p></div>
+<div class="member" id="syntax-reading-block"><pre class="sig"><code>pub fn Reading::block(Self, String, String, Bool?, Int32) -&gt; Array[Node] raise @spec.Refused</code></pre><p>A block in the language named <code>name</code>, read into the tree and spliced where it stands; a reader of a user&#x27;s own language calls this for the blocks it finds. Its output goes through the enclosing stretch&#x27;s conversion, so a reader that wants the block converted as its own language wants <code>Reading::stretch</code>.</p></div>
+<div class="member" id="syntax-reading-inside"><pre class="sig"><code>pub fn Reading::inside(Self, Lang, Bool?, Bool?, Int32) -&gt; Self</code></pre><p>The reading inside a block starting at <code>line</code>: its own language and options, and its own force and safety when it gives them, else the enclosing stretch&#x27;s. A block in the stretch&#x27;s own language keeps its options; line prefixes carry through.</p></div>
+<div class="member" id="syntax-reading-stretch"><pre class="sig"><code>pub fn Reading::stretch(Self, String, String, Bool?, Bool?, Int32) -&gt; Node raise @spec.Refused</code></pre><p>A block in the language named <code>name</code>, kept whole as one node: what it renders is converted by its own language and, inside a stretch that converts its output too, put back after that conversion.</p></div>
 </article>
 <article id="syntax-target"><h3><span class="kind">enum</span> Target</h3>
 <p>Where an assignment or a loop binds.</p>
@@ -543,10 +552,10 @@ pub using @spec {trait Object}</code></pre>
   Int(Int64)
   Float(Double)
   Op(String)
-  Lang(String, Bool?, String)
+  Lang(String, Bool?, Bool?, String)
   Eof
 }</code></pre>
-<dl class="fields"><dt><code>Lang</code></dt><dd><p>A language block&#x27;s language, its force if given, and its body.</p></dd></dl>
+<dl class="fields"><dt><code>Lang</code></dt><dd><p>A language block&#x27;s language, its force and its safety if given, and its body.</p></dd></dl>
 </article>
 <article id="syntax-token"><h3><span class="kind">struct</span> Token</h3>
 
@@ -575,10 +584,10 @@ pub using @spec {trait Object}</code></pre>
 <div class="member" id="syntax-resolve"><pre class="sig"><code>pub fn resolve(String, String, line? : Int32) -&gt; String raise @spec.Refused</code></pre><p>A path the indentation syntax names, relative to the template naming it unless it starts with <code>/</code>; <code>.pug</code> is added when there is no extension.</p></div>
 <h3 id="syntax-values">Values</h3>
 <div class="member" id="syntax-delimiters"><pre class="sig"><code>pub let delimiters : Delimiters</code></pre><p><code>{{ }}</code>, <code>{% %}</code> and <code>{# #}</code>.</p></div>
-<div class="member" id="syntax-html"><pre class="sig"><code>pub let html : Lang</code></pre><p>HTML: text with <code>{{ }}</code>, <code>{% %}</code> and <code>{# #}</code>.</p></div>
-<div class="member" id="syntax-markdown"><pre class="sig"><code>pub let markdown : Lang</code></pre><p>Markdown: the brace syntax, with a tag on a line of its own leaving no blank line behind.</p></div>
+<div class="member" id="syntax-html"><pre class="sig"><code>pub let html : Lang</code></pre><p>HTML: text with <code>{{ }}</code>, <code>{% %}</code> and <code>{# #}</code>, written as it stands.</p></div>
+<div class="member" id="syntax-markdown"><pre class="sig"><code>pub let markdown : Lang</code></pre><p>Markdown: the brace syntax, with a tag on a line of its own leaving no blank line behind; what it renders is then read as Markdown and written as HTML.</p></div>
 <div class="member" id="syntax-options"><pre class="sig"><code>pub let options : Options</code></pre><p>Brace options with nothing trimmed and no line prefixes.</p></div>
-<div class="member" id="syntax-pug"><pre class="sig"><code>pub let pug : Lang</code></pre><p>Pug: elements by indentation, <code>&lt;</code> lines passed through, <code>{% %}</code> lines as statements.</p></div>
+<div class="member" id="syntax-pug"><pre class="sig"><code>pub let pug : Lang</code></pre><p>Pug: elements by indentation, <code>&lt;</code> lines passed through, <code>{% %}</code> lines as statements; the HTML it writes is already the page.</p></div>
 </section>
   </div>
 </main>
