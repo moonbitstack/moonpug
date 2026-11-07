@@ -185,7 +185,7 @@ Statements: `if`/`elif`/`else`, `for`/`else` with `loop`, `break`, `continue`, `
 
 Expressions: literals, lists, tuples and maps, attributes and subscripts, slices, arithmetic with `//`, `%` and `**`, comparisons that chain, `in`, `and`/`or`/`not`, `~` to join as text, inline `if`/`else`, filters with `|` and tests with `is`. Strings, lists and maps carry their methods: `'a,b'.split(',')`, `'{:>8.2f}'.format(x)`, `'%s=%d' % (k, v)`, `d.items()`.
 
-Built in: 84 filters (among them `date`, `timesince`, `floatformat`, `pluralize`, `urlize`, `wordwrap`, `tojson`, `json_script`, `groupby`, `dictsort`, `xmlattr`, `slugify`, `truncatechars_html`, `widthratio`), 39 tests, and the globals `range`, `dict`, `lipsum`, `cycler`, `joiner`, `namespace`, `templatetag`, `query_string` and the `gettext` family.
+Built in: 85 filters (among them `date`, `timesince`, `floatformat`, `pluralize`, `urlize`, `wordwrap`, `tojson`, `json_script`, `groupby`, `dictsort`, `xmlattr`, `slugify`, `truncatechars_html`, `widthratio` and `markdown`, which is the conversion described above), 39 tests, and the globals `range`, `dict`, `lipsum`, `cycler`, `joiner`, `namespace`, `templatetag`, `query_string` and the `gettext` family.
 
 In the indentation syntax: tags with `#id` and `.class`, attributes in `( )`, or `[ ]` and `{ }` when a long list wraps, `&attributes`, `#{}` and `!{}` interpolation, `#[tag]` inline, `|` and `.` text, `if`/`unless`/`each`/`case`, mixins with blocks and attributes, `include` with a block that lands at `yield`, `extends` with `block append` and `prepend`, `doctype`, comments, and `:name` content filters.
 
