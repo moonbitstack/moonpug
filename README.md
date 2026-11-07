@@ -56,7 +56,7 @@ ul
 
 ```moonbit
 let out = @moonpug.render("Hello {{ name|title }}!", { "name": "ada" })
-// Hello Ada!
+assert_eq(out, "Hello Ada!")
 ```
 
 ## Install
