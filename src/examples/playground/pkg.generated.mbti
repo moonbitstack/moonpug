@@ -6,6 +6,8 @@ pub fn names() -> String
 
 pub fn render_page(String, String, String, Bool) -> String
 
+pub fn three_ways(String) -> String
+
 // Errors
 
 // Types and methods

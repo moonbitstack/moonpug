@@ -5,5 +5,10 @@ import {
 }
 
 options(
-  link: { "js": { "exports": [ "render_page", "names" ], "format": "esm" } },
+  link: {
+    "js": {
+      "exports": [ "render_page", "names", "three_ways" ],
+      "format": "esm",
+    },
+  },
 )

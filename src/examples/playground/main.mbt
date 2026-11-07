@@ -22,6 +22,70 @@ pub fn render_page(
 }
 
 ///|
+/// One page written three ways, for the home page: each language, the source
+/// it is written in, and what it renders to. The page is the shelf the
+/// playground shows, so the three panes and the bench agree.
+pub fn three_ways(context : String) -> String {
+  let data = @json.parse(context) catch {
+    e => return "refused: the data is not JSON: \{e}"
+  }
+  let pages : Array[(String, String, @moonpug.Format)] = [
+    (
+      "html",
+      (
+        #|<h2>{{ shelf }}</h2>
+        #|<ul>
+        #|{% for b in books %}
+        #|<li><strong>{{ b.title }}</strong>, {{ b.year }}</li>
+        #|{% endfor %}
+        #|</ul>
+      ),
+      @moonpug.html,
+    ),
+    (
+      "pug",
+      (
+        #|h2= shelf
+        #|ul
+        #|  each b in books
+        #|    li
+        #|      strong= b.title
+        #|      | , #{b.year}
+      ),
+      @moonpug.pug,
+    ),
+    (
+      "md",
+      (
+        #|## {{ shelf }}
+        #|
+        #|{% for b in books %}
+        #|- **{{ b.title }}**, {{ b.year }}
+        #|{% endfor %}
+      ),
+      @moonpug.markdown,
+    ),
+  ]
+  let out : Array[Json] = []
+  for page in pages {
+    let (lang, source, format) = page
+    let rendered = @moonpug.render(source, data, format~) catch {
+      e => "refused: \{e}"
+    }
+    out.push(
+      Json::object(
+        Map([
+          ("lang", Json::string(lang)),
+          ("source", Json::string(source)),
+          ("out", Json::string(rendered)),
+        ]),
+      ),
+    )
+  }
+  Json::array(out).stringify()
+}
+
+///|
 /// The built-in filters, tests and globals, as JSON, for the reference.
 pub fn names() -> String {
   let sorted = (keys : Array[String]) => {

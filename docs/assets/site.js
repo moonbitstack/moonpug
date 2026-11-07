@@ -55,13 +55,6 @@ function render() {
   out.classList.toggle("refused", refused);
   if (refused) {
     view.textContent = "";
-  } else if (lang === "md") {
-    view.textContent = "";
-    const pre = document.createElement("pre");
-    pre.textContent = text;
-    pre.style.margin = "0";
-    pre.style.whiteSpace = "pre-wrap";
-    view.append(pre);
   } else {
     view.innerHTML = text;
   }
@@ -74,6 +67,48 @@ function choose(name) {
   }
   $("#source").value = samples[name].source;
   render();
+}
+
+// The three spellings of one page: the engine writes the source and what it
+// renders to, so the panes and the bench below show the same shelf.
+function trio() {
+  const box = document.getElementById("trio");
+  const verdict = document.getElementById("trio-verdict");
+  if (!box || !engine) return;
+  const rows = JSON.parse(engine.three_ways($("#data").value));
+  const panes = box.querySelectorAll("article");
+  for (const [i, pane] of [...panes].entries()) {
+    const row = rows[i];
+    pane.querySelector("pre.src").textContent = row.source;
+    pane.querySelector("pre.out").textContent = row.out;
+  }
+  const same = rows.every((row) => doc(row.out) === doc(rows[0].out));
+  verdict.replaceChildren(
+    document.createTextNode(same
+      ? "The three outputs are one document. Read with the browser's parser, they differ only in where the newlines fall: "
+      : "The three outputs differ: "),
+    Object.assign(document.createElement("b"), {
+      textContent: same ? "same tree, same text" : "not the same",
+    }),
+  );
+}
+
+// A document as a tree of tags, attributes and words: whitespace between
+// blocks is not part of what a reader sees, so it is folded away here too.
+function doc(html) {
+  const walk = (node) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      const text = node.parentElement?.closest("pre, code")
+        ? node.textContent
+        : node.textContent.replace(/\s+/g, " ").trim();
+      return text === "" ? "" : JSON.stringify(text);
+    }
+    if (node.nodeType !== Node.ELEMENT_NODE) return "";
+    const attrs = [...node.attributes].map((a) => `${a.name}=${a.value}`).sort().join(" ");
+    return `<${node.tagName} ${attrs}>${[...node.childNodes].map(walk).join("")}</>`;
+  };
+  const body = new DOMParser().parseFromString(html, "text/html").body;
+  return [...body.childNodes].map(walk).join("");
 }
 
 const anchor = { filters: "filter", tests: "test", globals: "global" };
@@ -118,5 +153,5 @@ for (const b of document.querySelectorAll(".tabs button")) b.addEventListener("c
 for (const el of ["#source", "#data", "#force"]) $(el).addEventListener("input", render);
 choose("html");
 import("../engine/moonpug.js")
-  .then((m) => { engine = m; render(); reference(); })
+  .then((m) => { engine = m; render(); reference(); trio(); })
   .catch(() => render());

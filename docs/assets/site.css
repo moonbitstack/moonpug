@@ -283,8 +283,11 @@ footer { max-width: 1120px; margin: 0 auto; padding: 2rem 16px 3rem; color: var(
 }
 
 @media (width <= 560px) {
-  .bar { gap: .75rem; }
-  .bar nav { gap: .6rem; }
+  .bar { gap: .5rem; padding-inline: 12px; }
+  .bar nav { gap: .55rem; font-size: .78rem; }
+  /* The theme switch keeps its place but drops its words on a phone. */
+  .bar button { font-size: 0; padding: .2rem .5rem; }
+  .bar button::before { content: "\25D0"; font-size: .95rem; line-height: 1; }
   .features { grid-template-columns: 1fr; }
   .figures { grid-template-columns: 1fr 1fr; }
   .figures div { border-left: 0 !important; }
@@ -333,12 +336,55 @@ dl.fields dd p { margin: 0; color: var(--ink-2); }
 .next a b { display: block; font: 600 1.15rem "Fraunces", Georgia, serif; margin-bottom: .3rem; }
 .next a span { color: var(--ink-2); font-size: .92rem; }
 .next a:hover { border-color: var(--accent); }
+.trio { margin: 1rem 0 1.4rem; }
+.trio-note { max-width: 62ch; color: var(--ink-2); font-size: .95rem; margin: 0 0 .9rem; }
+.trio-panes { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+.trio article {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--sheet);
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.trio h4 {
+  margin: 0;
+  padding: .55rem .9rem .45rem;
+  font: 600 .7rem "Inter", system-ui, sans-serif;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border-bottom: 1px dotted var(--rule);
+}
+.trio h5 {
+  margin: 0;
+  padding: .45rem .9rem .35rem;
+  font: 600 .62rem "Inter", system-ui, sans-serif;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.trio pre {
+  margin: 0;
+  padding: .75rem .9rem;
+  font: .73rem/1.65 "JetBrains Mono", monospace;
+  white-space: pre;
+  overflow: auto;
+  min-height: 0;
+}
+.trio pre.src { background: var(--code-bg); color: var(--code-ink); height: 9.5rem; }
+.trio pre.out { border-top: 1px dashed var(--rule); color: var(--ink); flex: 1 1 auto; }
+.trio-verdict { margin: 0 0 3.5rem; font: 500 .78rem "Inter", system-ui, sans-serif; color: var(--muted); letter-spacing: .02em; }
+.trio-verdict b { color: var(--accent-2); font-weight: 600; }
+
 .duo { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin: 1rem 0 4rem; }
 .duo pre.code { margin: 0; height: 100%; }
 .duo h4 { margin: 0 0 .4rem; font: 600 .7rem "Inter", system-ui, sans-serif; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
 
 @media (width <= 900px) {
-  .next, .duo { grid-template-columns: minmax(0, 1fr); }
+  .next, .duo, .trio-panes { grid-template-columns: minmax(0, 1fr); }
   aside.index { display: none; }
 }
 
@@ -439,11 +485,11 @@ p.note {
 
 html, button, input, textarea, select { font-variant-ligatures: no-contextual; }
 
-/* The page scroll bar shows while the page moves or under the pointer and
-   hides a moment after; it keeps its place, so nothing shifts. */
+/* The page scroll bar hides while the page stands at its top and shows from
+   the first scroll on. It keeps its width either way, so nothing shifts. */
 @supports selector(::-webkit-scrollbar) {
-  html:not(.scrolling)::-webkit-scrollbar-thumb { background: transparent; border-color: transparent; box-shadow: none; }
+  html.at-top::-webkit-scrollbar-thumb { background: transparent; border-color: transparent; box-shadow: none; }
 }
 @supports not selector(::-webkit-scrollbar) {
-  html:not(.scrolling) { scrollbar-color: transparent transparent; }
+  html.at-top { scrollbar-color: transparent transparent; }
 }

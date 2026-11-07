@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@500;600&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="assets/site.css">
 <script type="module" src="assets/scrollbar.js"></script>
 </head>
@@ -21,7 +22,7 @@
     <a href="builtins.html">BtIns</a>
   </nav>
   <a class="github" href="https://github.com/moonbitstack/moonpug" aria-label="moonpug on GitHub"><svg viewBox="0 0 16 16" width="18" height="18" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8a8 8 0 0 0 5.47 7.59c.4.07.55-.17.55-.38v-1.33c-2.23.48-2.7-1.07-2.7-1.07-.36-.92-.89-1.17-.89-1.17-.73-.5.06-.49.06-.49.8.06 1.23.83 1.23.83.72 1.22 1.88.87 2.34.66.07-.52.28-.87.5-1.07-1.78-.2-3.65-.89-3.65-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6 7.6 0 0 1 4 0c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48v2.2c0 .21.15.46.55.38A8 8 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/></svg></a>
-  <button id="theme" type="button">Light / dark</button>
+  <button id="theme" type="button" aria-label="Light or dark">Light / dark</button>
 </header>
 
 <main class="doc">
@@ -39,6 +40,7 @@
       <a href="#whitespace">Whitespace</a>
       <a href="#delimiters">Delimiters and shorthands</a>
       <a href="#pug">Indentation syntax</a>
+      <a href="#markdown">Markdown that writes HTML</a>
       <a href="#blocks">Language blocks</a>
     </div>
     <div class="group"><b>Going further</b>
@@ -57,7 +59,7 @@
   <div class="reference">
     <div class="kicker">Guide</div>
     <h1>From a first page to a language of your own</h1>
-    <p class="lede">Each section builds on the one before. Every example runs as written; the eight programs in <code>src/examples</code> put them together, from a one-line render to a small application.</p>
+    <p class="lede">Each section builds on the one before. Every example runs as written; the nine programs in <code>src/examples</code> put them together, from a one-line render to a small application.</p>
 
     <section id="quick-start">
       <h2>Quick start</h2>
@@ -90,10 +92,11 @@ greet.render({ <span class="s">"name"</span>: <span class="s">"Grace"</span> })<
         <tr><th>Name</th><th>Also</th><th>Reads</th><th>Preset</th></tr>
         <tr><td><code>html</code></td><td></td><td>text with <code>{{ }}</code>, <code>{% %}</code>, <code>{# #}</code></td><td><code>html</code> escaped, <code>text</code> not</td></tr>
         <tr><td><code>pug</code></td><td><code>pg</code></td><td>elements by indentation</td><td><code>pug</code></td></tr>
-        <tr><td><code>md</code></td><td><code>markdown</code></td><td>braces, with a tag on a line of its own leaving no blank line</td><td><code>markdown</code></td></tr>
+        <tr><td><code>md</code></td><td><code>markdown</code></td><td>braces, then Markdown</td><td><code>markdown</code></td></tr>
       </table>
       <pre class="code">@moonpug.render(source, data, format=@moonpug.pug)
 @moonpug.render(source, data, format=@moonpug.markdown)</pre>
+      <p>All three write HTML5: a template is what you write, the page is what comes out. The <code>md</code> language is the brace syntax plus one more step, described <a href="#markdown">below</a>.</p>
       <p>An unnamed source reads as <code>settings.format</code>, escaped HTML unless you change it. A named template takes its format from <code>settings.formats</code>, which by default goes by extension: <code>.pug</code> and <code>.pg</code> as pug, <code>.md</code> and <code>.markdown</code> as Markdown, <code>.html</code>, <code>.htm</code>, <code>.xml</code>, <code>.svg</code> and <code>.xhtml</code> as escaped HTML, anything else as unescaped text.</p>
     </section>
 
@@ -205,6 +208,47 @@ html
       <p>Attributes go in <code>( )</code>, or <code>[ ]</code> and <code>{ }</code> when a long list wraps; <code>&amp;attributes(map)</code> merges a mapping in; <code>:key</code> is written as <code>data-key</code>. <code>|</code> starts a line of text and a trailing <code>.</code> makes the indented block text. <code>&lt;</code> lines pass through as HTML, and <code>{% %}</code> lines are statements whose body is the indented block. Mixins take arguments, a block and attributes; <code>include</code> with an indented block puts it where the included file says <code>yield</code>; <code>case</code> takes <code>when a, b</code>.</p>
     </section>
 
+    <section id="markdown">
+      <h2>Markdown that writes HTML</h2>
+      <p>A Markdown template is rendered first and read as Markdown afterwards, the way a static site generator does it: render the template, then convert what it wrote. The output of a <code>.md</code> template is HTML, not Markdown.</p>
+      <pre class="code"># {{ title }}
+
+{% for p in points %}
+- {{ p }}
+{% endfor %}</pre>
+      <pre class="code"><span class="c">&lt;!-- what the two steps write --&gt;</span>
+&lt;h1&gt;Notes&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;ink&lt;/li&gt;
+&lt;li&gt;paper&lt;/li&gt;
+&lt;/ul&gt;</pre>
+      <p>Values are escaped before they enter the Markdown, so a tag in the data cannot become a tag in the page; the conversion runs afterwards and leaves the entities alone. Markdown of the value itself still works — it is text like any other. Turning escaping off with <code>{% autoescape false %}</code> is the one way to let a value's tags through.</p>
+      <p>HTML the template's author wrote is escaped too, unless the stretch says otherwise: <code>Format.safe = false</code> for the whole template, or <code>{% block lang=md safe=false %}</code> for one block. It is the switch a Markdown page calls <code>html: false</code>.</p>
+      <pre class="code">{% block lang=md safe=false %}
+&lt;div class="note"&gt;&lt;p&gt;body&lt;/p&gt;&lt;/div&gt;
+{% endblock %}</pre>
+      <p>A language block inside Markdown is not converted again: it is rendered on its own, held under a mark, and put back once the Markdown around it is done. That is what keeps a block of Pug markup from being read as a paragraph.</p>
+      <pre class="code"># {{ title }}
+
+{% block lang=pug %}
+ul
+  each p in points
+    li= p
+{% endblock %}</pre>
+      <p><code>{% filter markdown %}</code> and the indentation syntax's <code>:markdown</code> run the same conversion for a stretch of text, without registering anything. They write markup, so the result is not escaped again.</p>
+      <pre class="code">{% filter markdown %}
+## From a string
+{% endfilter %}
+
+div
+  :markdown
+    ## Or from a block</pre>
+      <p>To write a Markdown file — a <code>README.md</code> in a generator, a changelog — use the <code>text</code> format: the template is still read with braces, and nothing is converted.</p>
+      <pre class="code">@moonpug.render(<span class="s">"# {{ title }}\n"</span>, data, format=@moonpug.text)
+<span class="c">// # Notes\n</span></pre>
+      <p>A language of your own ends the same way: <code>Lang.finish</code> takes what the stretch wrote and returns the page, and <code>Lang</code> carries it next to the reader. See <a href="#own">your own language</a>.</p>
+    </section>
+
     <section id="blocks">
       <h2>Language blocks</h2>
       <pre class="code">&lt;article&gt;
@@ -308,8 +352,23 @@ env.add_host(host~)</pre>
   nodes
 }
 
-env.add_lang({ name: <span class="s">"csv"</span>, aliases: [<span class="s">"table"</span>], options: @syntax.options, read: read_csv })</pre>
-      <p>A reader turns source into the tree in <code>moonbitstack/moonpug/syntax</code>. <code>Reading</code> says where it stands (language, force, template, line, brace options) and <code>reading.block</code> reads a stretch in any registered language, so a reader can lean on the built-in ones. After <code>add_lang</code>, <code>{% block lang=csv %}</code> and <code>Format.lang = "csv"</code> both work.</p>
+env.add_lang({
+  name: <span class="s">"csv"</span>,
+  aliases: [<span class="s">"table"</span>],
+  options: @syntax.options,
+  read: read_csv,
+  finish: None,          <span class="c">// the reader writes the page itself</span>
+})</pre>
+      <p>A reader turns source into the tree in <code>moonbitstack/moonpug/syntax</code>. <code>Reading</code> says where it stands (language, force, template, line, brace options, whether raw HTML is allowed) and <code>reading.block</code> reads a stretch in any registered language, so a reader can lean on the built-in ones. After <code>add_lang</code>, <code>{% block lang=csv %}</code> and <code>Format.lang = "csv"</code> both work.</p>
+      <p>Write the source of something that is not HTML — AsciiDoc, reStructuredText, a spreadsheet formula language — and give the language a <code>finish</code>: it receives what the stretch rendered and the <code>Reading</code> it rendered in, and returns what belongs in the page. Markdown's is the converter above.</p>
+      <pre class="code"><span class="k">let</span> asciidoc : @moonpug.Lang = {
+  name: <span class="s">"asciidoc"</span>,
+  aliases: [<span class="s">"adoc"</span>],
+  options: @syntax.options,
+  read: @syntax.read_braces,
+  finish: Some((text, reading) =&gt; my_asciidoc_to_html(text, safe=reading.safe)),
+}
+env.add_lang(asciidoc)</pre>
     </section>
 
     <section id="i18n">
@@ -341,6 +400,7 @@ env.add_lang({ name: <span class="s">"csv"</span>, aliases: [<span class="s">"ta
       <table>
         <tr><th>Field</th><th>Preset</th><th>Means</th></tr>
         <tr><td><code>format</code></td><td><code>html</code></td><td>how an unnamed source reads</td></tr>
+        <tr><td><code>format.safe</code></td><td>true</td><td>whether HTML the author wrote reaches the page; <code>false</code> lets it through in Markdown</td></tr>
         <tr><td><code>formats</code></td><td><code>format_of</code></td><td>how a named template reads</td></tr>
         <tr><td><code>force</code></td><td>false</td><td>read only the template's own language</td></tr>
         <tr><td><code>undefined</code></td><td><code>Strict</code></td><td>what using a missing name does</td></tr>
