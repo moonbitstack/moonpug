@@ -244,7 +244,8 @@ div
   :markdown
     ## Or from a block</pre>
       <p>To write a Markdown file — a <code>README.md</code> in a generator, a changelog — use the <code>text</code> format: the template is still read with braces, and nothing is converted.</p>
-      <pre class="code">@moonpug.render(<span class="s">"# {{ title }}\n"</span>, data, format=@moonpug.text)
+      <pre class="code"><span class="k">let</span> file = { ..@moonpug.text, keep_trailing_newline: <span class="k">true</span> }
+@moonpug.render(<span class="s">"# {{ title }}\n"</span>, data, format=file)
 <span class="c">// # Notes\n</span></pre>
       <p>A language of your own ends the same way: <code>Lang.finish</code> takes what the stretch wrote and returns the page, and <code>Lang</code> carries it next to the reader. See <a href="#own">your own language</a>.</p>
     </section>
