@@ -64,3 +64,27 @@ jobs:
         run: |
           python3 scripts/gen_api.py || python scripts/gen_api.py
           git diff --exit-code --ignore-cr-at-eol docs/api.html
+
+      - name: the skills are valid
+        if: runner.os == 'Linux'
+        run: |
+          for dir in docs/skills/*/; do
+            case "$dir" in *CHANGE-ME*) continue ;; esac
+            [ -f "$dir/SKILL.md" ] || continue
+            pipx run --spec skills-ref agentskills validate "$dir"
+          done
+
+      # A reader pastes the blocks of the README and the skills into a project, so they have
+      # to compile as written, against this commit's source.
+      - name: the code in the docs compiles
+        if: runner.os == 'Linux'
+        run: python3 scripts/check_snippets.py
+
+      # One page written three ways has to come out as one document. The three are compared
+      # with parse5, the parser the HTML specification's own tests use, not as text.
+      - name: one page in three languages is one document
+        if: runner.os == 'Linux'
+        run: |
+          npm install --no-save --no-package-lock parse5@7
+          moon run src/examples/09-same-page --target native -- --json > "$RUNNER_TEMP/same-page.json"
+          node scripts/check_same_page.mjs "$RUNNER_TEMP/same-page.json"
