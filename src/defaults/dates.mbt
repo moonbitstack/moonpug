@@ -83,32 +83,60 @@ fn zone_of(m : @moondate.Moment) -> @moondate.Zone {
 }
 
 ///|
-fn offset_minutes(zone : @moondate.Zone) -> Int32 {
-  match zone {
-    Utc => 0
-    Offset(minutes) => minutes
+/// The offset in whole seconds, floored, as Python's
+/// `timedelta.days * 86400 + timedelta.seconds` reads it.
+fn offset_seconds(zone : @moondate.Zone) -> Int64 {
+  let n = zone.nanos()
+  let s = n / 1_000_000_000L
+  if n < 0L && n % 1_000_000_000L != 0L {
+    s - 1L
+  } else {
+    s
   }
 }
 
 ///|
-/// The zone's name as Python's fixed-offset `timezone` gives it.
+/// The zone's name as Python's `tzname()` gives it: a named zone's
+/// abbreviation, or `timezone`'s spelling of a fixed offset, which keeps
+/// microseconds and no finer.
 fn zone_name(zone : @moondate.Zone) -> String {
-  match zone {
-    Utc | Offset(0) => "UTC"
-    Offset(m) => {
-      let sign = if m < 0 { "-" } else { "+" }
-      let a = m.abs()
-      "UTC" + sign + pad2(a / 60) + ":" + pad2(a % 60)
-    }
+  if zone is Named({ abbrev, .. }) && abbrev != "" {
+    return abbrev
+  }
+  let micros = zone.nanos() / 1000L
+  if micros == 0L {
+    return "UTC"
+  }
+  let sign = if micros < 0L { "-" } else { "+" }
+  let a = micros.abs()
+  let head = "UTC" +
+    sign +
+    pad2((a / 3_600_000_000L).to_int()) +
+    ":" +
+    pad2((a / 60_000_000L % 60L).to_int())
+  let s = (a / 1_000_000L % 60L).to_int()
+  let us = (a % 1_000_000L).to_int()
+  if us != 0 {
+    let digits = us.to_string()
+    head +
+    ":" +
+    pad2(s) +
+    "." +
+    "000000"[:6 - digits.length()].to_owned() +
+    digits
+  } else if s != 0 {
+    head + ":" + pad2(s)
+  } else {
+    head
   }
 }
 
 ///|
 fn signed_offset(zone : @moondate.Zone) -> String {
-  let m = offset_minutes(zone)
-  let sign = if m < 0 { "-" } else { "+" }
-  let a = m.abs()
-  sign + pad2(a / 60) + pad2(a % 60)
+  let s = offset_seconds(zone)
+  let sign = if s < 0L { "-" } else { "+" }
+  let a = s.abs()
+  sign + pad2((a / 3600L).to_int()) + pad2((a / 60L % 60L).to_int())
 }
 
 ///|
@@ -188,7 +216,7 @@ fn django_format(
         let micro = (t.nano / 1000).to_string()
         "000000"[:6 - micro.length()].to_owned() + micro
       }
-      'Z' => (offset_minutes(zone) * 60).to_string()
+      'Z' => offset_seconds(zone).to_string()
       'b' => month_names[date.month - 1][:3].to_owned().to_lower()
       'c' => m.isoformat()
       'd' => pad2(date.day)
@@ -226,7 +254,7 @@ fn django_format(
           t.hour.to_int64() * 3600L +
           t.minute.to_int64() * 60L +
           t.second.to_int64()
-        (wall - offset_minutes(zone).to_int64() * 60L).to_string()
+        (wall - offset_seconds(zone)).to_string()
       }
       'w' => date.weekday().to_string()
       'W' => date.isocalendar().1.to_string()
@@ -335,7 +363,7 @@ fn seconds_of(
   t.hour.to_int64() * 3600L +
   t.minute.to_int64() * 60L +
   t.second.to_int64() -
-  offset_minutes(zone).to_int64() * 60L
+  offset_seconds(zone)
 }
 
 ///|
@@ -357,7 +385,7 @@ fn timesince(
   let d_zone = zone_of(d)
   let (n_date, n_time) = if n_aware {
     let shifted = seconds_of(n_date0, n_time0, zone_of(now)) +
-      offset_minutes(d_zone).to_int64() * 60L
+      offset_seconds(d_zone)
     let days = if shifted >= 0L {
       shifted / 86400L
     } else {
