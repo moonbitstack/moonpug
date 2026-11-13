@@ -384,6 +384,7 @@ const html = `<!doctype html>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@500;600&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap" rel="stylesheet">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="assets/site.css">
 
 <script type="module" src="assets/scrollbar.js"></script></head>
@@ -397,7 +398,7 @@ const html = `<!doctype html>
     <a href="builtins.html" aria-current="page">BtIns</a>
   </nav>
   <a class="github" href="https://github.com/moonbitstack/moonpug" aria-label="moonpug on GitHub">${githubSvg}</a>
-  <button id="theme" type="button">Light / dark</button>
+  <button id="theme" type="button" aria-label="Light or dark">Light / dark</button>
 </header>
 <main class="doc">
   ${asideIndex()}
