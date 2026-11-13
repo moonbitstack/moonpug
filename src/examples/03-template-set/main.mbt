@@ -21,16 +21,18 @@ fn main {
     let page = env.template("page.html")
     println(
       page.render(
-        @json.parse("{\"name\": \"Ada\", \"note\": \"<first program>\"}"),
+        @jsontext.loads("{\"name\": \"Ada\", \"note\": \"<first program>\"}"),
       ),
     )
     println(
-      page.render(@json.parse("{\"name\": \"Grace\", \"note\": \"compilers\"}")),
+      page.render(
+        @jsontext.loads("{\"name\": \"Grace\", \"note\": \"compilers\"}"),
+      ),
     )
     let nav = env.template("nav.pug")
     println(
       nav.render(
-        @json.parse(
+        @jsontext.loads(
           "{\"links\": [{\"url\": \"/\", \"label\": \"Home\"}, {\"url\": \"/about\", \"label\": \"About\"}]}",
         ),
       ),

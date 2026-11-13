@@ -24,11 +24,13 @@ fn main {
     for (path, source) in pages {
       let t = env.compile(source)
       let data : Json = if path == "index.html" {
-        @json.parse(
+        @jsontext.loads(
           "{\"site\":\"Notes\",\"pages\":[{\"url\":\"/\",\"title\":\"Home\"},{\"url\":\"/about\",\"title\":\"About\"}]}",
         )
       } else {
-        @json.parse("{\"title\":\"About\",\"body\":\"A small static site.\"}")
+        @jsontext.loads(
+          "{\"title\":\"About\",\"body\":\"A small static site.\"}",
+        )
       }
       println("// \{path}\n" + t.render(data) + "\n")
     }

@@ -110,7 +110,7 @@ Output is escaped by default: `Reading <list>` is written as `Reading &lt;list&g
 | `md` | `markdown` | the brace syntax, then Markdown | `markdown` |
 
 ```moonbit
-let data = @json.parse("{\"title\": \"Notes\", \"items\": [\"ink\", \"paper\"]}")
+let data : Json = { "title": "Notes", "items": ["ink", "paper"] }
 let page = @moonpug.render("h1= title\neach i in items\n  p= i", data, format=@moonpug.pug)
 assert_eq(page, "<h1>Notes</h1><p>ink</p><p>paper</p>")
 ```

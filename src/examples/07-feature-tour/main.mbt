@@ -89,36 +89,24 @@ fn show(title : String, source : String, data : Json) -> Unit {
 
 ///|
 fn main {
-  try {
-    show("Text", text_src, @json.parse("{}"))
-    show("Numbers", numbers_src, @json.parse("{}"))
-    show(
-      "Lists and maps",
-      lists_src,
-      @json.parse(
-        "{\"users\":[{\"name\":\"Ada\",\"kind\":\"a\"},{\"name\":\"Grace\",\"kind\":\"b\"},{\"name\":\"Alan\",\"kind\":\"a\"}],\"items\":[{\"shown\":true},{\"shown\":false}]}",
-      ),
-    )
-    show(
-      "Choosing a value",
-      choose_src,
-      @json.parse("{\"ok\":true,\"count\":3}"),
-    )
-    show(
-      "Dates",
-      dates_src,
-      @json.parse("{\"d\":\"2026-01-01\",\"now\":\"2026-05-04\"}"),
-    )
-    show("Tests", tests_src, @json.parse("{}"))
-    show("Globals", globals_src, @json.parse("{}"))
-    show(
-      "Statements",
-      statements_src,
-      @json.parse(
-        "{\"books\":[{\"title\":\"Dune\",\"year\":1965},{\"title\":\"The Hobbit\",\"year\":1937}]}",
-      ),
-    )
-  } catch {
-    e => println("refused: \{e}")
-  }
+  show("Text", text_src, Json::empty_object())
+  show("Numbers", numbers_src, Json::empty_object())
+  show("Lists and maps", lists_src, {
+    "users": [
+      { "name": "Ada", "kind": "a" },
+      { "name": "Grace", "kind": "b" },
+      { "name": "Alan", "kind": "a" },
+    ],
+    "items": [{ "shown": true }, { "shown": false }],
+  })
+  show("Choosing a value", choose_src, { "ok": true, "count": 3 })
+  show("Dates", dates_src, { "d": "2026-01-01", "now": "2026-05-04" })
+  show("Tests", tests_src, Json::empty_object())
+  show("Globals", globals_src, Json::empty_object())
+  show("Statements", statements_src, {
+    "books": [
+      { "title": "Dune", "year": 1965 },
+      { "title": "The Hobbit", "year": 1937 },
+    ],
+  })
 }

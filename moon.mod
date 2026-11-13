@@ -38,6 +38,7 @@ source = "src"
 import {
   "moonbitstack/moondate@0.1.6",
   "moonbitstack/moonmd@0.1.1",
+  "moonbitstack/moonjson@0.5.0",
   "moonbitstack/moonucd@0.1.4",
 }
 

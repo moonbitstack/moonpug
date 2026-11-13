@@ -13,8 +13,8 @@ pub fn render_page(
     "md" => @moonpug.markdown
     _ => @moonpug.html
   }
-  let data = @json.parse(context) catch {
-    e => return "refused: the data is not JSON: \{e}"
+  let data = @jsontext.loads(context) catch {
+    e => return "refused: the data is not JSON: " + e.message()
   }
   @moonpug.render(source, data, format~, force~) catch {
     e => "refused: \{e}"
@@ -26,8 +26,8 @@ pub fn render_page(
 /// it is written in, and what it renders to. The page is the shelf the
 /// playground shows, so the three panes and the bench agree.
 pub fn three_ways(context : String) -> String {
-  let data = @json.parse(context) catch {
-    e => return "refused: the data is not JSON: \{e}"
+  let data = @jsontext.loads(context) catch {
+    e => return "refused: the data is not JSON: " + e.message()
   }
   let pages : Array[(String, String, @moonpug.Format)] = [
     (
@@ -82,7 +82,7 @@ pub fn three_ways(context : String) -> String {
       ),
     )
   }
-  Json::array(out).stringify()
+  @jsontext.dumps(Json::array(out))
 }
 
 ///|
@@ -97,5 +97,5 @@ pub fn names() -> String {
     "tests": Json(sorted(@defaults.tests().keys().collect())),
     "globals": Json(sorted(@defaults.globals().keys().collect())),
   }
-  doc.stringify()
+  @jsontext.dumps(doc)
 }

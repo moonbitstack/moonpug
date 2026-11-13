@@ -2,5 +2,6 @@ pkgtype(kind: "executable")
 
 import {
   "moonbitstack/moonpug",
+  "moonbitstack/moonjson/json" @jsontext,
   "moonbitlang/core/env",
 }

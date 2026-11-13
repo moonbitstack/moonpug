@@ -172,7 +172,7 @@ fn renderings() -> Json {
 fn main {
   let args = @env.args()
   if args.contains("--json") {
-    println(renderings().stringify())
+    println(@jsontext.dumps(renderings()))
     return
   }
   let mut agreed = 0

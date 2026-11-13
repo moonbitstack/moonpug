@@ -64,16 +64,16 @@ fn js_json(value : @spec.Value) -> String {
       } else {
         d.to_string()
       }
-    Text(s) | Markup(s) => Json::string(s).stringify()
+    Text(s) | Markup(s) => @jsontext.dumps(Json::string(s))
     Seq(items) | Tuple(items) => "[" + items.map(js_json).join(",") + "]"
     Dict(fields) => {
       let parts = []
       for k, v in fields {
-        parts.push(Json::string(k).stringify() + ":" + js_json(v))
+        parts.push(@jsontext.dumps(Json::string(k)) + ":" + js_json(v))
       }
       "{" + parts.join(",") + "}"
     }
-    Object(_) => Json::string(value.to_string()).stringify()
+    Object(_) => @jsontext.dumps(Json::string(value.to_string()))
   }
 }
 

@@ -1,7 +1,7 @@
 import {
   "moonbitstack/moonpug",
   "moonbitstack/moonpug/defaults",
-  "moonbitlang/core/json",
+  "moonbitstack/moonjson/json" @jsontext,
 }
 
 options(

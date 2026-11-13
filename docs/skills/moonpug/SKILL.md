@@ -18,7 +18,7 @@ import {
 `@moonpug.render(source, data)` compiles and renders in one call. When a template renders more than once, compile it:
 
 ```moonbit
-let data = @json.parse("{\"title\": \"Notes\", \"name\": \"ada\"}")
+let data : Json = { "title": "Notes", "name": "ada" }
 let env = @moonpug.Env::new()
 let page = env.compile("Hello {{ name|title }}!")
 let one = page.render(data)
