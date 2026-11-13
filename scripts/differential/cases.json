@@ -1,0 +1,39 @@
+{
+  "jinja": [
+    { "name": "escaping", "source": "<p>{{ name }}</p>", "data": { "name": "<Ada & Bob>" } },
+    { "name": "loop", "source": "{% for x in items %}<li>{{ x }}</li>{% endfor %}", "data": { "items": [1, 2, 3] } },
+    { "name": "loop-variables", "source": "{% for x in items %}{{ loop.index }}/{{ loop.length }}{% if not loop.last %},{% endif %}{% endfor %}", "data": { "items": ["a", "b", "c"] } },
+    { "name": "loop-else", "source": "{% for x in items %}<li>{{ x }}</li>{% else %}<li>none</li>{% endfor %}", "data": { "items": [] } },
+    { "name": "if-elif", "source": "{% if n > 10 %}big{% elif n > 3 %}mid{% else %}small{% endif %}", "data": { "n": 5 } },
+    { "name": "filters", "source": "{{ 'hello world'|title }} {{ items|join('-') }} {{ items|length }}", "data": { "items": ["a", "b"] } },
+    { "name": "tests", "source": "{{ 4 is divisibleby(2) }} {{ 'a' is string }} {{ missing is defined }}", "data": {} },
+    { "name": "set-and-sum", "source": "{% set total = items|sum %}{{ total }}", "data": { "items": [1, 2, 3, 4] } },
+    { "name": "macro", "source": "{% macro cell(v) %}<td>{{ v }}</td>{% endmacro %}{% for i in items %}{{ cell(i) }}{% endfor %}", "data": { "items": [1, 2] } },
+    { "name": "filter-block", "source": "{% filter upper %}mixed{% endfilter %}", "data": {} },
+    { "name": "tilde", "source": "{{ 'a' ~ n ~ 'b' }}", "data": { "n": 1 } },
+    { "name": "inline-if", "source": "{{ 'yes' if ok else 'no' }}", "data": { "ok": true } },
+    { "name": "sort-first-last", "source": "{{ items|sort|first }}{{ items|sort|last }}", "data": { "items": [3, 1, 2] } },
+    { "name": "slice", "source": "{{ items[1:3]|join(',') }}", "data": { "items": [10, 20, 30, 40] } },
+    { "name": "dictsort", "source": "{% for k, v in d|dictsort %}{{ k }}={{ v }};{% endfor %}", "data": { "d": { "b": 2, "a": 1 } } },
+    { "name": "numbers", "source": "{{ 7 // 2 }} {{ 7 % 2 }} {{ 2 ** 8 }} {{ 1.5 }}", "data": {} },
+    { "name": "escape-filter", "source": "{{ '<b>'|escape }}", "data": {} },
+    { "name": "default-filter", "source": "{{ missing|default('fallback') }}", "data": {} },
+    { "name": "whitespace", "source": "a\n  {%- if ok %}\n  b\n  {%- endif %}\nc", "data": { "ok": true } }
+  ],
+  "pug": [
+    { "name": "element", "source": "h1 Title", "data": {} },
+    { "name": "class-and-id", "source": "#main.card.wide\n  p Text", "data": {} },
+    { "name": "attribute", "source": "a(href='/x', title=name) Link", "data": { "name": "Ada" } },
+    { "name": "each", "source": "ul\n  each b in books\n    li= b.title", "data": { "books": [{ "title": "Dune" }, { "title": "Hobbit" }] } },
+    { "name": "if-else", "source": "if ok\n  p yes\nelse\n  p no", "data": { "ok": false } },
+    { "name": "unless", "source": "unless ok\n  p none", "data": { "ok": false } },
+    { "name": "case", "source": "case n\n  when 1\n    p one\n  when 2\n    p two\n  default\n    p many", "data": { "n": 2 } },
+    { "name": "mixin", "source": "mixin row(v)\n  li= v\nul\n  +row(1)\n  +row(2)", "data": {} },
+    { "name": "interpolation", "source": "p Hello #{name}!", "data": { "name": "Ada" } },
+    { "name": "doctype", "source": "doctype html\nhtml\n  body\n    p x", "data": {} },
+    { "name": "comment", "source": "//- hidden\np shown", "data": {} },
+    { "name": "text-block", "source": "script.\n  var x = 1;\n  call(x);", "data": {} },
+    { "name": "attributes-object", "source": "div&attributes(attrs)", "data": { "attrs": { "data-a": "1", "class": "z" } } },
+    { "name": "nested", "source": "div\n  ul\n    li a\n    li b", "data": {} }
+  ]
+}

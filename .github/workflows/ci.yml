@@ -80,6 +80,21 @@ jobs:
         if: runner.os == 'Linux'
         run: python3 scripts/check_snippets.py
 
+      # The same template, rendered by this engine and by the implementation the syntax comes
+      # from, has to come out byte for byte. Both references are installed at a pinned version
+      # and asked for their own output; nothing here reads the expectations in the repository.
+      - name: the engine agrees with the reference implementations
+        if: runner.os == 'Linux'
+        run: |
+          python3 -m venv "$RUNNER_TEMP/refs"
+          "$RUNNER_TEMP/refs/bin/pip" install --quiet "jinja2==3.1.6"
+          npm install --no-save --no-package-lock pug@3.0.4
+          moon build --target js --release src/examples/playground
+          node scripts/differential/render_cases.mjs \
+            _build/js/release/build/examples/playground/playground.js "$RUNNER_TEMP/rendered.json"
+          "$RUNNER_TEMP/refs/bin/python" scripts/differential/check_jinja.py "$RUNNER_TEMP/rendered.json"
+          node scripts/differential/check_pug.mjs "$RUNNER_TEMP/rendered.json"
+
       # One page written three ways has to come out as one document. The three are compared
       # with parse5, the parser the HTML specification's own tests use, not as text.
       - name: one page in three languages is one document

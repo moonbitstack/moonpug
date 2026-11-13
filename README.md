@@ -350,6 +350,10 @@ The suites below run in CI on every push, on Linux, macOS and Windows. Each one 
 | Django 6.1.2 `truncatechars` and `truncatewords` families | 224 | all |
 | Pug 3.0.4 cases | 64 + 103 | all |
 | One page written in HTML, in Pug and in Markdown | 24 pages | all: the three are one document once a browser's parser has read them |
+| Jinja 3.1.6, the same templates rendered by both | 19 | all: byte for byte |
+| Pug 3.0.4, the same templates rendered by both | 14 | all: byte for byte |
+
+The last two rows are not a corpus replayed from a file: CI installs Jinja 3.1.6 and Pug 3.0.4 at those versions, renders `scripts/differential/cases.json` with the reference and with this engine, and compares the two outputs character for character.
 
 The eleven CommonMark examples that differ from the specification's HTML are not template questions — the corpus has no template tag in it, and the template frontend reproduces the Markdown reader's output on all 652. They are named here because the reader is what the frontend ends with:
 
