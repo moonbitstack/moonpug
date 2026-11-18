@@ -1,6 +1,6 @@
 name = "moonbitstack/moonpug"
 
-version = "0.2.0"
+version = "0.2.1"
 
 readme = "README.md"
 
@@ -42,10 +42,10 @@ description = "A template engine for MoonBit: HTML, Pug and Markdown pages over 
 source = "src"
 
 import {
-  "moonbitstack/moondate@0.1.7",
-  "moonbitstack/moonmd@0.2.0",
-  "moonbitstack/moonjson@0.5.0",
-  "moonbitstack/moonucd@0.2.0",
+  "moonbitstack/moondate@0.2.1",
+  "moonbitstack/moonmd@0.2.1",
+  "moonbitstack/moonjson@0.5.1",
+  "moonbitstack/moonucd@0.2.1",
 }
 
 preferred_target = "wasm-gc"
