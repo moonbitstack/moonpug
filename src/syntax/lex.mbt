@@ -225,7 +225,7 @@ fn Lexer::read_number(self : Lexer) -> Tok raise @spec.Refused {
       }
       self.advance(i)
       let digits = src[start + 2:i].to_owned().replace_all(old="_", new="")
-      return Int(@string.parse_int64(digits, base=radix)) catch {
+      return Int(@string.parse_int64(digits, radix~)) catch {
         _ => raise self.fail("malformed number \{src[start:i]}")
       }
     }

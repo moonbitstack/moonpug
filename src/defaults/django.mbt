@@ -723,7 +723,7 @@ fn filter_floatformat(
     return finish(if negative && whole != "0" { "-" + whole } else { whole })
   }
   let places = p.abs()
-  let coefficient = @bigint.BigInt::from_string(digits)
+  let coefficient = @string.parse_bigint(digits) catch { _ => return Text("") }
   let scaled = if exponent >= -places {
     coefficient * ten_to(exponent + places)
   } else {

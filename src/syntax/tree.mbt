@@ -158,7 +158,7 @@ pub(all) enum Node {
     recursive~ : Bool,
     each~ : Bool,
     body~ : Array[Node],
-    otherwise~ : Array[Node]
+    otherwise~ : Array[Node],
   )
   If(Array[(Expr, Array[Node])], Array[Node])
   Set(Target, Expr)
@@ -179,7 +179,7 @@ pub(all) enum Node {
     context~ : Bool,
     raw~ : Bool,
     inline~ : Bool,
-    block~ : Array[Node]
+    block~ : Array[Node],
   )
   /// Where an include's block goes.
   Yield

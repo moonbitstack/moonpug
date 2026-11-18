@@ -71,10 +71,9 @@ fn charref(cs : Array[Char], at : Int32) -> (String, Int32)? {
     }
     let digits = String::from_array(cs[start:j])
     let after = if j < n && cs[j] == ';' { j + 1 } else { j }
-    let num = @bigint.BigInt::from_string(
-      digits,
-      radix=if hex { 16 } else { 10 },
-    )
+    let num = @string.parse_bigint(digits, radix=if hex { 16 } else { 10 }) catch {
+      _ => return None
+    }
     let text = if num.compare_int(0x10FFFF) > 0 {
       "\u{FFFD}"
     } else {

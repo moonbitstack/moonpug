@@ -1129,7 +1129,7 @@ fn PugLexer::attrs(self : PugLexer) -> Bool raise @spec.Refused {
         | Attrs(_)
         | Call(_, _),
         ..
-      }
+      },
     ) => true
     _ => false
   }
